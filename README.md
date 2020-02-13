@@ -1,2 +1,2 @@
 # gblearn
-Machine Learning for Grain Boundaries
+Representation and Machine Learning for Collections of Atoms 
