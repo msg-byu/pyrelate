@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 try:
-        from setuptools import setup
-            args = {}
+    from setuptools import setup
+    args = {}
 except ImportError:
     from distutils.core import setup
         print("""\

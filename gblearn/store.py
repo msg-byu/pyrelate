@@ -2,7 +2,6 @@
 """
 import os
 import numpy as np
-import inspect
 import descriptors as desc
 class ResultStore:
     """
