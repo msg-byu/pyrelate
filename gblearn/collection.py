@@ -116,6 +116,7 @@ class Collection:
 
 #Questions
 #what else do I need before I push to gblearn? (unit tests, travis CI)
+#can you look over everything pls?
 
 #TODO
 #better error catching
