@@ -4,17 +4,17 @@ try:
     args = {}
 except ImportError:
     from distutils.core import setup
-        print("""\
-                *** WARNING: setuptools is not found.  Using distutils...
-                """)
+    print("""\
+    *** WARNING: setuptools is not found.  Using distutils...
+    """)
 
-        from setuptools import setup
-        try:
-                from pypandoc import convert
-                    read_md = lambda f: convert(f, 'rst')
-        except ImportError:
-                print("warning: pypandoc module not found, could not convert Markdown to RST")
-                    read_md = lambda f: open(f, 'r').read()
+from setuptools import setup
+try:
+    from pypandoc import convert
+    read_md = lambda f: convert(f, 'rst')
+except ImportError:
+    print("warning: pypandoc module not found, could not convert Markdown to RST")
+    read_md = lambda f: open(f, 'r').read()
 
 from os import path
 setup(name='gblearn',
