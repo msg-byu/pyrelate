@@ -2,7 +2,7 @@
 """
 import os
 import numpy as np
-import descriptors as desc
+
 class ResultStore:
     """
 
