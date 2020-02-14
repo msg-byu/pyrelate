@@ -29,6 +29,9 @@ setup(name='gblearn',
     tests_require=['pytest', 'python-coveralls'],
     install_requires=[
         "numpy",
+        "tqdm",
+        "ase",
+        "dscribe"
     ],
     packages=['gblearn'],
     scripts=[],

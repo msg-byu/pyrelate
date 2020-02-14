@@ -7,25 +7,19 @@ class ResultStore:
     """
 
     """
-    root = None
-    name = None
     
-    def __init__(self, location, name):
+    def __init__(self, location):
         self.root = location
-        #what if location does not exist--try/except
-        self.name = name
+        if not os.path.exists(location):
+            os.mkdir(location)
     
-    def check_existing_results(self, descriptor, idd, fname, atomic_env_specific):
+    def check_existing_results(self, descriptor, idd, check_name, atomic_env_specific):
         """ Function to check if correct file structure is in place and if a result file
             exists for these parameters
             Returns:
                 bool: True if file results already exits, false if they do not
         """    
-        check_name = fname
-        path = os.path.join(self.root, self.name)#if result dir exists
-        if not (os.path.exists(path)):
-            os.mkdir(path)
-        path = os.path.join(path, descriptor)
+        path = os.path.join(self.root, descriptor)
         if not os.path.exists(path): #if descriptor dir exists
             os.mkdir(path)
         if atomic_env_specific:
@@ -34,7 +28,7 @@ class ResultStore:
                 os.mkdir(path)
         for f in os.listdir(path):
             nm, ex = os.path.splitext(f)
-            if(nm==check_name) and os.path.isfile(os.path.join(path,f)):
+            if nm==check_name and os.path.isfile(os.path.join(path,f)):
                 return True, os.path.join(path, f)  #results already exist
 
         return False, path

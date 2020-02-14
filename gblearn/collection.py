@@ -8,6 +8,7 @@ from ase import io, Atoms
 from gblearn.store import ResultStore
 
 class Collection:
+    #inherit from a dictionary, (look in gblearn to double check), can get rid of atoms_files
     """Represents a collection of ASE Atoms objects
 
     Args :
@@ -23,29 +24,32 @@ class Collection:
 
         r_store (gblearn.store.ResultStore) : 
     """
-    atoms_files={}
-    _result_store = None
 
     def __init__(self, name, fpath):
+        super(Collection, self).__init__()
+        self.atoms_files = {}
         self._result_store = ResultStore(fpath, name.lower())
 
-    def _get_idd(self, fpath, rxid=None, prefix=None):
+    def _get_idd(self, fpath,comp_rxid, prefix=None):
         """Private function to create the idd for the Atoms object
         """
-        import re
-        comp_rxid = re.compile(rxid)
         extra,fname = path.split(fpath)
         if comp_rxid is not None:
-            idd = comp_rxid.match(fname)
+            idd_match = comp_rxid.match(fname)
+            if idd_match is None:
+                print("Regex found no pattern. Resolving to filename as idd.")
+                idd = fname
+            else:
+                idd = idd_match.group(1)
         else: 
             idd=fname
-
+        
         if prefix is not None:
-            idd= prefix.lower() + idd.group(1)
+            idd= prefix.lower() + idd
 
         return idd
 
-    def read(self, root, f_format, Z, rxid=None, prefix=None):
+    def read(self, root, Z, f_format=None, rxid=None, prefix=None):
         """Function to read atoms data into ASE Atoms objects and add to Collection
 
         Args :
@@ -63,7 +67,10 @@ class Collection:
 
         Example:
 
-           """  
+           """
+        if rxid is not None:
+            import re
+            comp_rxid = re.compile(rxid)
         try:
             if isinstance(root, list):
                 for i in range(len(root)):
@@ -74,7 +81,7 @@ class Collection:
             elif(path.isfile(root)):
                 a=io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
-                idd = self._get_idd(root, rxid, prefix)
+                idd = self._get_idd(root, comp_rxid, prefix)
                 self.atoms_files[idd] = a
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
@@ -113,8 +120,7 @@ class Collection:
             fname = self._result_store.generate_file_name(descriptor, idd,z[0], **args)
             exists, fpath =  self._result_store.check_existing_results(descriptor, idd, fname, atomic_env_specific)
             if not exists:
-                
-                result = fcn(idd, species=z, **args)
+                result = fcn(self.atoms_files[idd], species=z, **args)
                 self._result_store.store_to_file(result, fpath, fname, file_ext=None)
 
 #Questions
