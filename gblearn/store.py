@@ -12,7 +12,8 @@ class ResultStore:
     
     def __init__(self, location, name):
         self.root = location
-        #what if location does not exist--try/except
+        if not os.path.exists(location):
+            os.mkdir(location)
         self.name = name
     
     def check_existing_results(self, descriptor, idd, fname, atomic_env_specific):
@@ -23,7 +24,7 @@ class ResultStore:
         """    
         check_name = fname
         path = os.path.join(self.root, self.name)#if result dir exists
-        if not (os.path.exists(path)):
+        if not os.path.exists(path):
             os.mkdir(path)
         path = os.path.join(path, descriptor)
         if not os.path.exists(path): #if descriptor dir exists
@@ -34,7 +35,7 @@ class ResultStore:
                 os.mkdir(path)
         for f in os.listdir(path):
             nm, ex = os.path.splitext(f)
-            if(nm==check_name) and os.path.isfile(os.path.join(path,f)):
+            if nm==check_name and os.path.isfile(os.path.join(path,f)):
                 return True, os.path.join(path, f)  #results already exist
 
         return False, path
