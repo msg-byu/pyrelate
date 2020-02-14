@@ -1,5 +1,7 @@
 from dscribe.descriptors import SOAP
 import collection as C
+
+
 def soap(idd, species, rcut,nmax,lmax):#add args for additional parameters
     rbf = "gto"
     soap_desc = SOAP(species=species, periodic=False, rcut=rcut, nmax=nmax, lmax=lmax)

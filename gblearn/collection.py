@@ -5,8 +5,7 @@ from tqdm import tqdm
 from os import path
 import os
 from ase import io, Atoms
-import descriptors
-from store import ResultStore
+from gblearn.store import ResultStore
 
 class Collection:
     """Represents a collection of ASE Atoms objects
@@ -86,7 +85,7 @@ class Collection:
         except ValueError:
             print("Invalid file path, " , root, " was not read.")
 
-    def describe(self, descriptor, fcn, atomic_env_specific=True, file_extension=None , **args):
+    def describe(self, descriptor, fcn=None, atomic_env_specific=True, file_extension=None , **args):
         """Function to call specified description function and store the result
         
         Args :
@@ -104,14 +103,18 @@ class Collection:
         Returns:
 
         """ 
-        fcn_to_call = getattr(descriptors, fcn)
-
+        if fcn is None:
+            from gblearn import descriptors
+            fcn = getattr(descriptors, descriptor)
+            #TODO: work on it
+        
         for idd in self.atoms_files:
             z = self.atoms_files[idd].get_chemical_symbols() #.get_atomic_numbers()
             fname = self._result_store.generate_file_name(descriptor, idd,z[0], **args)
             exists, fpath =  self._result_store.check_existing_results(descriptor, idd, fname, atomic_env_specific)
             if not exists:
-                result = fcn_to_call(idd, species=z, **args)
+                
+                result = fcn(idd, species=z, **args)
                 self._result_store.store_to_file(result, fpath, fname, file_ext=None)
 
 #Questions
