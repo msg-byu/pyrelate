@@ -22,13 +22,16 @@ class Collection:
             keys are either user specified (e.g. using regex) or is given by the file name of the 
             original data
 
-        r_store (gblearn.store.ResultStore) : 
+        r_store (gblearn.store.ResultStore) :
+
+    ''warning'': MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
     """
 
     def __init__(self, name, fpath):
         super(Collection, self).__init__()
         self.atoms_files = {}
-        self._result_store = ResultStore(fpath, name.lower())
+        self.name = name.lower()
+        self._result_store = ResultStore(fpath)
 
     def _get_idd(self, fpath,comp_rxid, prefix=None):
         """Private function to create the idd for the Atoms object
