@@ -20,20 +20,20 @@ class ResultStore:
                 bool: True if file results already exits, false if they do not
         """    
         path = os.path.join(self.root, descriptor)
-        if not os.path.exists(path): #if descriptor dir exists
+        if not os.path.exists(path): 
             os.mkdir(path)
         if atomic_env_specific:
-            path = os.path.join(path, idd)#if idd dir exists
+            path = os.path.join(path, idd)
             if not os.path.exists(path):
                 os.mkdir(path)
         for f in os.listdir(path):
             nm, ex = os.path.splitext(f)
             if nm==check_name and os.path.isfile(os.path.join(path,f)):
-                return True, os.path.join(path, f)  #results already exist
+                return True, os.path.join(path, f) 
 
         return False, path
             
-    def store_to_file(self, result, path, fname, file_ext=None):
+    def store_descriptor(self, result, path, fname, file_ext=None):
         if isinstance(result, np.ndarray):
             full_path = os.path.join(path, fname)
             np.save(full_path, result)
@@ -48,11 +48,23 @@ class ResultStore:
         return path
 
 
-    def generate_file_name(self, descriptor, idd, z, **args):
+    def generate_file_name(self, descriptor, idd, **kwargs):
+        """Function to generate file name for storage
+
+        Args:
+            descriptor (str):
+            idd (str):
+            **kwargs: arguments for computing descriptor, will be used to generate 
+                file names
+
+        Returns:
+            file name (without extension)
+
+        """
         sep=""
-        name = sep.join([descriptor, ":", z, "_",idd,"__|"])
-        for i in args:
-            name = sep.join([name, i, "_", str(args[i]), "|"])
+        name = sep.join([descriptor, "__", idd])
+        for key in sorted(kwargs.keys()):
+            name = sep.join([name, "___", key, "_", str(kwargs[key])])
 
         return name
 

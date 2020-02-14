@@ -1,6 +1,6 @@
 """Functions and Collection class for interacting with collections of Atoms objects
 """
-#import numpy as np
+import numpy as np
 from tqdm import tqdm
 from os import path
 import os
@@ -78,9 +78,9 @@ class Collection:
             if isinstance(root, list):
                 for i in range(len(root)):
                     if not isinstance(Z, list):
-                        self.read(root[i], f_format, Z, rxid, prefix)
+                        self.read(root[i], Z, f_format, rxid, prefix)
                     else:
-                        self.read(root[i], f_format,Z[i], rxid, prefix) 
+                        self.read(root[i], Z[i], f_format, rxid, prefix) 
             elif(path.isfile(root)):
                 a=io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
@@ -116,28 +116,34 @@ class Collection:
         if fcn is None:
             from gblearn import descriptors
             fcn = getattr(descriptors, descriptor)
-            #TODO: work on it
         
         for idd in self.atoms_files:
-            z = self.atoms_files[idd].get_chemical_symbols() #.get_atomic_numbers()
-            fname = self._result_store.generate_file_name(descriptor, idd,z[0], **args)
+            z = self.atoms_files[idd].get_chemical_symbols() 
+            fname = self._result_store.generate_file_name(descriptor, idd, **args)
             exists, fpath =  self._result_store.check_existing_results(descriptor, idd, fname, atomic_env_specific)
             if not exists:
                 result = fcn(self.atoms_files[idd], species=z, **args)
-                self._result_store.store_to_file(result, fpath, fname, file_ext=None)
+                self._result_store.store_descriptor(result, fpath, fname, file_ext=None)
 
-#Questions
-#what else do I need before I push to gblearn? (unit tests, travis CI)
-#can you look over everything pls?
+    def get_descriptor(self, idd, descriptor, **args):
+        """Function to retrieve descriptor from ResultStore
 
-#TODO
-#better error catching
-#have user input where to get module that corresponds to their own describe function
+        Args:
+            idd (str):
+            descriptor (str):
+            **args: refers to whatever arguments that were used to generate the description (which
+                correspond to the file name)
 
-#Documentation--docstring, look at correct syntax, compare to other documentation, 
-#link to other documentation
-
-#Get descriptors working more generally
-#add tqdm bar for loading GB's??
-#go through getting started and follow structure of developing scientific code
-
+        Returns:
+            the descriptor, or -1 if no corresponding descriptor is found
+        """
+        name = self._result_store.generate_file_name(descriptor, idd,**args)
+        path = os.path.join(self._result_store.root, descriptor, idd)
+        for f in os.listdir(path):
+            nm, ex = os.path.splitext(f)
+            if nm == name:
+                if ex == ".npy":
+                    return np.load(os.path.join(path,f))
+                else:
+                    return np.loadtxt(os.path.join(path,f))
+        return -1
