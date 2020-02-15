@@ -89,7 +89,7 @@ class Collection:
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
                     fpath = os.path.join(root, afile)
-                    self.read(fpath, f_format, Z, rxid, prefix)
+                    self.read(fpath,Z, f_format, rxid, prefix)
             else:
                 raise ValueError(root)
         except ValueError:
