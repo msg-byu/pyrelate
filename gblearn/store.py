@@ -53,8 +53,8 @@ class ResultStore:
         """Function to generate file name for storage
 
         Args:
-            descriptor (str):
-            aid (str):
+            descriptor (str): name of descriptor
+            aid (str): atoms id 
             **kwargs: arguments for computing descriptor, will be used to generate
                 file names
 
