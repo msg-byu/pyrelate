@@ -8,7 +8,7 @@ def soap(atoms, species, rcut,nmax,lmax):
     P = soap_desc.create(atoms)
     return P
 
-def test(idd, species, rcut, nmax, lmax):
+def test(aid, species, rcut, nmax, lmax):
     import numpy as np
     arb = np.array([[1,1,1],[2,2,2]])
     return arb
