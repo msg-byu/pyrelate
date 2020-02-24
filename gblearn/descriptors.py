@@ -1,7 +1,7 @@
 from pycsoap.soaplite import SOAP
-def soap(atoms, species, rcut,nmax,lmax, **kwargs):
+def soap(atoms, atomic_numbers, rcut,nmax,lmax, **kwargs):
     #TODO add args for additional parameters
-    soap_desc = SOAP(species=species, rcut=rcut, nmax=nmax, lmax=lmax)
+    soap_desc = SOAP(atomic_numbers=atomic_numbers, rcut=rcut, nmax=nmax, lmax=lmax)
     P = soap_desc.create(atoms)
     return P
 

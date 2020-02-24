@@ -112,6 +112,7 @@ class AtomsCollection(dict):
         Example:
 
         """
+        #TODO when RS is None, return a dictionary
         if fcn is None:
             from gblearn import descriptors
             fcn = getattr(descriptors, descriptor)
@@ -122,6 +123,6 @@ class AtomsCollection(dict):
             exists = result_store.check_existing_results(
                 descriptor, aid, fname)
             if not exists:
-                result = fcn(self[aid], species=z, **kwargs)
+                result = fcn(self[aid], atomic_numbers=z, **kwargs)
                 result_store.store_descriptor(
                     result, descriptor, aid, fname, file_ext=None)
