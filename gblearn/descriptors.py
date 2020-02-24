@@ -1,10 +1,7 @@
-from dscribe.descriptors import SOAP
-
-
-def soap(atoms, species, rcut,nmax,lmax):
+from pycsoap.soaplite import SOAP
+def soap(atoms, species, rcut,nmax,lmax, **kwargs):
     #TODO add args for additional parameters
-    rbf = "gto"
-    soap_desc = SOAP(species=species, periodic=False, rcut=rcut, nmax=nmax, lmax=lmax)
+    soap_desc = SOAP(species=species, rcut=rcut, nmax=nmax, lmax=lmax)
     P = soap_desc.create(atoms)
     return P
 
