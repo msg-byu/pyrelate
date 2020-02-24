@@ -117,7 +117,7 @@ class AtomsCollection(dict):
             fcn = getattr(descriptors, descriptor)
 
         for aid in tqdm(self):
-            z = self[aid].get_chemical_symbols()
+            z = self[aid].numbers
             fname = result_store.generate_file_name(descriptor, aid, **kwargs)
             exists = result_store.check_existing_results(
                 descriptor, aid, fname)

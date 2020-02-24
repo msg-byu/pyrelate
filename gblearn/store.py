@@ -54,7 +54,7 @@ class ResultStore:
 
         Args:
             descriptor (str): name of descriptor
-            aid (str): atoms id 
+            aid (str): atoms id
             **kwargs: arguments for computing descriptor, will be used to generate
                 file names
 
