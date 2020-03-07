@@ -11,28 +11,30 @@ from gblearn.store import ResultStore
 class AtomsCollection(dict):
     """Represents a collection of ASE Atoms objects
 
-    Args :
-        name (str) : identifier for this collection, which will be correlated with the ResultStore
-            that is created
-
-        fpath (str) : relative file path of where you would like the results to be stored
-
     Attributes :
-        atoms_files (dict) : holds the different ASE atoms objects that make up the collection,
-            keys are either user specified (e.g. using regex) or is given by the file name of the
-            original data
-
-        r_store (gblearn.store.ResultStore) :
+        name (str) : identifier for this collection
+        self (dict): inherits from dictionary
 
     ''warning'': MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
     """
 
     def __init__(self, name):
+        """initializer which calls dicts initializer"""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
 
     def _get_aid(self, fpath, comp_rxid, prefix=None):
         """Private function to create the aid for the Atoms object
+
+        Args:
+            fpath (str): file path to the file holding the atoms information to
+                be read in. File name will be used in aid creation.
+            comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired
+            aid from file name. If none found, default aid will be the file name.
+            prefix (str): otional prefix for aid to be generated
+
+        Returns:
+            aid (str): atoms id, will be used as key for the corresponding atoms object
         """
         extra, fname = path.split(fpath)
         if comp_rxid is not None:
@@ -56,9 +58,9 @@ class AtomsCollection(dict):
         Args :
             root (str) : relative file path (or list of file paths) to the file, or
                 directory of files, where the raw atomic descriptions are located.
-            f_format (str) : format of data file. See ase documentation at
-                'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
             Z (int) : atomic number of the elements to be read
+            f_format (str) : format of data file. Defaults to None. See ase documentation at
+                'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
             rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each
                 Atoms object. Defaults to None. Any files that don't match the regex are
                 automatically excluded. The regex should include a named group `(?P<aid>...)`
@@ -91,36 +93,44 @@ class AtomsCollection(dict):
             else:
                 raise ValueError(root)
         except ValueError:
-            print("Invalid file path, ", root, " was not read.")
+            print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, result_store, fcn=None, file_extension=None, **args):
+    def describe(self, descriptor, result_store = None, fcn=None, file_extension=None, **kwargs):
         """Function to call specified description function and store the result
 
         Args :
             descriptor (str): descriptor to be applied to AtomsCollection, will be used in
                 creation of the ResultStore file structure.
+            result_store (gblearn.store.ResultStore): Object to facilitate storage of
+                the results of describe
             fcn (str): function to apply said description. Built in functions are held in
                 descriptors.py, see its documentation for function details.
-            atomic_env_specific (bool): Corresponds to if the description yielded by the
-                descriptor function is atomic environment specific (True) or collection
-                specific (False). Default is true.
             file_extension (str): preferred file extension of stored results. If numpy array,
                 extension will be .npy, else the default is .dat
-            **args: Parameters associated with the description function specified.
-
-        Returns:
-
+            **kwargs (dict): Parameters associated with the description function specified.
+            #TODO update returns dictionary
+        Example:
+        #TODO
         """
+
         if fcn is None:
             from gblearn import descriptors
             fcn = getattr(descriptors, descriptor)
 
+        if result_store is None:
+            dict_res = {}
+            for aid in tqdm(self):
+                z = self[aid].numbers
+                dict_res[aid] = fcn(self[aid], atomic_numbers=z, **kwargs)
+            return dict_res
+
         for aid in tqdm(self):
-            z = self[aid].get_chemical_symbols()
-            fname = result_store.generate_file_name(descriptor, aid, **args)
+            z = self[aid].numbers
+
+            fname = result_store.generate_file_name(descriptor, aid, **kwargs)
             exists = result_store.check_existing_results(
                 descriptor, aid, fname)
             if not exists:
-                result = fcn(self[aid], species=z, **args)
+                result = fcn(self[aid], atomic_numbers=z, **kwargs)
                 result_store.store_descriptor(
                     result, descriptor, aid, fname, file_ext=None)
