@@ -1,11 +1,11 @@
 language: python
 python: 
-	-"3.4"
-	-"3.6"
-	-"3.7"
+    - "3.6"
+#    - "3.7"
 #command to install dependencies
 install:
-	-pip install .
-	-pip install tox
+    - pip install .
+    - pip install tox
 #command to run tests
-script: tox
+script: 
+    - tox
