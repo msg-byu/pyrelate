@@ -5,7 +5,5 @@ def soap(atoms, atomic_numbers, rcut,nmax,lmax, **kwargs):
     P = soap_desc.create(atoms)
     return P
 
-def test(aid, species, rcut, nmax, lmax):
-    import numpy as np
-    arb = np.array([[1,1,1],[2,2,2]])
-    return arb
+def test(self, **args):
+    return 'waffles'

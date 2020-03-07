@@ -93,9 +93,9 @@ class AtomsCollection(dict):
             else:
                 raise ValueError(root)
         except ValueError:
-            print("Invalid file path, ", root, " was not read.")
+            print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, result_store, fcn=None, file_extension=None, **kwargs):
+    def describe(self, descriptor, result_store = None, fcn=None, file_extension=None, **kwargs):
         """Function to call specified description function and store the result
 
         Args :
@@ -108,17 +108,25 @@ class AtomsCollection(dict):
             file_extension (str): preferred file extension of stored results. If numpy array,
                 extension will be .npy, else the default is .dat
             **kwargs (dict): Parameters associated with the description function specified.
-
+            #TODO update returns dictionary
         Example:
-
+        #TODO
         """
-        #TODO when RS is None, return a dictionary
+
         if fcn is None:
             from gblearn import descriptors
             fcn = getattr(descriptors, descriptor)
 
+        if result_store is None:
+            dict_res = {}
+            for aid in tqdm(self):
+                z = self[aid].numbers
+                dict_res[aid] = fcn(self[aid], atomic_numbers=z, **kwargs)
+            return dict_res
+
         for aid in tqdm(self):
             z = self[aid].numbers
+
             fname = result_store.generate_file_name(descriptor, aid, **kwargs)
             exists = result_store.check_existing_results(
                 descriptor, aid, fname)

@@ -6,7 +6,7 @@ import numpy as np
 
 class ResultStore:
     """
-
+        #TODO
     """
 
     def __init__(self, location):
@@ -36,8 +36,8 @@ class ResultStore:
         path = os.path.join(path, aid)
         if not os.path.exists(path):
             os.mkdir(path)
+        full_path = os.path.join(path, fname)
         if isinstance(result, np.ndarray):
-            full_path = os.path.join(path, fname)
             np.save(full_path, result)
         else:
             if file_ext is None:
@@ -64,6 +64,11 @@ class ResultStore:
         """
         sep = ""
         name = sep.join([descriptor, "__", aid])
+        if descriptor == "soap":
+            try:
+                kwargs['rcut'] = float(kwargs['rcut'])
+            except ValueError:
+                raise ValueError("Rcut must be an integer or float.")
         for key in sorted(kwargs.keys()):
             name = sep.join([name, "___", key, "_", str(kwargs[key])])
 
@@ -89,5 +94,7 @@ class ResultStore:
                 if ex == ".npy":
                     return np.load(os.path.join(path, f))
                 else:
-                    return np.loadtxt(os.path.join(path, f))
+                    with open(os.path.join(path, f)) as file:
+                        return file.read()
+                    #return np.loadtxt(os.path.join(path, f))
         return -1
