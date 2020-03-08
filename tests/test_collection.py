@@ -103,7 +103,7 @@ class TestCollection(unittest.TestCase):
                 prefix="TEST")
         res = t1.describe('test', rcut='huge', nmax='not_as_huge')
         assert "<class 'dict'>" == str(type(res))
-        assert 'waffles' == res['test455']
+        assert 'test result' == res['test455']
         assert 1 == len(res)
 
         '''SOAP'''

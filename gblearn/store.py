@@ -5,9 +5,7 @@ import numpy as np
 
 
 class ResultStore:
-    """
-        #TODO
-    """
+    """Class for efficient storing of description of the AtomsCollection"""
 
     def __init__(self, location):
         self.root = location
@@ -96,5 +94,5 @@ class ResultStore:
                 else:
                     with open(os.path.join(path, f)) as file:
                         return file.read()
-                    #return np.loadtxt(os.path.join(path, f))
+                    # return np.loadtxt(os.path.join(path, f))
         return -1

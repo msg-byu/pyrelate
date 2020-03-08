@@ -15,7 +15,7 @@ class AtomsCollection(dict):
         name (str) : identifier for this collection
         self (dict): inherits from dictionary
 
-    ''warning'': MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
+    ..warning:: MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
     """
 
     def __init__(self, name):
@@ -30,11 +30,11 @@ class AtomsCollection(dict):
             fpath (str): file path to the file holding the atoms information to
                 be read in. File name will be used in aid creation.
             comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired
-            aid from file name. If none found, default aid will be the file name.
+                aid from file name. If none found, default aid will be the file name.
             prefix (str): otional prefix for aid to be generated
 
         Returns:
-            aid (str): atoms id, will be used as key for the corresponding atoms object
+            aid (str): atoms id, will be used as key for the corresponding Atoms object
         """
         extra, fname = path.split(fpath)
         if comp_rxid is not None:
@@ -69,6 +69,9 @@ class AtomsCollection(dict):
             prefix (str): optional prefix for aid
 
         Example:
+            c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
+                prefix="Homer")
 
            """
         if rxid is not None:
@@ -95,7 +98,7 @@ class AtomsCollection(dict):
         except ValueError:
             print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, result_store = None, fcn=None, file_extension=None, **kwargs):
+    def describe(self, descriptor, result_store=None, fcn=None, file_extension=None, **kwargs):
         """Function to call specified description function and store the result
 
         Args :
@@ -108,9 +111,14 @@ class AtomsCollection(dict):
             file_extension (str): preferred file extension of stored results. If numpy array,
                 extension will be .npy, else the default is .dat
             **kwargs (dict): Parameters associated with the description function specified.
-            #TODO update returns dictionary
+
+        Returns:
+            Dictionary (default): Will return dictionary with keys as the aid and the result vector
+            None: If a ResultStore is given as a parameter, no return will be given, but the result
+                will be stored in the specified location in Result Store
         Example:
-        #TODO
+            rs = ResultStore("../store")
+            c.describe("soap", rs,  rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
