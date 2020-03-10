@@ -49,6 +49,18 @@ class TestResultStore(unittest.TestCase):
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
 
+        #store descriptor with file ext I specify
+        r5 = rs("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "aid_111"
+        fname = "filename"
+        r3.store_descriptor(result, desc, aid, fname, file_ext=".out")
+        fname = fname + ".out"
+        fpath = os.path.join(r5.root, desc, aid, fname)
+        assert os.path.exists(fpath)
+        shutil.rmtree("./tests/results/")
+
         # test storing numpy ndarray
         r4 = rs("./tests/results")
         result2 = np.array([[1, 2, 3], [4, 5, 6]])
@@ -57,6 +69,8 @@ class TestResultStore(unittest.TestCase):
         fpath = os.path.join(r4.root, desc, aid, fname)
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
+
+
 
     def test_get_descriptor(self):
         '''Tests to make sure get_descriptor returns expected value'''
