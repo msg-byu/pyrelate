@@ -1,8 +1,10 @@
 """Tests collection.py
 """
 from gblearn.collection import AtomsCollection as col
+from gblearn.collection import ResultStore
 import os
 import sys
+import shutil
 import io
 import unittest
 
@@ -49,6 +51,7 @@ class TestCollection(unittest.TestCase):
         '''
         Test read() function with various inputs types (list of file paths, directories, files, etc)
         '''
+
         t1 = col("Test_1")
         # list of input files
         t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], 28,
@@ -94,9 +97,18 @@ class TestCollection(unittest.TestCase):
         # missing parameter
         self.assertRaises(StopIteration, col.read, t1, "./tests/test_data/ni.p456.out",
                           "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        #TODO test for a list of atomic numbers
+        t2 = col("Test_2")
+        t2.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28,28],
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
+                prefix="TEST")
+        assert 2 == len(t2)
+        assert "test454" == list(t2)[0]
+
 
     def test_describe(self):
         '''Function to test descriptors built into gblearn, held in gblearn/descriptors.py'''
+
         t1 = col("Test_1")
         t1.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
@@ -113,3 +125,17 @@ class TestCollection(unittest.TestCase):
                 prefix="")
         res = t1.describe('soap', rcut=5.0, nmax=9, lmax=9)
         assert "<class 'dict'>" == str(type(res))
+
+	    #test running full descriptor and saving to file (and deleting after)
+        t3 = col("Test_SOAP_2")
+        rs = ResultStore("./tests/results/")
+        t3.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
+        desc = 'soap'
+        aid = '455'
+        res = t3.describe(desc ,rs, rcut=5.0, nmax=9, lmax=9)
+        fname = rs.generate_file_name(desc, aid, rcut=5.0, nmax=9, lmax=9)
+        fname = fname + '.npy'
+        fpath = os.path.join(rs.root, desc, aid, fname)
+        assert os.path.exists(fpath)
+        shutil.rmtree("./tests/results/")
