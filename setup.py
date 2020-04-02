@@ -19,7 +19,7 @@ except ImportError:
 from os import path
 setup(name='gblearn',
     version='0.1.0',
-    description='Scientific code to represent a collection of atomic encironments',
+    description='Scientific code to represent a collection of atomic environments',
     #long_description= "" if not path.isfile("README.md") else read_md('README.md'),
     author='Jay Spendlove',
     author_email='jayclark24@gmail.com',
@@ -32,6 +32,7 @@ setup(name='gblearn',
         "tqdm",
         "ase",
         "pycsoap",
+        "pickle"
     ],
     packages=['gblearn'],
     scripts=[],
