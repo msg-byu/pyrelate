@@ -38,7 +38,7 @@ def atoms(element):
             a.set_atomic_numbers([Z for i in a])
             return a
 #do rcut and nmax and lmax need to match what we call in SOAP?
-def seed(element, lmax=12, nmax=12, rcut=6.0, *kwargs):
+def seed(element, lmax=12, nmax=12, rcut=6.0, **kwargs):
     """Computes the :math:`P` matrix for the given element.
     Args:
         element (str): name of the element.
@@ -50,4 +50,4 @@ def seed(element, lmax=12, nmax=12, rcut=6.0, *kwargs):
     """
     lattice, latpar, Z, basis = elements[element]
     a = atoms(element)
-    return descriptors.soap(a, rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)
+    return descriptors.soap(a, rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)[0]

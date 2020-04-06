@@ -1,4 +1,4 @@
-"""Functions and AtomsCollection class for interacting with collections of Atoms objects
+"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects
 """
 import numpy as np
 from tqdm import tqdm
@@ -12,30 +12,32 @@ class AtomsCollection(dict):
     """Represents a collection of ASE Atoms objects
 
     Attributes :
-        name (str) : identifier for this collection
         self (dict): inherits from dictionary
+        name (str) : identifier for this collection
+        store (Store) : store to hold all the results and other information
+
 
     ..warning:: MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
     """
 
     def __init__(self, name, store_path):
-        """initializer which calls dicts initializer"""
+        """Initializer which calls dict's and Store's initializers"""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
         self.store = Store(store_path)
 
     def __str__(self):
+        """String representation of the AtomsCollection object (name of collection)"""
         return self.name
 
     def _read_aid(self, fpath, comp_rxid, prefix=None):
-        """Private function to create the aid for the Atoms object
+        """Private function to read the aid for the Atoms object from filename
 
         Args:
-            fpath (str): file path to the file holding the atoms information to
-                be read in. File name will be used in aid creation.
+            fpath (str): file path to the atomic information to be read in
             comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired
                 aid from file name. If none found, default aid will be the file name.
-            prefix (str): otional prefix for aid to be generated
+            prefix (str): otional prefix for aid to be generated (will be made lowercase)
 
         Returns:
             aid (str): atoms id, will be used as key for the corresponding Atoms object
@@ -57,7 +59,7 @@ class AtomsCollection(dict):
         return aid
 
     def read(self, root, Z, f_format=None, rxid=None, prefix=None):
-        """Function to read atoms data into ASE Atoms objects and add to Collection
+        """Function to read atoms data into ASE Atoms objects and add to AtomsCollection
 
         Args :
             root (str) : relative file path (or list of file paths) to the file, or
@@ -70,7 +72,7 @@ class AtomsCollection(dict):
                 automatically excluded. The regex should include a named group `(?P<aid>...)`
                 so that the id can be extracted correctly. If not specified, the file name is
                 used as the `aid`.
-            prefix (str): optional prefix for aid
+            prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
             c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28,
@@ -91,7 +93,8 @@ class AtomsCollection(dict):
             elif(path.isfile(root)):
                 a = io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
-                #FIXME store aid as array of atoms object, do we want that?
+                # FIXME aid is stored as an array in the Atoms object, ideally want a
+                # single property for the Atoms object
                 aid = self._read_aid(root, comp_rxid, prefix)
                 a.new_array("aid", [aid for i in a], dtype="str")
                 self[aid] = a
@@ -105,24 +108,21 @@ class AtomsCollection(dict):
             print("Invalid file path,", root, "was not read.")
 
     def describe(self, descriptor, fcn=None, needs_store=False, **kwargs):
-        #FIXME check if result store is not none
         """Function to call specified description function and store the result
 
         Args :
-            descriptor (str): descriptor to be applied to AtomsCollection, will be used in
-                creation of the ResultStore file structure.
-            store (gblearn.store.ResultStore): Object to facilitate storage of
-                the results of describe
-            fcn (str): function to apply said description. Built in functions are held in
-                descriptors.py, see its documentation for function details.
-            **kwargs (dict): Parameters associated with the description function specified.
+            descriptor (str): descriptor to be applied to AtomsCollection.
+            fcn (str): function to apply said description. Defaults to none. Built in functions
+                are held in descriptors.py.
+            needs_store (bool) : boolean that indicates if information in the Store will need to
+                be accessed while computing the description. Defaults to False.
+            **kwargs (dict): Parameters associated with the description function specified. See
+                documentation in descriptors.py for function details and parameters.
 
         Returns:
-            None: everything will be stored in the specified location in Result Store
+            None: everything will be stored in the Store
         Example:
-            #FIXME: change example to updated version
-            rs = ResultStore("../store")
-            c.describe("soap", rs,  rcut=5.0, nmax=9, lmax=9)
+            my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
