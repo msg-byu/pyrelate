@@ -34,7 +34,6 @@ class Store:
         return name
 
     def check_exists(self, descriptor, idd, **kwargs):
-
         """ Function to check if correct file structure is in place and if a result file
             exists for these parameters
 

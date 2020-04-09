@@ -42,6 +42,7 @@ class AtomsCollection(dict):
         Returns:
             aid (str): atoms id, will be used as key for the corresponding Atoms object
         """
+
         extra, fname = path.split(fpath)
         if comp_rxid is not None:
             aid_match = comp_rxid.match(fname)
@@ -54,7 +55,7 @@ class AtomsCollection(dict):
             aid = fname
 
         if prefix is not None:
-            aid = prefix.lower() + aid
+            aid = prefix.lower() + "_" + aid
 
         return aid
 
@@ -80,6 +81,7 @@ class AtomsCollection(dict):
                 prefix="Homer")
 
            """
+        comp_rxid = None
         if rxid is not None:
             import re
             comp_rxid = re.compile(rxid)
@@ -137,5 +139,10 @@ class AtomsCollection(dict):
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
                     result = fcn(self[aid], **kwargs)
-                self.store.store(
-                    result, descriptor, aid, **kwargs)
+
+                if result is not None:
+                    self.store.store(
+                        result, descriptor, aid, **kwargs)
+
+    def get(self, descriptor, idd, **kwargs):
+        return self.store.get(descriptor, idd, **kwargs)

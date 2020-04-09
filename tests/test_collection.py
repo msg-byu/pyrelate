@@ -1,7 +1,6 @@
 """Tests collection.py
 """
 from gblearn.collection import AtomsCollection as col
-from gblearn.collection import ResultStore
 import os
 import sys
 import shutil
@@ -10,55 +9,56 @@ import unittest
 
 
 class TestCollection(unittest.TestCase):
-    def test_get_aid(self):
+    def test_read_aid(self):
         '''
         Test get_aid function with different inputs (regex, prefix, filename),
             including incorrect Regex pattern
         '''
-        t1 = col("t1")
+        t1 = col("t1", "./tests/store")
         rxid = r'ni.p(?P<gbid>\d+).out'
         import re
         c_rxid = re.compile(rxid)
         fn1 = "../homer/ni.p454.out"
-        a1 = t1._get_aid(fn1, c_rxid)
+        a1 = t1._read_aid(fn1, c_rxid)
         assert a1 == "454"
 
         prefix = "Pre"
-        a2 = t1._get_aid(fn1, c_rxid, prefix)
-        assert a2 == "pre454"
+        a2 = t1._read_aid(fn1, c_rxid, prefix)
+        assert a2 == "pre_454"
 
         prefix = ""
-        a3 = t1._get_aid(fn1, c_rxid, prefix)
-        assert a3 == "454"
+        a3 = t1._read_aid(fn1, c_rxid, prefix)
+        assert a3 == "_454"
 
-        c_rxid = None
-        prefix = None
-        a4 = t1._get_aid(fn1, c_rxid, prefix)
+        a4 = t1._read_aid(fn1, None)
         assert a4 == "ni.p454.out"
 
-        prefix = "Test_"
-        a5 = t1._get_aid(fn1, c_rxid, prefix)
+        prefix = "Test"
+        a5 = t1._read_aid(fn1, None, prefix)
         assert a5 == "test_ni.p454.out"
 
         output2 = io.StringIO()
         sys.stdout = output2
         import re
-        c_rxid2 = re.compile(r'ni.p(P<gbid>\d+).out')
-        a6 = t1._get_aid(fn1, c_rxid2, prefix)
+        c_rxid3 = re.compile(r'ni.p(P<gbid>\d+).out')
+        a6 = t1._read_aid(fn1, c_rxid3, prefix)
         assert "Regex found no pattern. Resolving to filename as aid.\n" == output2.getvalue()
+        assert a6 == "test_ni.p454.out"
+
+        shutil.rmtree("./tests/store")
 
     def test_read(self):
         '''
         Test read() function with various inputs types (list of file paths, directories, files, etc)
         '''
 
-        t1 = col("Test_1")
+        t1 = col("Test_1", "./tests/store")
         # list of input files
         t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
         assert 2 == len(t1)
-        assert "test454" == list(t1)[0]
+        assert "test_454" == list(t1)[0]
         # read single file
         t1.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
@@ -98,28 +98,33 @@ class TestCollection(unittest.TestCase):
         self.assertRaises(StopIteration, col.read, t1, "./tests/test_data/ni.p456.out",
                           "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         #TODO test for a list of atomic numbers
-        t2 = col("Test_2")
+        t2 = col("Test_2", "./tests/store")
         t2.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28,28],
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
         assert 2 == len(t2)
-        assert "test454" == list(t2)[0]
+        assert "test_454" == list(t2)[0]
 
+        shutil.rmtree("./tests/store")
 
     def test_describe(self):
         '''Function to test descriptors built into gblearn, held in gblearn/descriptors.py'''
 
-        t1 = col("Test_1")
+        t1 = col("Test_1", "./tests/store")
         t1.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
-        res = t1.describe('test', rcut='huge', nmax='not_as_huge')
-        assert "<class 'dict'>" == str(type(res))
-        assert 'test result' == res['test455']
-        assert 1 == len(res)
+        desc = "test"
+        aid = "test_455"
+        t1.describe(desc, rcut='huge', nmax='not_as_huge')
+        res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
+        assert res == "test result"
 
         '''SOAP'''
-        t2 = col("Test_SOAP")
+        '''
+        #can I have a cooked up example for this one?
+        #test it does something
+        t2 = col("Test_SOAP", "./tests/store")
         t2.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="")
@@ -139,3 +144,16 @@ class TestCollection(unittest.TestCase):
         fpath = os.path.join(rs.root, desc, aid, fname)
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
+        '''
+        '''ASR'''
+        #cook up random soap vector, and compute asr by hand
+
+
+    def test_get(self):
+        my_col = col("A", "./tests/results")
+        result = "Random test result"
+        desc = "test"
+        aid = "12"
+        my_col.store.store(result, desc, aid, arg_a=1, arg_b=2)
+        ret_val3 = my_col.get(desc, aid, arg_a=1, arg_b=2)
+        assert ret_val3 == result
