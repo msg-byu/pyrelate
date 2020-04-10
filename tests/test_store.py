@@ -8,9 +8,7 @@ import unittest
 class TestResultStore(unittest.TestCase):
 
     def test_check_exists(self):
-        '''Test check_existing_results function
-        '''
-        #fix fake files, must have correct kwargs for  _generate_file_name
+        '''Test check_existing_results function'''
         r1 = rs('./tests/test_paths/')
         e1 = r1.check_exists('desc', 'aid1', a="result")
         assert e1 == True
@@ -18,7 +16,7 @@ class TestResultStore(unittest.TestCase):
         assert e2 == False
         e3 = r1.check_exists('desc', 'aid2', rcut=9.0, nmax=11, lmax=11)
         assert e3 == False
-        e4 = r1.check_exists('desc', 'no_file',a="n")
+        e4 = r1.check_exists('desc', 'no_file', a="n")
         assert e4 == False
         e5 = r1.check_exists('no_file', 'aid1', a='result1')
         assert e5 == False
@@ -39,8 +37,6 @@ class TestResultStore(unittest.TestCase):
 
     def test_store(self):
         '''Tests storing results as a numpy array or other type'''
-
-        """result, descriptor, idd, **kwargs"""
         r3 = rs("./tests/results")
         result = "Random test result"
         desc = "test_desc"
@@ -54,18 +50,16 @@ class TestResultStore(unittest.TestCase):
         shutil.rmtree("./tests/results/")
 
     def test_get(self):
-        pass
         '''Tests to make sure get_descriptor returns expected value'''
-
         desc = "soap"
         aid = "aid_111"
         r4 = rs("./tests/results/")
         res = np.array([[1, 2, 3], [4, 5, 6]])
         r4.store(res, desc, aid, rcut=9, nmax=10, lmax=10)
-        ret_val = r4.get(desc,aid, rcut=9, nmax=10, lmax=10)
+        ret_val = r4.get(desc, aid, rcut=9, nmax=10, lmax=10)
         assert np.array_equal(ret_val, res)
 
-        #No corresponding result (missing parameter)
+        # No corresponding result (missing parameter)
         ret_val2 = r4.get(aid, desc, rcut=9, lmax=10)
         assert ret_val2 == None
         shutil.rmtree("./tests/results/")

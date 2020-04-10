@@ -17,7 +17,7 @@ class AtomsCollection(dict):
         store (Store) : store to hold all the results and other information
 
 
-    ..warning:: MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
+    ..warning:: Make sure to have unique collection names, will be used for LER
     """
 
     def __init__(self, name, store_path):
@@ -80,7 +80,7 @@ class AtomsCollection(dict):
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="Homer")
 
-           """
+        """
         comp_rxid = None
         if rxid is not None:
             import re
@@ -123,8 +123,10 @@ class AtomsCollection(dict):
 
         Returns:
             None: everything will be stored in the Store
+
         Example:
             my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
+            my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
@@ -145,4 +147,5 @@ class AtomsCollection(dict):
                         result, descriptor, aid, **kwargs)
 
     def get(self, descriptor, idd, **kwargs):
+        '''Shell function to call Store's get method'''
         return self.store.get(descriptor, idd, **kwargs)
