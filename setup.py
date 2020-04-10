@@ -26,7 +26,7 @@ setup(name='gblearn',
     url='https://github.com/msg-byu/gblearn',
     license='Academic Public License',
     setup_requires=['pytest-runner',],
-    tests_require=['pytest', 'python-coveralls'],
+    tests_require=['pytest', 'python-coveralls', 'pycsoap','annoy'],
     install_requires=[
         "numpy",
         "tqdm",
