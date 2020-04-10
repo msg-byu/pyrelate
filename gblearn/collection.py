@@ -1,41 +1,48 @@
-"""Functions and AtomsCollection class for interacting with collections of Atoms objects
+"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects
 """
 import numpy as np
 from tqdm import tqdm
 from os import path
 import os
 from ase import io, Atoms
-from gblearn.store import ResultStore
+from gblearn.store import Store
 
 
 class AtomsCollection(dict):
     """Represents a collection of ASE Atoms objects
 
     Attributes :
-        name (str) : identifier for this collection
         self (dict): inherits from dictionary
+        name (str) : identifier for this collection
+        store (Store) : store to hold all the results and other information
 
-    ..warning:: MAKE SURE TO HAVE UNIQUE COLLECTION NAMES, WILL BE USED FOR LER
+
+    ..warning:: Make sure to have unique collection names, will be used for LER
     """
 
-    def __init__(self, name):
-        """initializer which calls dicts initializer"""
+    def __init__(self, name, store_path):
+        """Initializer which calls dict's and Store's initializers"""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
+        self.store = Store(store_path)
 
-    def _get_aid(self, fpath, comp_rxid, prefix=None):
-        """Private function to create the aid for the Atoms object
+    def __str__(self):
+        """String representation of the AtomsCollection object (name of collection)"""
+        return self.name
+
+    def _read_aid(self, fpath, comp_rxid, prefix=None):
+        """Private function to read the aid for the Atoms object from filename
 
         Args:
-            fpath (str): file path to the file holding the atoms information to
-                be read in. File name will be used in aid creation.
+            fpath (str): file path to the atomic information to be read in
             comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired
                 aid from file name. If none found, default aid will be the file name.
-            prefix (str): otional prefix for aid to be generated
+            prefix (str): otional prefix for aid to be generated (will be made lowercase)
 
         Returns:
             aid (str): atoms id, will be used as key for the corresponding Atoms object
         """
+
         extra, fname = path.split(fpath)
         if comp_rxid is not None:
             aid_match = comp_rxid.match(fname)
@@ -48,12 +55,12 @@ class AtomsCollection(dict):
             aid = fname
 
         if prefix is not None:
-            aid = prefix.lower() + aid
+            aid = prefix.lower() + "_" + aid
 
         return aid
 
     def read(self, root, Z, f_format=None, rxid=None, prefix=None):
-        """Function to read atoms data into ASE Atoms objects and add to Collection
+        """Function to read atoms data into ASE Atoms objects and add to AtomsCollection
 
         Args :
             root (str) : relative file path (or list of file paths) to the file, or
@@ -66,14 +73,15 @@ class AtomsCollection(dict):
                 automatically excluded. The regex should include a named group `(?P<aid>...)`
                 so that the id can be extracted correctly. If not specified, the file name is
                 used as the `aid`.
-            prefix (str): optional prefix for aid
+            prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
             c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="Homer")
 
-           """
+        """
+        comp_rxid = None
         if rxid is not None:
             import re
             comp_rxid = re.compile(rxid)
@@ -87,7 +95,10 @@ class AtomsCollection(dict):
             elif(path.isfile(root)):
                 a = io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
-                aid = self._get_aid(root, comp_rxid, prefix)
+                # FIXME aid is stored as an array in the Atoms object, ideally want a
+                # single property for the Atoms object
+                aid = self._read_aid(root, comp_rxid, prefix)
+                a.new_array("aid", [aid for i in a], dtype="str")
                 self[aid] = a
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
@@ -98,47 +109,43 @@ class AtomsCollection(dict):
         except ValueError:
             print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, result_store=None, fcn=None, file_extension=None, **kwargs):
+    def describe(self, descriptor, fcn=None, needs_store=False, **kwargs):
         """Function to call specified description function and store the result
 
         Args :
-            descriptor (str): descriptor to be applied to AtomsCollection, will be used in
-                creation of the ResultStore file structure.
-            result_store (gblearn.store.ResultStore): Object to facilitate storage of
-                the results of describe
-            fcn (str): function to apply said description. Built in functions are held in
-                descriptors.py, see its documentation for function details.
-            file_extension (str): preferred file extension of stored results. If numpy array,
-                extension will be .npy, else the default is .dat
-            **kwargs (dict): Parameters associated with the description function specified.
+            descriptor (str): descriptor to be applied to AtomsCollection.
+            fcn (str): function to apply said description. Defaults to none. Built in functions
+                are held in descriptors.py.
+            needs_store (bool) : boolean that indicates if information in the Store will need to
+                be accessed while computing the description. Defaults to False.
+            **kwargs (dict): Parameters associated with the description function specified. See
+                documentation in descriptors.py for function details and parameters.
 
         Returns:
-            Dictionary (default): Will return dictionary with keys as the aid and the result vector
-            None: If a ResultStore is given as a parameter, no return will be given, but the result
-                will be stored in the specified location in Result Store
+            None: everything will be stored in the Store
+
         Example:
-            rs = ResultStore("../store")
-            c.describe("soap", rs,  rcut=5.0, nmax=9, lmax=9)
+            my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
+            my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
             from gblearn import descriptors
             fcn = getattr(descriptors, descriptor)
 
-        if result_store is None:
-            dict_res = {}
-            for aid in tqdm(self):
-                z = self[aid].numbers
-                dict_res[aid] = fcn(self[aid], atomic_numbers=z, **kwargs)
-            return dict_res
-
         for aid in tqdm(self):
-            z = self[aid].numbers
-
-            fname = result_store.generate_file_name(descriptor, aid, **kwargs)
-            exists = result_store.check_existing_results(
-                descriptor, aid, fname)
+            exists = self.store.check_exists(
+                descriptor, aid, **kwargs)
             if not exists:
-                result = fcn(self[aid], atomic_numbers=z, **kwargs)
-                result_store.store_descriptor(
-                    result, descriptor, aid, fname, file_ext=None)
+                if needs_store:
+                    result = fcn(self[aid], self.store, **kwargs)
+                else:
+                    result = fcn(self[aid], **kwargs)
+
+                if result is not None:
+                    self.store.store(
+                        result, descriptor, aid, **kwargs)
+
+    def get(self, descriptor, idd, **kwargs):
+        '''Shell function to call Store's get method'''
+        return self.store.get(descriptor, idd, **kwargs)
