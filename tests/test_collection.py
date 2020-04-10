@@ -2,6 +2,7 @@
 """
 from gblearn.collection import AtomsCollection as col
 import os
+import numpy as np
 import sys
 import shutil
 import io
@@ -49,7 +50,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read(self):
         '''
-        Test read() function with various inputs types (list of file paths, directories, files, etc)
+        Test read() function with various input types (list of file paths, directories, files, etc)
         '''
 
         t1 = col("Test_1", "./tests/store")
@@ -97,9 +98,9 @@ class TestCollection(unittest.TestCase):
         # missing parameter
         self.assertRaises(StopIteration, col.read, t1, "./tests/test_data/ni.p456.out",
                           "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
-        #TODO test for a list of atomic numbers
+        # TODO test for a list of atomic numbers
         t2 = col("Test_2", "./tests/store")
-        t2.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28,28],
+        t2.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28, 28],
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
         assert 2 == len(t2)
@@ -121,33 +122,50 @@ class TestCollection(unittest.TestCase):
         assert res == "test result"
 
         '''SOAP'''
-        '''
-        #can I have a cooked up example for this one?
-        #test it does something
-        t2 = col("Test_SOAP", "./tests/store")
-        t2.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
-                prefix="")
-        res = t1.describe('soap', rcut=5.0, nmax=9, lmax=9)
-        assert "<class 'dict'>" == str(type(res))
-
-	    #test running full descriptor and saving to file (and deleting after)
-        t3 = col("Test_SOAP_2")
-        rs = ResultStore("./tests/results/")
+        # FIXME make unit test that tests the functionality of SOAP
+        t3 = col("Test_SOAP", "./tests/results")
         t3.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
         desc = 'soap'
         aid = '455'
-        res = t3.describe(desc ,rs, rcut=5.0, nmax=9, lmax=9)
-        fname = rs.generate_file_name(desc, aid, rcut=5.0, nmax=9, lmax=9)
-        fname = fname + '.npy'
-        fpath = os.path.join(rs.root, desc, aid, fname)
+        t3.describe(desc, rcut=5.0, nmax=9, lmax=9)
+        fname = t3.store._generate_file_name(
+            desc, aid, rcut=5.0, nmax=9, lmax=9)
+        fpath = os.path.join(t3.store.root, desc, aid, fname)
+        assert os.path.exists(fpath)
+        #shutil.rmtree("./tests/results/")
+
+        '''ASR'''
+        # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
+        t4 = col("Test_ASR", "./tests/test_paths")
+        t4.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
+        desc = 'asr'
+        aid = 'fake_455'
+        t4.describe(desc, needs_store=True, rcut=0, nmax=0, lmax=0)
+        res = t4.get(desc, aid, rcut=0, nmax=0, lmax=0)
+        exp = np.array([1, 2, 4, 4])  # expected  result of ASR
+        assert np.array_equal(res, exp)
+        fname = t4.store._generate_file_name(desc, aid, rcut=0, nmax=0, lmax=0)
+        fpath = os.path.join(t4.store.root, desc, aid, fname)
+        assert os.path.exists(fpath)
+        shutil.rmtree("./tests/test_paths/asr")
+
+        '''LER'''
+        # FIXME make unit test that tests the functionality of LER
+        t5 = col("Test_LER", "./tests/results")
+        t5.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text",
+            rxid=r'ni.p(?P<gbid>\d+).out')
+        desc = 'ler'
+        aid1 = '455'
+        t5.describe(desc, needs_store=True, collection=t5,
+                    eps=0.025, rcut=5.0, nmax=9, lmax=9)
+        fname = t5.store._generate_file_name(
+            desc, aid1, collection=t5, eps=0.025, rcut=5.0, nmax=9, lmax=9)
+        fpath = os.path.join(t5.store.root, desc, aid1, fname)
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
-        '''
-        '''ASR'''
-        #cook up random soap vector, and compute asr by hand
-
+        #shutil.rmtree("./tests/test_paths/ler")
 
     def test_get(self):
         my_col = col("A", "./tests/results")

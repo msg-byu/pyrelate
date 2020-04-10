@@ -4,6 +4,7 @@ import os
 import numpy as np
 import pickle
 
+
 class Store:
     """Class for efficient storing of description of the AtomsCollection"""
 
@@ -38,9 +39,9 @@ class Store:
             exists for these parameters
 
             Args:
-                descriptor (str): name of descriptor
-                aid (str): atoms id
-                check_name (string): expected filename of results
+                descriptor (str): name of descriptor.
+                idd (str): id of item to check for.
+                **kwargs (dict): Parameters associated with the description function.
 
             Returns:
                 bool: True if file results already exits, false if they do not
