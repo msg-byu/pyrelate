@@ -63,8 +63,7 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
         search_k(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
         **kwargs (dict): Parameters associated with the description function
 
-
-        Annoy's documentation: https://github.com/spotify/annoy        
+        Annoy's documentation: https://github.com/spotify/annoy
 
     '''
     U = store.get(
