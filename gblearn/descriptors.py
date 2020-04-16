@@ -64,6 +64,7 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
         **kwargs (dict): Parameters associated with the description function
 
         Annoy's documentation: https://github.com/spotify/annoy
+
     '''
     U = store.get(
         "ler", 'U', collection=collection, eps=eps, rcut=rcut, nmax=nmax, lmax=lmax, metric=metric, n_trees=n_trees, search_k=search_k, **kwargs)  # add seed? or hash?
