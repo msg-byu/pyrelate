@@ -33,10 +33,9 @@ class AtomsCollection(dict):
     def _read_aid(self, fpath, comp_rxid, prefix=None):
         """Private function to read the aid for the Atoms object from filename
 
-        Args:
+        Parameters:
             fpath (str): file path to the atomic information to be read in
-            comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired
-                aid from file name. If none found, default aid will be the file name.
+            comp_rxid(_sre.SRE_Pattern): pre-compiled regex parser to extract desired aid from file name. If none found, default aid will be the file name.
             prefix (str): otional prefix for aid to be generated (will be made lowercase)
 
         Returns:
@@ -62,23 +61,15 @@ class AtomsCollection(dict):
     def read(self, root, Z, f_format=None, rxid=None, prefix=None):
         """Function to read atoms data into ASE Atoms objects and add to AtomsCollection
 
-        Args :
-            root (str) : relative file path (or list of file paths) to the file, or
-                directory of files, where the raw atomic descriptions are located.
+        Parameters:
+            root (str) : relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.
             Z (int) : atomic number of the elements to be read
-            f_format (str) : format of data file. Defaults to None. See ase documentation at
-                'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
-            rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each
-                Atoms object. Defaults to None. Any files that don't match the regex are
-                automatically excluded. The regex should include a named group `(?P<aid>...)`
-                so that the id can be extracted correctly. If not specified, the file name is
-                used as the `aid`.
+            f_format (str) : format of data file. Defaults to None. See ase documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
+            rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. Any files that don't match the regex are automatically excluded. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly. If not specified, the file name is used as the `aid`.
             prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
-            c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
-                prefix="Homer")
+            c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="Homer")
 
         """
         comp_rxid = None
@@ -93,6 +84,7 @@ class AtomsCollection(dict):
                     else:
                         self.read(root[i], Z[i], f_format, rxid, prefix)
             elif(path.isfile(root)):
+                #FIXME generalize for reading multi elemental data
                 a = io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
                 # FIXME aid is stored as an array in the Atoms object, ideally want a
@@ -112,14 +104,11 @@ class AtomsCollection(dict):
     def describe(self, descriptor, fcn=None, needs_store=False, **kwargs):
         """Function to call specified description function and store the result
 
-        Args :
+        Parameters:
             descriptor (str): descriptor to be applied to AtomsCollection.
-            fcn (str): function to apply said description. Defaults to none. Built in functions
-                are held in descriptors.py.
-            needs_store (bool) : boolean that indicates if information in the Store will need to
-                be accessed while computing the description. Defaults to False.
-            **kwargs (dict): Parameters associated with the description function specified. See
-                documentation in descriptors.py for function details and parameters.
+            fcn (str): function to apply said description. Defaults to none. Built in functions are held in descriptors.py.
+            needs_store (bool) : boolean that indicates if information in the Store will need to be accessed while computing the description. Defaults to False.
+            kwargs (dict): Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
         Returns:
             None: everything will be stored in the Store
