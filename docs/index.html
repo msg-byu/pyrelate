@@ -1,0 +1,174 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to gblearn’s documentation! &#8212; gblearn  documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-gblearn.collection">
+<span id="welcome-to-gblearn-s-documentation"></span><h1>Welcome to gblearn’s documentation!<a class="headerlink" href="#module-gblearn.collection" title="Permalink to this headline">¶</a></h1>
+<p>Functions and AtomsCollection class for interacting with collections of ASE Atoms objects</p>
+<dl class="py class">
+<dt id="gblearn.collection.AtomsCollection">
+<em class="property">class </em><code class="sig-prename descclassname">gblearn.collection.</code><code class="sig-name descname">AtomsCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">store_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a collection of ASE Atoms objects</p>
+<dl class="simple">
+<dt>Attributes :</dt><dd><p>self (dict): inherits from dictionary
+name (str) : identifier for this collection
+store (Store) : store to hold all the results and other information</p>
+</dd>
+</dl>
+<p>..warning:: Make sure to have unique collection names, will be used for LER</p>
+<dl class="py method">
+<dt id="gblearn.collection.AtomsCollection.describe">
+<code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">needs_store</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to call specified description function and store the result</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – descriptor to be applied to AtomsCollection.</p></li>
+<li><p><strong>fcn</strong> (<em>str</em>) – function to apply said description. Defaults to none. Built in functions are held in descriptors.py.</p></li>
+<li><p><strong>needs_store</strong> (<em>bool</em>) – boolean that indicates if information in the Store will need to be accessed while computing the description. Defaults to False.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>everything will be stored in the Store</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>my_col.describe(“soap”, rcut=5.0, nmax=9, lmax=9)
+my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="gblearn.collection.AtomsCollection.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shell function to call Store’s get method</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="gblearn.collection.AtomsCollection.read">
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">Z</span></em>, <em class="sig-param"><span class="n">f_format</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rxid</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to read atoms data into ASE Atoms objects and add to AtomsCollection</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>str</em>) – relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.</p></li>
+<li><p><strong>Z</strong> (<em>int</em>) – atomic number of the elements to be read</p></li>
+<li><p><strong>f_format</strong> (<em>str</em>) – format of data file. Defaults to None. See ase documentation at ‘<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io/io.html">https://wiki.fysik.dtu.dk/ase/ase/io/io.html</a>’</p></li>
+<li><p><strong>(</strong> (<em>rxid</em>) – obj: str, optional) : regex pattern for extracting the <cite>aid</cite> for each Atoms object. Defaults to None. Any files that don’t match the regex are automatically excluded. The regex should include a named group <cite>(?P&lt;aid&gt;…)</cite> so that the id can be extracted correctly. If not specified, the file name is used as the <cite>aid</cite>.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – optional prefix for aid. Defaults to none.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>c.read([“../homer/ni.p454.out”, “../homer/ni.p453.out”], 28, “lammps-dump-text”, rxid=r’ni.p(?P&lt;gbid&gt;d+).out’, prefix=”Homer”)</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">gblearn</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Jay Spendlove.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
