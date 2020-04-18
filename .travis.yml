@@ -1,8 +1,10 @@
 language: python
 python:
-    - "3.6"
-#    - "3.7"
+#    - "3.6"
+    - "3.7"
 #command to install dependencies
+apt_packages:
+	- pandoc
 install:
     - pip install .
     - pip install tox
