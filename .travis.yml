@@ -1,11 +1,9 @@
 language: python
 python:
-#    - "3.6"
     - "3.7"
 #command to install dependencies
-apt_packages:
-	- pandoc
 install:
+    - sudo apt-get -y install pandoc
     - pip install .
     - pip install tox
     - pip install annoy
