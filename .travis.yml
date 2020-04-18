@@ -3,11 +3,11 @@ python:
     - "3.7"
 #command to install dependencies
 install:
-	- sudo apt-get -y install pandoc
+    - sudo apt-get -y install pandoc
     - pip install .
     - pip install tox
     - pip install annoy
-	- pip install pycsoap
+    - pip install pycsoap
 #command to run tests
 script:
     - tox
