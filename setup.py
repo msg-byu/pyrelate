@@ -30,8 +30,7 @@ setup(name='gblearn',
     install_requires=[
         "numpy",
         "tqdm",
-        "ase",
-        "pycsoap"
+        "ase"
     ],
     packages=['gblearn'],
     scripts=[],
