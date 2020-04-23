@@ -16,9 +16,9 @@ class TestDescriptors():
         t1.describe(desc, rcut='huge', nmax='not_as_huge')
         res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
         assert res == "test result"
+        shutil.rmtree("./tests/store")
 
     def test_soap(self):
-        pass
         '''SOAP'''
         # FIXME make unit test that tests the functionality of SOAP
         t3 = col("Test_SOAP", "./tests/results")
@@ -31,7 +31,7 @@ class TestDescriptors():
             desc, aid, rcut=5.0, nmax=9, lmax=9)
         fpath = os.path.join(t3.store.root, desc, aid, fname)
         assert os.path.exists(fpath)
-        #shutil.rmtree("./tests/results/")
+        shutil.rmtree("./tests/results/")
 
     def test_asr(self):
         '''ASR'''
@@ -51,10 +51,9 @@ class TestDescriptors():
         shutil.rmtree("./tests/test_paths/asr")
 
     def test_ler_runs(self):
-        pass
         '''LER'''
         # FIXME make unit test that tests the functionality of LER
-        t5 = col("Test_LER", "./tests/results")
+        t5 = col("Test_LER", "./tests/test_paths")
         t5.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text",
             rxid=r'ni.p(?P<gbid>\d+).out')
         desc = 'ler'
@@ -65,8 +64,8 @@ class TestDescriptors():
             desc, aid1, collection=t5, eps=0.025, rcut=5.0, nmax=9, lmax=9)
         fpath = os.path.join(t5.store.root, desc, aid1, fname)
         assert os.path.exists(fpath)
-        shutil.rmtree("./tests/results/")
-        #shutil.rmtree("./tests/test_paths/ler")
+        #shutil.rmtree("./tests/results/")
+        shutil.rmtree("./tests/test_paths/ler")
 
     def test_ler_functionality(self):
         my_col = col("test_col", "./tests/results")

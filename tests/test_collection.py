@@ -174,6 +174,7 @@ class TestCollection(unittest.TestCase):
         t1.describe(desc, Desc.fake_descriptor, arg1=1, arg2=2, arg3=3)
         res = t1.get(desc,aid, arg1=1, arg2=2, arg3=3)
         assert res == [1,2,3]
+        shutil.rmtree("./tests/store")
 
     def test_get(self):
         my_col = col("A", "./tests/results")
@@ -183,3 +184,4 @@ class TestCollection(unittest.TestCase):
         my_col.store.store(result, desc, aid, arg_a=1, arg_b=2)
         ret_val3 = my_col.get(desc, aid, arg_a=1, arg_b=2)
         assert ret_val3 == result
+        shutil.rmtree("./tests/results")
