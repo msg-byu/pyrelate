@@ -8,6 +8,15 @@ Welcome to gblearn's documentation!
 .. automodule:: gblearn.collection
    :members:
 
+.. automodule:: gblearn.descriptors
+   :members:
+
+.. automodule:: gblearn.store
+   :members:
+
+.. automodule:: gblearn.elements
+   :members:
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:

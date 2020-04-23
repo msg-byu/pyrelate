@@ -6,7 +6,7 @@ import shutil
 import unittest
 
 
-class TestResultStore(unittest.TestCase):
+class TestStore(unittest.TestCase):
 
     #check_results function
     def test_check_exists_true(self):

@@ -31,8 +31,6 @@ setup(name='gblearn',
         "numpy",
         "tqdm",
         "ase",
-        "pycsoap",
-        "annoy"
     ],
     packages=['gblearn'],
     scripts=[],
