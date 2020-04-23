@@ -16,11 +16,10 @@ class Store:
     def _generate_file_name(self, descriptor, idd, **kwargs):
         """Function to generate file name for storage
 
-        Args:
+        Parameters:
             descriptor (str): name of descriptor
             idd (str): atoms id
-            **kwargs (dict): arguments for computing descriptor, will be used to generate
-                file names
+            kwargs (dict): arguments for computing descriptor, will be used to generate file names
 
         Returns:
             string: file name with extension '.pkl'
@@ -35,16 +34,15 @@ class Store:
         return name
 
     def check_exists(self, descriptor, idd, **kwargs):
-        """ Function to check if correct file structure is in place and if a result file
-            exists for these parameters
+        """ Function to check if correct file structure is in place and if a result file exists for these parameters
 
-            Args:
-                descriptor (str): name of descriptor.
-                idd (str): id of item to check for.
-                **kwargs (dict): Parameters associated with the description function.
+        Parameters:
+            descriptor (str): name of descriptor.
+            idd (str): id of item to check for.
+            kwargs (dict): Parameters associated with the description function.
 
-            Returns:
-                bool: True if file results already exits, false if they do not
+        Returns:
+            bool: True if file results already exits, false if they do not
         """
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)
@@ -54,12 +52,11 @@ class Store:
         """
         Function to store information into result store
 
-        Args:
+        Parameters:
             result (pickle): computed result
             descriptor (str): name of descriptor
             idd (str): atoms id
-            **kwargs (dict): arguments for computing descriptor, will be
-                used to generate file names
+            kwargs (dict): arguments for computing descriptor, will be used to generate file names
 
         """
         fname = self._generate_file_name(descriptor, idd, **kwargs)
@@ -73,11 +70,10 @@ class Store:
     def get(self, descriptor, idd, **kwargs):
         """Function to retrieve information from the Store
 
-        Args
+        Parameters:
             descriptor (str): name of descriptor
             idd (str): atoms id
-            **kwargs (dict): refers to whatever arguments that were used to generate
-                the description (which correspond to the file name)
+            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)

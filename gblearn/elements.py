@@ -21,7 +21,7 @@ elements = {
 def atoms(element):
     """Returns a :class:`quippy.Atoms` structure for the given
     element, using the tabulated lattice parameters.
-    Args:
+    Parameters:
         element (str): name of the element.
     """
     lattice = "unknown"
@@ -40,12 +40,10 @@ def atoms(element):
 #do rcut and nmax and lmax need to match what we call in SOAP?
 def seed(element, lmax=12, nmax=12, rcut=6.0, **kwargs):
     """Computes the :math:`P` matrix for the given element.
-    Args:
+    Parameters:
         element (str): name of the element.
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis
-          functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical
-          harmonics.
+        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
+        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
     """
     lattice, latpar, Z, basis = elements[element]

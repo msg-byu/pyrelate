@@ -2,12 +2,13 @@ language: python
 python:
     - "3.7"
 #command to install dependencies
+before_install:
+    - pip install pycsoap
+    - pip install annoy
 install:
     - sudo apt-get -y install pandoc
     - pip install .
     - pip install tox
-    - pip install annoy
-    - pip install pycsoap
 #command to run tests
 script:
     - tox

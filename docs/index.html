@@ -12,6 +12,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -94,6 +95,162 @@ my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)</p>
 <p>c.read([“../homer/ni.p454.out”, “../homer/ni.p453.out”], 28, “lammps-dump-text”, rxid=r’ni.p(?P&lt;gbid&gt;d+).out’, prefix=”Homer”)</p>
 </dd></dl>
 
+</dd></dl>
+
+<span class="target" id="module-gblearn.descriptors"></span><dl class="py function">
+<dt id="gblearn.descriptors.asr">
+<code class="sig-prename descclassname">gblearn.descriptors.</code><code class="sig-name descname">asr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.descriptors.asr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average SOAP representation: average vectors from SOAP matrix into a single vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
+<li><p><strong>store</strong> (<a class="reference internal" href="#gblearn.store.Store" title="gblearn.store.Store"><em>gblearn.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
+<li><p><strong>nmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor radial basis functions.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor spherical harmonics.</p></li>
+<li><p><strong>rcut</strong> (<em>float</em>) – local environment finite cutoff parameter.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="gblearn.descriptors.ler">
+<code class="sig-prename descclassname">gblearn.descriptors.</code><code class="sig-name descname">ler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">eps</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">n_trees</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">search_k</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.descriptors.ler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Environment Representation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
+<li><p><strong>store</strong> (<a class="reference internal" href="#gblearn.store.Store" title="gblearn.store.Store"><em>gblearn.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
+<li><p><strong>collection</strong> (<a class="reference internal" href="#gblearn.collection.AtomsCollection" title="gblearn.collection.AtomsCollection"><em>gblearn.collection.AtomsCollection</em></a>) – LER is collection specific, needed for computation</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – epsilon value indicating that any LAE’s outside this value are considered dissimilar</p></li>
+<li><p><strong>rcut</strong> (<em>float</em>) – local environment finite cutoff parameter.</p></li>
+<li><p><strong>nmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor radial basis functions.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor spherical harmonics.</p></li>
+<li><p><strong>seed</strong><strong>(</strong><strong>)</strong> – perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.</p></li>
+<li><p><strong>metric</strong> (<em>str</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
+<li><p><strong>n_trees</strong> (<em>int</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
+<li><p><strong>search_k</strong> (<em>int</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function</p></li>
+<li><p><strong>documentation</strong> (<em>Annoy's</em>) – <a class="reference external" href="https://github.com/spotify/annoy">https://github.com/spotify/annoy</a></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="gblearn.descriptors.soap">
+<code class="sig-prename descclassname">gblearn.descriptors.</code><code class="sig-name descname">soap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.descriptors.soap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Smooth Overlap of Atomic Positions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
+<li><p><strong>nmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor radial basis functions.</p></li>
+<li><p><strong>lmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor spherical harmonics.</p></li>
+<li><p><strong>rcut</strong> (<em>float</em>) – local environment finite cutoff parameter.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-gblearn.store"></span><p>Functions and Store class for storing atomic descriptions</p>
+<dl class="py class">
+<dt id="gblearn.store.Store">
+<em class="property">class </em><code class="sig-prename descclassname">gblearn.store.</code><code class="sig-name descname">Store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for efficient storing of description of the AtomsCollection</p>
+<dl class="py method">
+<dt id="gblearn.store.Store.check_exists">
+<code class="sig-name descname">check_exists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store.check_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to check if correct file structure is in place and if a result file exists for these parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor.</p></li>
+<li><p><strong>idd</strong> (<em>str</em>) – id of item to check for.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if file results already exits, false if they do not</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="gblearn.store.Store.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to retrieve information from the Store</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor</p></li>
+<li><p><strong>idd</strong> (<em>str</em>) – atoms id</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – refers to whatever arguments that were used to generate the description (which correspond to the file name)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="gblearn.store.Store.store">
+<code class="sig-name descname">store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">result</span></em>, <em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to store information into result store</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<em>pickle</em>) – computed result</p></li>
+<li><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor</p></li>
+<li><p><strong>idd</strong> (<em>str</em>) – atoms id</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – arguments for computing descriptor, will be used to generate file names</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<span class="target" id="module-gblearn.elements"></span><p>Crystal definitions and SOAP vector calculations for simple
+elements.</p>
+<dl class="py function">
+<dt id="gblearn.elements.atoms">
+<code class="sig-prename descclassname">gblearn.elements.</code><code class="sig-name descname">atoms</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.elements.atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a <code class="xref py py-class docutils literal notranslate"><span class="pre">quippy.Atoms</span></code> structure for the given
+element, using the tabulated lattice parameters.
+:param element: name of the element.
+:type element: str</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="gblearn.elements.elements">
+<code class="sig-prename descclassname">gblearn.elements.</code><code class="sig-name descname">elements</code><em class="property"> = {'Al': ('FaceCenteredCubic', 4.05, 13, [0]), 'Cr': ('BodyCenteredCubic', 2.91, 24, [0, 1]), 'Mg': ('HexagonalClosedPacked', {'a': 3.21, 'c/a': 1.633}, 12, [0, 1]), 'Ni': ('FaceCenteredCubic', 3.52, 28, [0])}</em><a class="headerlink" href="#gblearn.elements.elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>keys are element names, values are a tuple of (<cite>str</cite> lattice,
+<cite>float</cite> lattice parameter, <cite>int</cite> element number, <cite>list</cite> basis indices).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="gblearn.elements.seed">
+<code class="sig-prename descclassname">gblearn.elements.</code><code class="sig-name descname">seed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">lmax</span><span class="o">=</span><span class="default_value">12</span></em>, <em class="sig-param"><span class="n">nmax</span><span class="o">=</span><span class="default_value">12</span></em>, <em class="sig-param"><span class="n">rcut</span><span class="o">=</span><span class="default_value">6.0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.elements.seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the <span class="math notranslate nohighlight">\(P\)</span> matrix for the given element.
+:param element: name of the element.
+:type element: str
+:param nmax: bandwidth limits for the SOAP descriptor radial basis functions.
+:type nmax: int
+:param lmax: bandwidth limits for the SOAP descriptor spherical harmonics.
+:type lmax: int
+:param rcut: local environment finite cutoff parameter.
+:type rcut: float</p>
 </dd></dl>
 
 <div class="toctree-wrapper compound">

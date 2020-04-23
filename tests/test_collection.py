@@ -152,6 +152,29 @@ class TestCollection(unittest.TestCase):
         pass
         #test with xyz file
 
+    def test_describe(self):
+        t1 = col("Test_1", "./tests/store")
+        t1.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
+                prefix="TEST")
+        desc = "test"
+        aid = "test_455"
+        t1.describe(desc, rcut='huge', nmax='not_as_huge')
+        res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
+        assert res == "test result"
+        shutil.rmtree("./tests/store")
+
+    def test_describe_own_function(self):
+        t1 = col("Test_1", "./tests/store")
+        t1.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        desc = "fake"
+        aid = "test_455"
+        from own_descriptor import Desc
+        t1.describe(desc, Desc.fake_descriptor, arg1=1, arg2=2, arg3=3)
+        res = t1.get(desc,aid, arg1=1, arg2=2, arg3=3)
+        assert res == [1,2,3]
+
     def test_get(self):
         my_col = col("A", "./tests/results")
         result = "Random test result"

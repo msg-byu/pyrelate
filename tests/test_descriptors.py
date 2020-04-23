@@ -3,6 +3,7 @@ import shutil
 import os
 import numpy as np
 
+class TestDescriptors():
     def test_describe(self):
         '''Function to test descriptors built into gblearn, held in gblearn/descriptors.py'''
 
@@ -16,6 +17,8 @@ import numpy as np
         res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
         assert res == "test result"
 
+    def test_soap(self):
+        pass
         '''SOAP'''
         # FIXME make unit test that tests the functionality of SOAP
         t3 = col("Test_SOAP", "./tests/results")
@@ -30,6 +33,7 @@ import numpy as np
         assert os.path.exists(fpath)
         #shutil.rmtree("./tests/results/")
 
+    def test_asr(self):
         '''ASR'''
         # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
         t4 = col("Test_ASR", "./tests/test_paths")
@@ -46,6 +50,8 @@ import numpy as np
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/test_paths/asr")
 
+    def test_ler_runs(self):
+        pass
         '''LER'''
         # FIXME make unit test that tests the functionality of LER
         t5 = col("Test_LER", "./tests/results")
@@ -61,3 +67,31 @@ import numpy as np
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
         #shutil.rmtree("./tests/test_paths/ler")
+
+    def test_ler_functionality(self):
+        my_col = col("test_col", "./tests/results")
+        my_col.read(["../homer/ni.p457.out","../homer/ni.p458.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="ler_unit_test")
+        #store fake SOAP arrays
+        rcut=0
+        nmax=0
+        lmax=0
+        fake_mat1 = np.array([[1,2,1],[4,4,4],[5,4,5], [1,0,0]])
+        fake_mat2 = np.array([[1,1,1],[10,10,9],[10,9,10],[1,1,2]])
+        aid1="ler_unit_test_457"
+        aid2="ler_unit_test_458"
+        my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)
+        my_col.store.store(fake_mat2, "soap", aid2, rcut=rcut, nmax=nmax, lmax=lmax)
+        #compute LER
+        seed =[0,0,0]
+        my_col.describe("ler",needs_store=True, collection=my_col, eps=2.0, rcut=0,nmax=0,lmax=0, seed=seed)
+        #check results
+        U = my_col.get("ler", 'U', collection=my_col, eps=2.0, rcut=rcut, nmax=nmax, lmax=lmax, metric='euclidean', n_trees=10, search_k=-1)
+        assert len(U['clusters']) == 4# 4 clusters
+        print(len(U['centers']))
+        ler1=my_col.get("ler", aid1,collection=my_col, eps=2.0, rcut=rcut, lmax=lmax, nmax=nmax, seed=seed)
+        ler2=my_col.get("ler", aid2,collection=my_col, eps=2.0, rcut=rcut, lmax=lmax, nmax=nmax, seed=seed)
+        #when sorting is implemented into LER these will be in a different order
+        assert np.array_equal(ler1, np.array([1/4,1/2,1/4,0]))
+        assert np.array_equal(ler2, np.array([1/2,0,0,1/2]))
+
+        shutil.rmtree("./tests/results/")
