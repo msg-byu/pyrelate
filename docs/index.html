@@ -1,34 +1,71 @@
 
-<!DOCTYPE html>
+
+<!doctype html>
 
 <html>
   <head>
     <meta charset="utf-8" />
     <title>Welcome to gblearn’s documentation! &#8212; gblearn  documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bizstyle.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/language_data.js"></script>
     <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script src="_static/bizstyle.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
   </head><body>
-  
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">gblearn  documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to gblearn’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
-
           <div class="body" role="main">
             
   <div class="section" id="module-gblearn.collection">
@@ -38,13 +75,19 @@
 <dt id="gblearn.collection.AtomsCollection">
 <em class="property">class </em><code class="sig-prename descclassname">gblearn.collection.</code><code class="sig-name descname">AtomsCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">store_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a collection of ASE Atoms objects</p>
-<dl class="simple">
-<dt>Attributes :</dt><dd><p>self (dict): inherits from dictionary
-name (str) : identifier for this collection
-store (Store) : store to hold all the results and other information</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p>self (dict): inherits from dictionary</p></li>
+<li><p>name (str) : identifier for this collection</p></li>
+<li><p>store (Store) : store to hold all the results and other information</p></li>
+</ul>
 </dd>
 </dl>
-<p>..warning:: Make sure to have unique collection names, will be used for LER</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Make sure to have unique collection names, will be used for LER</p>
+</div>
 <dl class="py method">
 <dt id="gblearn.collection.AtomsCollection.describe">
 <code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">needs_store</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
@@ -65,9 +108,15 @@ store (Store) : store to hold all the results and other information</p>
 <dd class="field-odd"><p>None</p>
 </dd>
 </dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The results from the SOAP descriptor are used in several other built in descriptors (including ASR and LER). If you want to use your own implementation of SOAP, you must a) make sure your descriptor name is “soap”, and b) make sure you do not compute different SOAP implementations that are to stored in the same descriptor folder in the store.</p>
+</div>
 <p class="rubric">Example</p>
-<p>my_col.describe(“soap”, rcut=5.0, nmax=9, lmax=9)
-my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="n">aid</span><span class="p">,</span> <span class="n">needs_store</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -92,7 +141,9 @@ my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<p>c.read([“../homer/ni.p454.out”, “../homer/ni.p453.out”], 28, “lammps-dump-text”, rxid=r’ni.p(?P&lt;gbid&gt;d+).out’, prefix=”Homer”)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="s2">&quot;../homer/ni.p454.out&quot;</span><span class="p">,</span> <span class="s2">&quot;../homer/ni.p453.out&quot;</span><span class="p">],</span> <span class="mi">28</span><span class="p">,</span> <span class="s2">&quot;lammps-dump-text&quot;</span><span class="p">,</span> <span class="n">rxid</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;ni.p(?P&lt;gbid&gt;\d+).out&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;Homer&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -267,65 +318,25 @@ element, using the tabulated lattice parameters.
 
 
           </div>
-          
-        </div>
-      </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="#">gblearn</a></h1>
-
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="#">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
         </div>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="footer">
-      &copy;2020, Jay Spendlove.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/index.rst.txt"
-          rel="nofollow">Page source</a>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">gblearn  documentation</a> &#187;</li> 
+      </ul>
     </div>
-
-    
-
-    
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jay Spendlove.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.1.
+    </div>
   </body>
 </html>
