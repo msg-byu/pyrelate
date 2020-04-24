@@ -4,9 +4,6 @@ python:
 #command to install dependencies
 install:
     - sudo apt-get -y install pandoc
-    - pip install pycsoap
-    - pip install annoy
-    - pip install .
     - pip install tox
 #command to run tests
 script:
