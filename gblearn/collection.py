@@ -11,13 +11,12 @@ from gblearn.store import Store
 class AtomsCollection(dict):
     """Represents a collection of ASE Atoms objects
 
-    Attributes :
-        self (dict): inherits from dictionary
-        name (str) : identifier for this collection
-        store (Store) : store to hold all the results and other information
+    :Attributes:
+        - self (dict): inherits from dictionary
+        - name (str) : identifier for this collection
+        - store (Store) : store to hold all the results and other information
 
-
-    ..warning:: Make sure to have unique collection names, will be used for LER
+    .. WARNING:: Make sure to have unique collection names, will be used for LER
     """
 
     def __init__(self, name, store_path):
@@ -69,7 +68,9 @@ class AtomsCollection(dict):
             prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
-            c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="Homer")
+            .. code-block:: python
+
+                c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="Homer")
 
         """
         comp_rxid = None
@@ -113,9 +114,13 @@ class AtomsCollection(dict):
         Returns:
             None: everything will be stored in the Store
 
+        .. WARNING:: The results from the SOAP descriptor are used in several other built in descriptors (including ASR and LER). If you want to use your own implementation of SOAP, you must a) make sure your descriptor name is "soap", and b) make sure you do not compute different SOAP implementations that are to stored in the same descriptor folder in the store.
+
         Example:
-            my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
-            my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
+            .. code-block:: python
+
+                my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
+                my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:

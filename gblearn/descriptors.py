@@ -1,5 +1,6 @@
 import numpy as np
-
+'''
+'''
 
 def soap(atoms, rcut, nmax, lmax, **kwargs):
     """Smooth Overlap of Atomic Positions
