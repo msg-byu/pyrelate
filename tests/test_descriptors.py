@@ -16,10 +16,11 @@ class TestDescriptors():
         t1.describe(desc, rcut='huge', nmax='not_as_huge')
         res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
         assert res == "test result"
+        shutil.rmtree("./tests/store")
 
     def test_soap(self):
         pass
-        '''SOAP'''
+        '''SOAP
         # FIXME make unit test that tests the functionality of SOAP
         t3 = col("Test_SOAP", "./tests/results")
         t3.read("./tests/test_data/ni.p455.out", 28,
@@ -31,7 +32,8 @@ class TestDescriptors():
             desc, aid, rcut=5.0, nmax=9, lmax=9)
         fpath = os.path.join(t3.store.root, desc, aid, fname)
         assert os.path.exists(fpath)
-        #shutil.rmtree("./tests/results/")
+        shutil.rmtree("./tests/results/")
+        '''
 
     def test_asr(self):
         '''ASR'''
@@ -52,9 +54,9 @@ class TestDescriptors():
 
     def test_ler_runs(self):
         pass
-        '''LER'''
+        '''LER
         # FIXME make unit test that tests the functionality of LER
-        t5 = col("Test_LER", "./tests/results")
+        t5 = col("Test_LER", "./tests/test_paths")
         t5.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text",
             rxid=r'ni.p(?P<gbid>\d+).out')
         desc = 'ler'
@@ -65,12 +67,12 @@ class TestDescriptors():
             desc, aid1, collection=t5, eps=0.025, rcut=5.0, nmax=9, lmax=9)
         fpath = os.path.join(t5.store.root, desc, aid1, fname)
         assert os.path.exists(fpath)
-        shutil.rmtree("./tests/results/")
-        #shutil.rmtree("./tests/test_paths/ler")
-
+        #shutil.rmtree("./tests/results/")
+        shutil.rmtree("./tests/test_paths/ler")
+        '''
     def test_ler_functionality(self):
         my_col = col("test_col", "./tests/results")
-        my_col.read(["../homer/ni.p457.out","../homer/ni.p458.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="ler_unit_test")
+        my_col.read(["./tests/test_data/ni.p457.out","./tests/test_data/ni.p456.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="ler_unit_test")
         #store fake SOAP arrays
         rcut=0
         nmax=0
@@ -78,12 +80,12 @@ class TestDescriptors():
         fake_mat1 = np.array([[1,2,1],[4,4,4],[5,4,5], [1,0,0]])
         fake_mat2 = np.array([[1,1,1],[10,10,9],[10,9,10],[1,1,2]])
         aid1="ler_unit_test_457"
-        aid2="ler_unit_test_458"
+        aid2="ler_unit_test_456"
         my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)
         my_col.store.store(fake_mat2, "soap", aid2, rcut=rcut, nmax=nmax, lmax=lmax)
         #compute LER
         seed =[0,0,0]
-        my_col.describe("ler",needs_store=True, collection=my_col, eps=2.0, rcut=0,nmax=0,lmax=0, seed=seed)
+        my_col.describe("ler",needs_store=True, collection=my_col, eps=2.0, rcut=rcut,nmax=nmax,lmax=lmax, seed=seed)
         #check results
         U = my_col.get("ler", 'U', collection=my_col, eps=2.0, rcut=rcut, nmax=nmax, lmax=lmax, metric='euclidean', n_trees=10, search_k=-1)
         assert len(U['clusters']) == 4# 4 clusters
