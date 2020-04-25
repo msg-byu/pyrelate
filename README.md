@@ -9,6 +9,9 @@ Unlike machine learning in some applications that are in all senses of the phras
 
 Gblearn is implemented with the use of ASE Atoms objects, with several built in descriptors, as well as the added capability of allowing the user to utilize their own descriptor function.
 
+To see the documentation:
+https://msg-byu.github.io/gblearn/
+
 ## Installation
 To pip install from github run the following command:
 
@@ -30,11 +33,12 @@ Depending what descriptors you plan to use, you will not need to install all pac
 `pip install pycsoap`
 
 ###### ASR
-None
-###### LER:
-`pip install annoy`
+SOAP
 
-`pip install pycsoap`
+###### LER:
+SOAP
+
+`pip install annoy`
 
 ## How to use gblearn
 [Here](https://jayclark24.gitbook.io/gblearn/) is a tutorial to getting started with using gblearn.
