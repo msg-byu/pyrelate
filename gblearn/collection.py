@@ -19,7 +19,7 @@ class AtomsCollection(dict):
     .. WARNING:: Make sure to have unique collection names, will be used for LER
     """
 
-    def __init__(self, name, store_path):
+    def __init__(self, name, store_path=None):
         """Initializer which calls dict's and Store's initializers"""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
@@ -64,7 +64,7 @@ class AtomsCollection(dict):
             root (str) : relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.
             Z (int) : atomic number of the elements to be read
             f_format (str) : format of data file. Defaults to None. See ase documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
-            rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. Any files that don't match the regex are automatically excluded. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly. If not specified, the file name is used as the `aid`.
+            rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly.  If any files don't match the regex or if it is not specified, the file name is used as the `aid`.
             prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
@@ -73,6 +73,8 @@ class AtomsCollection(dict):
                 c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="Homer")
 
         """
+        #FIXME add functionality to pass a collection into read
+
         comp_rxid = None
         if rxid is not None:
             import re
@@ -88,8 +90,7 @@ class AtomsCollection(dict):
                 #FIXME generalize for reading multi elemental data
                 a = io.read(root, format=f_format)
                 a.set_atomic_numbers([Z for i in a])
-                # FIXME aid is stored as an array in the Atoms object, ideally want a
-                # single property for the Atoms object
+                # FIXME aid is stored as an array in the Atoms object, ideally want a single property for the Atoms object
                 aid = self._read_aid(root, comp_rxid, prefix)
                 a.new_array("aid", [aid for i in a], dtype="str")
                 self[aid] = a
@@ -140,6 +141,14 @@ class AtomsCollection(dict):
                     self.store.store(
                         result, descriptor, aid, **kwargs)
 
-    def get(self, descriptor, idd, **kwargs):
+    def get(self, descriptor, idd=None, **kwargs):
         '''Shell function to call Store's get method'''
+        if idd is None:
+            idd = self.aids()
         return self.store.get(descriptor, idd, **kwargs)
+
+    def aids(self):
+        '''Returns sorted list of atom id's (aids) in collection'''
+        a = list(self)
+        a.sort()
+        return a

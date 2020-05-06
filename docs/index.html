@@ -73,7 +73,7 @@
 <p>Functions and AtomsCollection class for interacting with collections of ASE Atoms objects</p>
 <dl class="py class">
 <dt id="gblearn.collection.AtomsCollection">
-<em class="property">class </em><code class="sig-prename descclassname">gblearn.collection.</code><code class="sig-name descname">AtomsCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">store_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">gblearn.collection.</code><code class="sig-name descname">AtomsCollection</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">store_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a collection of ASE Atoms objects</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
@@ -88,6 +88,12 @@
 <p class="admonition-title">Warning</p>
 <p>Make sure to have unique collection names, will be used for LER</p>
 </div>
+<dl class="py method">
+<dt id="gblearn.collection.AtomsCollection.aids">
+<code class="sig-name descname">aids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.aids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns sorted list of atom id’s (aids) in collection</p>
+</dd></dl>
+
 <dl class="py method">
 <dt id="gblearn.collection.AtomsCollection.describe">
 <code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">needs_store</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
@@ -121,7 +127,7 @@
 
 <dl class="py method">
 <dt id="gblearn.collection.AtomsCollection.get">
-<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shell function to call Store’s get method</p>
 </dd></dl>
 
@@ -135,7 +141,7 @@
 <li><p><strong>root</strong> (<em>str</em>) – relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.</p></li>
 <li><p><strong>Z</strong> (<em>int</em>) – atomic number of the elements to be read</p></li>
 <li><p><strong>f_format</strong> (<em>str</em>) – format of data file. Defaults to None. See ase documentation at ‘<a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/io/io.html">https://wiki.fysik.dtu.dk/ase/ase/io/io.html</a>’</p></li>
-<li><p><strong>(</strong> (<em>rxid</em>) – obj: str, optional) : regex pattern for extracting the <cite>aid</cite> for each Atoms object. Defaults to None. Any files that don’t match the regex are automatically excluded. The regex should include a named group <cite>(?P&lt;aid&gt;…)</cite> so that the id can be extracted correctly. If not specified, the file name is used as the <cite>aid</cite>.</p></li>
+<li><p><strong>(</strong> (<em>rxid</em>) – obj: str, optional) : regex pattern for extracting the <cite>aid</cite> for each Atoms object. Defaults to None. The regex should include a named group <cite>(?P&lt;aid&gt;…)</cite> so that the id can be extracted correctly.  If any files don’t match the regex or if it is not specified, the file name is used as the <cite>aid</cite>.</p></li>
 <li><p><strong>prefix</strong> (<em>str</em>) – optional prefix for aid. Defaults to none.</p></li>
 </ul>
 </dd>
@@ -185,7 +191,8 @@
 <li><p><strong>n_trees</strong> (<em>int</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
 <li><p><strong>search_k</strong> (<em>int</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function</p></li>
-<li><p><strong>documentation</strong> (<em>Annoy's</em>) – <a class="reference external" href="https://github.com/spotify/annoy">https://github.com/spotify/annoy</a></p></li>
+<li><p><strong>documentation &lt;https</strong> (<em>`Annoy's</em>) – <p>//github.com/spotify/annoy&gt;`_.</p>
+</p></li>
 </ul>
 </dd>
 </dl>
@@ -211,7 +218,7 @@
 <span class="target" id="module-gblearn.store"></span><p>Functions and Store class for storing atomic descriptions</p>
 <dl class="py class">
 <dt id="gblearn.store.Store">
-<em class="property">class </em><code class="sig-prename descclassname">gblearn.store.</code><code class="sig-name descname">Store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">gblearn.store.</code><code class="sig-name descname">Store</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#gblearn.store.Store" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for efficient storing of description of the AtomsCollection</p>
 <dl class="py method">
 <dt id="gblearn.store.Store.check_exists">
@@ -242,7 +249,7 @@
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor</p></li>
-<li><p><strong>idd</strong> (<em>str</em>) – atoms id</p></li>
+<li><p><strong>idd</strong> (str <strong>or</strong> list(str)) – atoms id (or list of atom id’s)</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – refers to whatever arguments that were used to generate the description (which correspond to the file name)</p></li>
 </ul>
 </dd>

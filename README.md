@@ -21,7 +21,7 @@ To pip install from github run the following command:
 You may get an error 'No pandoc found' when installing and trying to read the long description on a setup.py. This error happens because pandoc is not installed on your system, but pypandoc (which was pip installed with the package) does not check to make sure it exists before it tries to use it in your setup.py. There are 2 solutions:
 
 ###### Solution 1
-`pip uninstall pypandoc` then pip install the package again. This will activate the except statement in your setup.py that will not use the convert() pandoc function (which is not on your system), and everything will insthall fine.
+`pip uninstall pypandoc` then pip install the package again. This will activate the except statement in your setup.py that will not use the convert() pandoc function (which is not on your system), and everything will install fine.
 
 ###### Solution 2
 This solution involves getting pandoc on your system.  Pypandoc will automatically install pandoc on your system for you _if you install [from the github page](https://github.com/bebraw/pypandoc/blob/master/setup.py)_. You can then proceed with pip installing gblearn on your system.
@@ -41,6 +41,6 @@ SOAP
 `pip install annoy`
 
 ## How to use gblearn
-[Here](https://jayclark24.gitbook.io/gblearn/) is a tutorial to getting started with using gblearn.
+See the 'tutorials' folder for tutorials to get started with using gblearn.
 
 ## Citing
