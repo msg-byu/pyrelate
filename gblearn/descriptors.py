@@ -1,17 +1,16 @@
 import numpy as np
-
+'''Built-in descriptors for use with AtomsCollection's describe function
+'''
 
 def soap(atoms, rcut, nmax, lmax, **kwargs):
     """Smooth Overlap of Atomic Positions
 
-    Args:
+    Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis
-          functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical
-          harmonics.
+        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
+        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
-        **kwargs (dict): Parameters associated with the description function
+        kwargs (dict): Parameters associated with the description function
     """
     from pycsoap.soaplite import SOAP
     soap_desc = SOAP(atomic_numbers=atoms.numbers, rcut=rcut,
@@ -23,16 +22,13 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
 def asr(atoms, store, rcut, nmax, lmax, **kwargs):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
-    Args:
+    Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (gblearn.store.Store) : store to access previously computed SOAP matrix
-            (automatically passed in with the 'needs_info' parameter in describe())
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis
-          functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical
-          harmonics.
+        store (gblearn.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
+        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
-        **kwargs (dict): Parameters associated with the description function
+        kwargs (dict): Parameters associated with the description function
     """
     aid = atoms.get_array("aid")[0]
     matrix = store.get(
@@ -46,24 +42,21 @@ def asr(atoms, store, rcut, nmax, lmax, **kwargs):
 def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):
     '''Local Environment Representation
 
-    Args:
+    Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (gblearn.store.Store) : store to access previously computed SOAP matrix
-            (automatically passed in with the 'needs_info' parameter in describe())
+        store (gblearn.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
         collection(gblearn.collection.AtomsCollection): LER is collection specific, needed for computation
         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
         rcut (float): local environment finite cutoff parameter.
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis
-          functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical
-          harmonics.
+        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
+        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         seed(): perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.
         metric(str): For approximate nearest neighbor calculation. See annoys documentation for more details.
         n_trees(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
         search_k(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
-        **kwargs (dict): Parameters associated with the description function
+        kwargs (dict): Parameters associated with the description function
 
-        Annoy's documentation: https://github.com/spotify/annoy
+        `Annoy's documentation <https://github.com/spotify/annoy>`_.
 
     '''
     U = store.get(

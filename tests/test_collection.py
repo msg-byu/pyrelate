@@ -152,6 +152,30 @@ class TestCollection(unittest.TestCase):
         pass
         #test with xyz file
 
+    def test_describe(self):
+        t1 = col("Test_1", "./tests/store")
+        t1.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
+                prefix="TEST")
+        desc = "test"
+        aid = "test_455"
+        t1.describe(desc, rcut='huge', nmax='not_as_huge')
+        res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
+        assert res == "test result"
+        shutil.rmtree("./tests/store")
+
+    def test_describe_own_function(self):
+        t1 = col("Test_1", "./tests/store")
+        t1.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        desc = "fake"
+        aid = "test_455"
+        from own_descriptor import Desc
+        t1.describe(desc, Desc.fake_descriptor, arg1=1, arg2=2, arg3=3)
+        res = t1.get(desc,aid, arg1=1, arg2=2, arg3=3)
+        assert res == [1,2,3]
+        shutil.rmtree("./tests/store")
+
     def test_get(self):
         my_col = col("A", "./tests/results")
         result = "Random test result"
@@ -160,3 +184,28 @@ class TestCollection(unittest.TestCase):
         my_col.store.store(result, desc, aid, arg_a=1, arg_b=2)
         ret_val3 = my_col.get(desc, aid, arg_a=1, arg_b=2)
         assert ret_val3 == result
+        shutil.rmtree("./tests/results")
+
+    def test_get_no_aid(self):
+        my_col = col("A", "./tests/results")
+        result = "Random test result"
+        desc = "test"
+        aid = "12"
+        aid2 = "13"
+        my_col["12"] = "test"
+        my_col["13"] = "test2"
+        my_col.store.store(result, desc, aid, arg_a=1, arg_b=2)
+        my_col.store.store(result, desc, aid2, arg_a=1, arg_b=2)
+        ret_val3 = my_col.get(desc, arg_a=1, arg_b=2)
+        assert type(ret_val3) is dict
+        assert len(ret_val3) is 2
+        shutil.rmtree("./tests/results")
+
+    def test_aids(self):
+        t1 = col("Test_1", "./tests/test_paths")
+        t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
+        aid_list = t1.aids()
+        assert type(aid_list) is list
+        assert int(aid_list[0]) == int("453")
+        assert len(aid_list) is 2
