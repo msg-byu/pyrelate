@@ -185,3 +185,27 @@ class TestCollection(unittest.TestCase):
         ret_val3 = my_col.get(desc, aid, arg_a=1, arg_b=2)
         assert ret_val3 == result
         shutil.rmtree("./tests/results")
+
+    def test_get_no_aid(self):
+        my_col = col("A", "./tests/results")
+        result = "Random test result"
+        desc = "test"
+        aid = "12"
+        aid2 = "13"
+        my_col["12"] = "test"
+        my_col["13"] = "test2"
+        my_col.store.store(result, desc, aid, arg_a=1, arg_b=2)
+        my_col.store.store(result, desc, aid2, arg_a=1, arg_b=2)
+        ret_val3 = my_col.get(desc, arg_a=1, arg_b=2)
+        assert type(ret_val3) is dict
+        assert len(ret_val3) is 2
+        shutil.rmtree("./tests/results")
+
+    def test_aids(self):
+        t1 = col("Test_1", "./tests/test_paths")
+        t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
+        aid_list = t1.aids()
+        assert type(aid_list) is list
+        assert int(aid_list[0]) == int("453")
+        assert len(aid_list) is 2

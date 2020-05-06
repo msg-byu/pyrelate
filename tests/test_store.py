@@ -8,6 +8,23 @@ import unittest
 
 class TestStore(unittest.TestCase):
 
+    #test initialization
+    def test_init_store(self):
+        try:
+            r = rs('./tests/test_paths/')
+        except:
+            assert False
+        assert True
+
+    #test default initialization
+    def test_init_store_default(self):
+        try:
+            r = rs()
+        except:
+            assert False
+        shutil.rmtree("./store")
+        assert True
+
     #check_results function
     def test_check_exists_true(self):
         r1 = rs('./tests/test_paths/')
@@ -53,33 +70,46 @@ class TestStore(unittest.TestCase):
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
 
-    def test_get_numpy_array(self):
+    def test_get_file_numpy_array(self):
         '''Tests to make sure get_descriptor returns expected value'''
         desc = "soap"
         aid = "aid_111"
         r4 = rs("./tests/results/")
         res = np.array([[1, 2, 3], [4, 5, 6]])
         r4.store(res, desc, aid, rcut=9, nmax=10, lmax=10)
-        ret_val = r4.get(desc, aid, rcut=9, nmax=10, lmax=10)
+        ret_val = r4._get_file(desc, aid, rcut=9, nmax=10, lmax=10)
         assert np.array_equal(ret_val, res)
         shutil.rmtree("./tests/results/")
 
         # No corresponding result (missing parameter)
-    def test_get_missing_param(self):
+    def test_get_file_missing_param(self):
         desc = "soap"
         aid = "aid_111"
         r4 = rs("./tests/results/")
         res = np.array([[1, 2, 3], [4, 5, 6]])
         r4.store(res, desc, aid, rcut=9, nmax=10, lmax=10)
-        ret_val2 = r4.get(aid, desc, rcut=9, lmax=10)
+        ret_val2 = r4._get_file(aid, desc, rcut=9, lmax=10)
         assert ret_val2 == None
         shutil.rmtree("./tests/results/")
 
-    def test_get_string(self):
+    def test_get_file_string(self):
         r3 = rs("./tests/results")
         result = "Random test result"
         desc = "test"
         aid = "12"
         r3.store(result, desc, aid, arg_a=1, arg_b=2)
-        ret_val3 = r3.get(desc, aid, arg_a=1, arg_b=2)
+        ret_val3 = r3._get_file(desc, aid, arg_a=1, arg_b=2)
         assert ret_val3 == result
+        shutil.rmtree("./tests/results/")
+
+    def test_get(self):
+        r3 = rs("./tests/test_paths")
+        res = r3.get("soap", '455', rcut=5.0, nmax=9, lmax=9)
+        assert type(res) is np.ndarray
+
+    def test_get_with_list(self):
+        r3 = rs("./tests/test_paths")
+        res = r3.get("soap", ['455'], rcut=5.0, nmax=9, lmax=9)
+        assert type(res) == dict
+        assert type(res['455']) is not type(None)
+        assert len(res) == 1
