@@ -1,5 +1,4 @@
-"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects
-"""
+"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects"""
 import numpy as np
 from tqdm import tqdm
 from os import path
@@ -121,7 +120,7 @@ class AtomsCollection(dict):
             .. code-block:: python
 
                 my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
-                my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
+                my_col.describe("asr", needs_store=True, rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
