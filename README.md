@@ -1,7 +1,7 @@
 # `relate`
 <span style="font-size:23px;"> __RE__presenting and __L__earning on __AT__omic __E__nvironments __</span>__
 
-[![Build Status](https://travis-ci.org/jayspendlove/relate.svg?branch=master)](https://travis-ci.org/jayspendlove/relate)
+[![Build Status](https://travis-ci.com/jayspendlove/relate.svg?branch=master)](https://travis-ci.com/jayspendlove/relate)
 
 
 Unlike machine learning in some applications that are in all senses of the phrase 'big data', with millions if not billions of pieces of training data, in materials applications we are often limited to much smaller datasets to train a model (thousands, or even perhaps a few hundred). In addition, the accuracy requirements for materials applications are extremely high. To work with these data limitations there need to be expressive ways to _represent_ this data to allow effective machine learning. This package aims to implement some of the 'top' descriptors, and allow implementation of custom descriptors in such a way to be a user-friendly tool in materials research to facilitate effective Machine Learning.
