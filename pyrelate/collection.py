@@ -4,7 +4,7 @@ from tqdm import tqdm
 from os import path
 import os
 from ase import io, Atoms
-from relate.store import Store
+from pyrelate.store import Store
 
 
 class AtomsCollection(dict):
@@ -124,7 +124,7 @@ class AtomsCollection(dict):
         """
 
         if fcn is None:
-            from relate import descriptors
+            from pyrelate import descriptors
             fcn = getattr(descriptors, descriptor)
 
         for aid in tqdm(self):

@@ -3,18 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to relate's documentation!
-===================================
-.. automodule:: relate.collection
+Welcome to pyrelate's documentation!
+====================================
+.. automodule:: pyrelate.collection
    :members:
 
-.. automodule:: relate.descriptors
+.. automodule:: pyrelate.descriptors
    :members:
 
-.. automodule:: relate.store
+.. automodule:: pyrelate.store
    :members:
 
-.. automodule:: relate.elements
+.. automodule:: pyrelate.elements
    :members:
 
 .. toctree::

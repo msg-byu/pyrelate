@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'relate'
+project = 'pyrelate'
 copyright = '2020, Jay Spendlove'
 author = 'Jay Spendlove'
 
