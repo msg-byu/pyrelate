@@ -26,7 +26,7 @@ def asr(atoms, store, rcut, nmax, lmax, **kwargs):
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (relate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
         nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
         lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
@@ -46,8 +46,8 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (relate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
-        collection(relate.collection.AtomsCollection): LER is collection specific, needed for computation
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        collection(pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
         rcut (float): local environment finite cutoff parameter.
         nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
@@ -71,7 +71,7 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
         }
 
         # Part 1: Clustering
-        import relate.elements as elements
+        import pyrelate.elements as elements
         if seed is None:
             seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[
                                  0], rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)

@@ -1,5 +1,5 @@
-from relate.store import Store as rs
-from relate.collection import AtomsCollection
+from pyrelate.store import Store as rs
+from pyrelate.collection import AtomsCollection
 import os
 import numpy as np
 import shutil
