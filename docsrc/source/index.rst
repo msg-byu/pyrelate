@@ -3,18 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to gblearn's documentation!
-===================================
-.. automodule:: gblearn.collection
+Welcome to pyrelate's documentation!
+====================================
+.. automodule:: pyrelate.collection
    :members:
 
-.. automodule:: gblearn.descriptors
+.. automodule:: pyrelate.descriptors
    :members:
 
-.. automodule:: gblearn.store
+.. automodule:: pyrelate.store
    :members:
 
-.. automodule:: gblearn.elements
+.. automodule:: pyrelate.elements
    :members:
 
 .. toctree::

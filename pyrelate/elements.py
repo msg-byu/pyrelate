@@ -2,10 +2,10 @@
 elements.
 """
 import numpy as np
-from gblearn import descriptors
+from pyrelate import descriptors
 from ase import Atoms
 _shells = {}
-"""dict: keys are element names, values are lists of shells (in Ang.).
+"""dict: keys are element names, values are lists of shells (in Angstroms).
 """
 
 elements = {
@@ -19,8 +19,8 @@ elements = {
 """
 
 def atoms(element):
-    """Returns a :class:`quippy.Atoms` structure for the given
-    element, using the tabulated lattice parameters.
+    """Returns a :class:`ase.Atoms` object for the given element, using the tabulated lattice parameters.
+
     Parameters:
         element (str): name of the element.
     """
@@ -37,9 +37,10 @@ def atoms(element):
             a.set_cell(lat.cell)
             a.set_atomic_numbers([Z for i in a])
             return a
-#do rcut and nmax and lmax need to match what we call in SOAP?
-def seed(element, lmax=12, nmax=12, rcut=6.0, **kwargs):
+
+def seed(element, lmax, nmax, rcut, **kwargs):
     """Computes the :math:`P` matrix for the given element.
+
     Parameters:
         element (str): name of the element.
         nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.

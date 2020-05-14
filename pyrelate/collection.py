@@ -1,11 +1,10 @@
-"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects
-"""
+"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects"""
 import numpy as np
 from tqdm import tqdm
 from os import path
 import os
 from ase import io, Atoms
-from gblearn.store import Store
+from pyrelate.store import Store
 
 
 class AtomsCollection(dict):
@@ -63,14 +62,14 @@ class AtomsCollection(dict):
         Parameters:
             root (str) : relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.
             Z (int) : atomic number of the elements to be read
-            f_format (str) : format of data file. Defaults to None. See ase documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
+            f_format (str) : format of data file. Defaults to None. See ASE's documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
             rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly.  If any files don't match the regex or if it is not specified, the file name is used as the `aid`.
             prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
             .. code-block:: python
 
-                c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="Homer")
+                c.read(["../homer/ni.p454.out", "../homer/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Homer")
 
         """
         #FIXME add functionality to pass a collection into read
@@ -121,11 +120,11 @@ class AtomsCollection(dict):
             .. code-block:: python
 
                 my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
-                my_col.describe(aid, needs_store=True, rcut=5.0, nmax=9, lmax=9)
+                my_col.describe("asr", needs_store=True, rcut=5.0, nmax=9, lmax=9)
         """
 
         if fcn is None:
-            from gblearn import descriptors
+            from pyrelate import descriptors
             fcn = getattr(descriptors, descriptor)
 
         for aid in tqdm(self):

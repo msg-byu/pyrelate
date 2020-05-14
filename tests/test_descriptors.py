@@ -1,11 +1,11 @@
-from gblearn.collection import AtomsCollection as col
+from pyrelate.collection import AtomsCollection as col
 import shutil
 import os
 import numpy as np
 
 class TestDescriptors():
     def test_describe(self):
-        '''Function to test descriptors built into gblearn, held in gblearn/descriptors.py'''
+        '''Function to test descriptors built into pyrelate, held in pyrelate/descriptors.py'''
 
         t1 = col("Test_1", "./tests/store")
         t1.read("./tests/test_data/ni.p455.out", 28,

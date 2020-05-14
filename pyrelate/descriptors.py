@@ -3,7 +3,7 @@ import numpy as np
 '''
 
 def soap(atoms, rcut, nmax, lmax, **kwargs):
-    """Smooth Overlap of Atomic Positions
+    """Smooth Overlap of Atomic Positions-- pycsoap implementation
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
@@ -11,6 +11,8 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
         lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
         kwargs (dict): Parameters associated with the description function
+
+    To see `pycsoap's documentation <https://pypi.org/project/pycsoap/>`_.
     """
     from pycsoap.soaplite import SOAP
     soap_desc = SOAP(atomic_numbers=atoms.numbers, rcut=rcut,
@@ -24,7 +26,7 @@ def asr(atoms, store, rcut, nmax, lmax, **kwargs):
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (gblearn.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
         nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
         lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         rcut (float): local environment finite cutoff parameter.
@@ -44,8 +46,8 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (gblearn.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
-        collection(gblearn.collection.AtomsCollection): LER is collection specific, needed for computation
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        collection(pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
         rcut (float): local environment finite cutoff parameter.
         nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
@@ -56,7 +58,7 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
         search_k(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
         kwargs (dict): Parameters associated with the description function
 
-        `Annoy's documentation <https://github.com/spotify/annoy>`_.
+    `Annoy's documentation <https://github.com/spotify/annoy>`_.
 
     '''
     U = store.get(
@@ -69,7 +71,7 @@ def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='eucl
         }
 
         # Part 1: Clustering
-        import gblearn.elements as elements
+        import pyrelate.elements as elements
         if seed is None:
             seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[
                                  0], rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)

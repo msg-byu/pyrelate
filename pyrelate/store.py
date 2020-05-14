@@ -50,7 +50,7 @@ class Store:
             kwargs (dict): Parameters associated with the description function.
 
         Returns:
-            bool: True if file results already exits, false if they do not
+            bool: True if file results already exists, false if they do not
         """
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)
