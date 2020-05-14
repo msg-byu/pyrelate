@@ -3,18 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to gblearn's documentation!
+Welcome to relate's documentation!
 ===================================
-.. automodule:: gblearn.collection
+.. automodule:: relate.collection
    :members:
 
-.. automodule:: gblearn.descriptors
+.. automodule:: relate.descriptors
    :members:
 
-.. automodule:: gblearn.store
+.. automodule:: relate.store
    :members:
 
-.. automodule:: gblearn.elements
+.. automodule:: relate.elements
    :members:
 
 .. toctree::

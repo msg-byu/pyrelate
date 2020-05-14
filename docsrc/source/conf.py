@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'gblearn'
+project = 'relate'
 copyright = '2020, Jay Spendlove'
 author = 'Jay Spendlove'
 

@@ -1,5 +1,5 @@
-from gblearn.store import Store as rs
-from gblearn.collection import AtomsCollection
+from relate.store import Store as rs
+from relate.collection import AtomsCollection
 import os
 import numpy as np
 import shutil

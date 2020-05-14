@@ -2,7 +2,7 @@
 elements.
 """
 import numpy as np
-from gblearn import descriptors
+from relate import descriptors
 from ase import Atoms
 _shells = {}
 """dict: keys are element names, values are lists of shells (in Ang.).
