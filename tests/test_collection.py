@@ -1,6 +1,6 @@
 """Tests collection.py
 """
-from gblearn.collection import AtomsCollection as col
+from relate.collection import AtomsCollection as col
 import os
 import numpy as np
 import sys
