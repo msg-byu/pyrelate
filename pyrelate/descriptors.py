@@ -21,7 +21,7 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
     return P
 
 
-def asr(atoms, store, normalize=False, **kwargs):
+def asr(atoms, store, res_needed, normalize=False, **kwargs):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
     Parameters:
@@ -35,7 +35,7 @@ def asr(atoms, store, normalize=False, **kwargs):
     magnitude = 1
     aid = atoms.get_array("aid")[0]
     matrix = store.get(
-        "soap", aid, **kwargs)
+        res_needed, aid, **kwargs)
     if matrix is None:
         return None
     else:
@@ -47,7 +47,8 @@ def asr(atoms, store, normalize=False, **kwargs):
 
 def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):
     '''Local Environment Representation
-
+    TODO fix for updated describe function
+    
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())

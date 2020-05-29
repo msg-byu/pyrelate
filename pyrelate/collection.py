@@ -87,7 +87,11 @@ class AtomsCollection(dict):
                         self.read(root[i], Z[i], f_format, rxid, prefix)
             elif(path.isfile(root)):
                 #FIXME generalize for reading multi elemental data
-                a = io.read(root, format=f_format)
+                a0 = io.read(root, format=f_format)
+                a=a0.copy()
+                #delete end blocks
+                del a[[atom.index for atom in a if atom.number==4 or atom.number==5]]
+                a.new_array('type', a.get_array('numbers', copy=True), dtype=int)
                 a.set_atomic_numbers([Z for i in a])
                 # FIXME aid is stored as an array in the Atoms object, ideally want a single property for the Atoms object
                 aid = self._read_aid(root, comp_rxid, prefix)
@@ -102,7 +106,7 @@ class AtomsCollection(dict):
         except ValueError:
             print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, fcn=None, needs_store=False, **kwargs):
+    def describe(self, descriptor, fcn=None, res_needed=None, **kwargs):
         """Function to call specified description function and store the result
 
         Parameters:
@@ -127,15 +131,18 @@ class AtomsCollection(dict):
             from pyrelate import descriptors
             fcn = getattr(descriptors, descriptor)
 
+        if res_needed is not None:
+            kwargs['res_needed'] = res_needed
+
         for aid in tqdm(self):
             exists = self.store.check_exists(
                 descriptor, aid, **kwargs)
             if not exists:
-                if needs_store:
+                if res_needed is not None:
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
                     result = fcn(self[aid], **kwargs)
-                    
+
                 if result is not None:
                     self.store.store(
                         result, descriptor, aid, **kwargs)
