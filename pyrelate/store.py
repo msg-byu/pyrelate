@@ -93,6 +93,8 @@ class Store:
                 result = pickle.load(f)
         except FileNotFoundError:
             pass
+        except Exception as exception:
+            print("%s when loading file %s, consider deleting result and recomputing" % (type(exception).__name__, fname))
 
         return result
 

@@ -19,8 +19,8 @@ class TestDescriptors():
         shutil.rmtree("./tests/store")
 
     def test_soap(self):
-        '''SOAP'''
-        # FIXME make unit test that tests the functionality of SOAP
+        pass
+        '''SOAP
         t3 = col("Test_SOAP", "./tests/results")
         t3.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
@@ -34,7 +34,7 @@ class TestDescriptors():
         res = t3.get(desc, aid, rcut=5.0, nmax=9, lmax=9)
         assert type(res) is np.ndarray
         shutil.rmtree("./tests/results/")
-
+        '''
 
     def test_asr(self):
         '''ASR'''
@@ -53,9 +53,36 @@ class TestDescriptors():
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/test_paths/asr")
 
+    def test_asr_normalize(self):
+        '''ASR'''
+        # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
+        '''
+        my_col = col("test_col", "./tests/results")
+        my_col.read("./tests/test_data/ni.p456.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="asr_unit_test")
+        #store fake SOAP arrays
+        rcut=0
+        nmax=0
+        lmax=0
+        fake_mat1 = np.array([[1,1,1],[1,0,0]])
+        aid1="asr_unit_test_456"
+        my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)'''
+        t4 = col("Test_ASR", "./tests/test_paths")
+        t4.read("./tests/test_data/ni.p455.out", 28,
+                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
+        desc = 'asr'
+        aid = 'fake_455'
+        t4.describe(desc, needs_store=True,normalize=True, rcut=0, nmax=0, lmax=0)
+        res = t4.get(desc, aid, normalize=True, rcut=0, nmax=0, lmax=0)
+        exp_mag = 6.0827625303 #np.sqrt(37) #Sqrt(4^2+4^2+2^2+1^1) = Sqrt(37)
+        exp = np.array([1, 2, 4, 4]) / exp_mag  # expected  result of ASR
+        assert np.all(np.isclose(res, exp))
+        fname = t4.store._generate_file_name(desc, aid, normalize=True, rcut=0, nmax=0, lmax=0)
+        fpath = os.path.join(t4.store.root, desc, aid, fname)
+        assert os.path.exists(fpath)
+        shutil.rmtree("./tests/test_paths/asr")
+
     def test_ler_runs(self):
         '''LER'''
-        # FIXME make unit test that tests the functionality of LER
         t5 = col("Test_LER", "./tests/test_paths")
         t5.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text",
             rxid=r'ni.p(?P<gbid>\d+).out')

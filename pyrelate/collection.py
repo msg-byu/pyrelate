@@ -135,7 +135,7 @@ class AtomsCollection(dict):
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
                     result = fcn(self[aid], **kwargs)
-
+                    
                 if result is not None:
                     self.store.store(
                         result, descriptor, aid, **kwargs)

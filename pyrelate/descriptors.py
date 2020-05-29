@@ -21,7 +21,7 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
     return P
 
 
-def asr(atoms, store, rcut, nmax, lmax, **kwargs):
+def asr(atoms, store, normalize=False, **kwargs):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
     Parameters:
@@ -32,13 +32,17 @@ def asr(atoms, store, rcut, nmax, lmax, **kwargs):
         rcut (float): local environment finite cutoff parameter.
         kwargs (dict): Parameters associated with the description function
     """
+    magnitude = 1
     aid = atoms.get_array("aid")[0]
     matrix = store.get(
-        "soap", aid, rcut=rcut, nmax=nmax, lmax=nmax, **kwargs)
+        "soap", aid, **kwargs)
     if matrix is None:
         return None
     else:
-        return np.average(matrix, axis=0)
+        asr_res = np.average(matrix, axis=0)
+        if normalize is True:
+            magnitude = np.linalg.norm(asr_res)
+        return asr_res/magnitude
 
 
 def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):

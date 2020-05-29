@@ -1,6 +1,8 @@
 from pyrelate.store import Store as rs
 from pyrelate.collection import AtomsCollection
 import os
+import io
+import sys
 import numpy as np
 import shutil
 import unittest
@@ -69,6 +71,15 @@ class TestStore(unittest.TestCase):
         fpath = os.path.join(r3.root, desc, aid, fname)
         assert os.path.exists(fpath)
         shutil.rmtree("./tests/results/")
+
+    def test_get_file_unpickling_error(self):
+        desc = "desc"
+        aid = "fakepkl"
+        r = rs("./tests/test_paths/")
+        output = io.StringIO()
+        sys.stdout = output
+        r.get(desc,aid,arg1="1")
+        assert "UnpicklingError when loading file desc__fakepkl___arg1_1.pkl, consider deleting result and recomputing\n" == output.getvalue()
 
     def test_get_file_numpy_array(self):
         '''Tests to make sure get_descriptor returns expected value'''
