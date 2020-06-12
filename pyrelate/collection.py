@@ -106,7 +106,7 @@ class AtomsCollection(dict):
         except ValueError:
             print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, fcn=None, res_needed=None, **kwargs):
+    def describe(self, descriptor, fcn=None, **kwargs):
         """Function to call specified description function and store the result
 
         Parameters:
@@ -131,9 +131,6 @@ class AtomsCollection(dict):
             from pyrelate import descriptors
             fcn = getattr(descriptors, descriptor)
 
-        if res_needed is not None:
-            kwargs['res_needed'] = res_needed
-
         for aid in tqdm(self):
             exists = self.store.check_exists(
                 descriptor, aid, **kwargs)
@@ -146,6 +143,18 @@ class AtomsCollection(dict):
                 if result is not None:
                     self.store.store(
                         result, descriptor, aid, **kwargs)
+
+    def clear(self, descriptor, aid, **kwargs):
+        if descriptor is not None:
+            if has_kwargs:
+                if idd is not None:
+                    self.store.clear(descriptor, aid, **kwargs)
+                else:
+                    self.store.clear(descriptor, **kwargs)
+            else:
+                self.store.clear_descriptor(descriptor)
+        else:
+            self.store.clear_all()
 
     def get(self, descriptor, idd=None, **kwargs):
         '''Shell function to call Store's get method'''
