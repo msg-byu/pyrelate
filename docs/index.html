@@ -95,32 +95,41 @@
 </dd></dl>
 
 <dl class="py method">
+<dt id="pyrelate.collection.AtomsCollection.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to delete specified results from Store. You can:</p>
+<ul class="simple">
+<li><p>remove a result for a specific Atoms object</p></li>
+<li><p>remove specific results for all Atoms objects in the collection</p></li>
+<li><p>remove all results for a certain type of descriptor, and</p></li>
+<li><p>remove all results in the store</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="s2">&quot;aid1&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.describe">
-<code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">needs_store</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">override</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to call specified description function and store the result</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>descriptor</strong> (<em>str</em>) – descriptor to be applied to AtomsCollection.</p></li>
-<li><p><strong>fcn</strong> (<em>str</em>) – function to apply said description. Defaults to none. Built in functions are held in descriptors.py.</p></li>
-<li><p><strong>needs_store</strong> (<em>bool</em>) – boolean that indicates if information in the Store will need to be accessed while computing the description. Defaults to False.</p></li>
+<li><p><strong>fcn</strong> (<em>str</em>) – function to apply said description. Defaults to none, and built in functions in descriptors.py are used.</p></li>
+<li><p><strong>override</strong> (<em>bool</em>) – if True, descriptor will override any matching results in the store. Defaults to False.</p></li>
 <li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>everything will be stored in the Store</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None</p>
-</dd>
 </dl>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>The results from the SOAP descriptor are used in several other built in descriptors (including ASR and LER). If you want to use your own implementation of SOAP, you must a) make sure your descriptor name is “soap”, and b) make sure you do not compute different SOAP implementations that are to stored in the same descriptor folder in the store.</p>
-</div>
 <p class="rubric">Example</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
-<span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;asr&quot;</span><span class="p">,</span> <span class="n">needs_store</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;my_soap&quot;</span><span class="p">,</span> <span class="n">fcn</span><span class="o">=</span><span class="n">soap</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;asr&quot;</span><span class="p">,</span> <span class="n">res_needed</span><span class="o">=</span><span class="s2">&quot;my_soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -128,7 +137,18 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shell function to call Store’s get method</p>
+<dd><p>Shell function to call Store’s get method
+:param descriptor: descriptor to be applied to AtomsCollection.
+:type descriptor: str
+:param idd: Idd of Atoms object who’s results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
+:type idd: str
+:param kwargs: Parameters associated with the description function specified.
+:type kwargs: dict</p>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="s1">&#39;aid1&#39;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;asr&quot;</span><span class="p">,</span> <span class="n">res_needed</span><span class="o">=</span><span class="s2">&quot;my_soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -147,7 +167,7 @@
 </dd>
 </dl>
 <p class="rubric">Example</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="s2">&quot;../homer/ni.p454.out&quot;</span><span class="p">,</span> <span class="s2">&quot;../homer/ni.p453.out&quot;</span><span class="p">],</span> <span class="mi">28</span><span class="p">,</span> <span class="s2">&quot;lammps-dump-text&quot;</span><span class="p">,</span> <span class="n">rxid</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;ni.p(?P&lt;aid&gt;\d+).out&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;Homer&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="o">.</span><span class="n">read</span><span class="p">([</span><span class="s2">&quot;/Ni/ni.p454.out&quot;</span><span class="p">,</span> <span class="s2">&quot;/Ni/ni.p453.out&quot;</span><span class="p">],</span> <span class="mi">28</span><span class="p">,</span> <span class="s2">&quot;lammps-dump-text&quot;</span><span class="p">,</span> <span class="n">rxid</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;ni.p(?P&lt;aid&gt;\d+).out&#39;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;Nickel&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -156,17 +176,15 @@
 
 <span class="target" id="module-pyrelate.descriptors"></span><dl class="py function">
 <dt id="pyrelate.descriptors.asr">
-<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">asr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.asr" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">asr</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">res_needed</span><span class="o">=</span><span class="default_value">'soap'</span></em>, <em class="sig-param"><span class="n">norm_asr</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.asr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Average SOAP representation: average vectors from SOAP matrix into a single vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
 <li><p><strong>store</strong> (<a class="reference internal" href="#pyrelate.store.Store" title="pyrelate.store.Store"><em>pyrelate.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
-<li><p><strong>nmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor radial basis functions.</p></li>
-<li><p><strong>lmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor spherical harmonics.</p></li>
-<li><p><strong>rcut</strong> (<em>float</em>) – local environment finite cutoff parameter.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function</p></li>
+<li><p><strong>res_needed</strong> (<em>str</em>) – What results to compute the ASR on. Defaults to ‘soap’.</p></li>
+<li><p><strong>norm_asr</strong> (<em>bool</em>) – Normalize ASR vector. Default is False, not normalized.</p></li>
 </ul>
 </dd>
 </dl>
@@ -174,8 +192,9 @@
 
 <dl class="py function">
 <dt id="pyrelate.descriptors.ler">
-<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">ler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">eps</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">n_trees</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">search_k</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.ler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Local Environment Representation</p>
+<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">ler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">eps</span></em>, <em class="sig-param"><span class="n">res_needed</span><span class="o">=</span><span class="default_value">'soap'</span></em>, <em class="sig-param"><span class="n">soapfcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">n_trees</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">search_k</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">soapargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.ler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local Environment Representation
+TODO fix for updated describe function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -183,9 +202,8 @@
 <li><p><strong>store</strong> (<a class="reference internal" href="#pyrelate.store.Store" title="pyrelate.store.Store"><em>pyrelate.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
 <li><p><strong>collection</strong> (<a class="reference internal" href="#pyrelate.collection.AtomsCollection" title="pyrelate.collection.AtomsCollection"><em>pyrelate.collection.AtomsCollection</em></a>) – LER is collection specific, needed for computation</p></li>
 <li><p><strong>eps</strong> (<em>float</em>) – epsilon value indicating that any LAE’s outside this value are considered dissimilar</p></li>
-<li><p><strong>rcut</strong> (<em>float</em>) – local environment finite cutoff parameter.</p></li>
-<li><p><strong>nmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor radial basis functions.</p></li>
-<li><p><strong>lmax</strong> (<em>int</em>) – bandwidth limits for the SOAP descriptor spherical harmonics.</p></li>
+<li><p><strong>res_needed</strong> (<em>str</em>) – What results to compute the LER with. Defaults to ‘soap’.</p></li>
+<li><p><strong>soapfcn</strong> (<em>function</em>) – optional parameter for a function to compute SOAP for perfect FCC atom, defaults to None and SOAP in descriptors.py will be used.</p></li>
 <li><p><strong>seed</strong><strong>(</strong><strong>)</strong> – perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.</p></li>
 <li><p><strong>metric</strong> (<em>str</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
 <li><p><strong>n_trees</strong> (<em>int</em>) – For approximate nearest neighbor calculation. See annoys documentation for more details.</p></li>
@@ -237,6 +255,38 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyrelate.store.Store.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.store.Store.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>More general clear function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor</p></li>
+<li><p><strong>idd</strong> (str <strong>or</strong> list(str)) – atoms id (or list of atom id’s)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – refers to whatever arguments that were used to generate the description (which correspond to the file name)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyrelate.store.Store.clear_all">
+<code class="sig-name descname">clear_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.store.Store.clear_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to remove all results from the Store</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pyrelate.store.Store.clear_descriptor">
+<code class="sig-name descname">clear_descriptor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.store.Store.clear_descriptor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to remove all descriptions of a certiain type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>descriptor</strong> (<em>str</em>) – name of descriptor</p>
 </dd>
 </dl>
 </dd></dl>
@@ -301,7 +351,7 @@ elements.</p>
 
 <dl class="py function">
 <dt id="pyrelate.elements.seed">
-<code class="sig-prename descclassname">pyrelate.elements.</code><code class="sig-name descname">seed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">lmax</span></em>, <em class="sig-param"><span class="n">nmax</span></em>, <em class="sig-param"><span class="n">rcut</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.elements.seed" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrelate.elements.</code><code class="sig-name descname">seed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">element</span></em>, <em class="sig-param"><span class="n">soapfcn</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">soapargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.elements.seed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the <span class="math notranslate nohighlight">\(P\)</span> matrix for the given element.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
