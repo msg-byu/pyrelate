@@ -140,7 +140,6 @@ class Store:
             shutil.rmtree(path)
 
     def clear_all(self):
-        #for all descriptors, delete descriptor files
         for item in os.listdir(self.root):
             path = os.path.join(self.root,item)
             if os.path.isdir(path):

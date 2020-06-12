@@ -1,13 +1,22 @@
-from pyrelate.collection import AtomsCollection as col
+from pyrelate.collection import AtomsCollection
 import shutil
 import os
 import numpy as np
+
+def _initialize_collection_and_read(aids, store_loc ="tests/results"):
+    '''initialize collection and read specified atoms files'''
+    my_col = AtomsCollection("Test", store_loc)
+    data_path = 'tests/test_data/ni.p{0:s}.out'
+    for aid in aids:
+        my_col.read(data_path.format(aid),
+                28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+    return my_col
 
 class TestDescriptors():
     def test_describe(self):
         '''Function to test descriptors built into pyrelate, held in pyrelate/descriptors.py'''
 
-        t1 = col("Test_1", "./tests/store")
+        t1 = AtomsCollection("Test_1", "./tests/store")
         t1.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
@@ -21,7 +30,7 @@ class TestDescriptors():
     def test_soap(self):
         pass
         '''SOAP
-        t3 = col("Test_SOAP", "./tests/results")
+        t3 = AtomsCollection("Test_SOAP", "./tests/results")
         t3.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
         desc = 'soap'
@@ -39,7 +48,7 @@ class TestDescriptors():
     def test_asr(self):
         '''ASR'''
         # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
-        t4 = col("Test_ASR", "./tests/test_paths")
+        t4 = AtomsCollection("Test_ASR", "./tests/test_paths")
         t4.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
         desc = 'asr'
@@ -57,7 +66,7 @@ class TestDescriptors():
         '''ASR'''
         # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
         '''
-        my_col = col("test_col", "./tests/results")
+        my_col = AtomsCollection("test_col", "./tests/results")
         my_col.read("./tests/test_data/ni.p456.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="asr_unit_test")
         #store fake SOAP arrays
         rcut=0
@@ -66,7 +75,7 @@ class TestDescriptors():
         fake_mat1 = np.array([[1,1,1],[1,0,0]])
         aid1="asr_unit_test_456"
         my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)'''
-        t4 = col("Test_ASR", "./tests/test_paths")
+        t4 = AtomsCollection("Test_ASR", "./tests/test_paths")
         t4.read("./tests/test_data/ni.p455.out", 28,
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
         desc = 'asr'
@@ -83,44 +92,53 @@ class TestDescriptors():
 
     def test_ler_runs(self):
         '''LER'''
-        t5 = col("Test_LER", "./tests/test_paths")
-        t5.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text",
-            rxid=r'ni.p(?P<gbid>\d+).out')
-        desc = 'ler'
-        aid1 = '455'
-        t5.describe(desc, needs_store=True, collection=t5,
-                    eps=0.025, rcut=5.0, nmax=9, lmax=9)
-        fname = t5.store._generate_file_name(
-            desc, aid1, collection=t5, eps=0.025, rcut=5.0, nmax=9, lmax=9)
-        fpath = os.path.join(t5.store.root, desc, aid1, fname)
-        assert os.path.exists(fpath)
-        #shutil.rmtree("./tests/results/")
-        shutil.rmtree("./tests/test_paths/ler")
+        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/")
+        lerargs = {
+            'collection' : my_col,
+            'eps' : 0.025,
+            'rcut' : 5.0,
+            'nmax' : 9,
+            'lmax' : 9
+        }
+        my_col.describe('ler', **lerargs)
+        assert my_col.store.check_exists('ler', '455', **lerargs)
+        #clear additional results added
+
+    def test_ler_runs_pass_in_soapfcn(self):
+        #LER
+        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/")
+        from pyrelate.descriptors import soap as soapfcn
+        #soapfcn = getattr(descriptors, 'soap')
+        lerargs = {
+            'collection' : my_col,
+            'eps' : 0.025,
+            'rcut' : 5.0,
+            'nmax' : 9,
+            'lmax' : 9,
+            'soapfcn' : soapfcn
+        }
+        my_col.describe('ler', **lerargs)
+        assert my_col.store.check_exists('ler', '455', **lerargs)
+        #clear additional results added
 
     def test_ler_functionality(self):
-        my_col = col("test_col", "./tests/results")
-        my_col.read(["./tests/test_data/ni.p457.out","./tests/test_data/ni.p456.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="ler_unit_test")
-        #store fake SOAP arrays
-        rcut=0
-        nmax=0
-        lmax=0
+        my_col = _initialize_collection_and_read(['454','455'])
+        soapargs = {'rcut':0, 'nmax':0, 'lmax':0}
         fake_mat1 = np.array([[1,2,1],[4,4,4],[5,4,5], [1,0,0]])
         fake_mat2 = np.array([[1,1,1],[10,10,9],[10,9,10],[1,1,2]])
-        aid1="ler_unit_test_457"
-        aid2="ler_unit_test_456"
-        my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)
-        my_col.store.store(fake_mat2, "soap", aid2, rcut=rcut, nmax=nmax, lmax=lmax)
-        #compute LER
+        my_col.store.store(fake_mat1, "fake_soap", '454'', **soapargs)
+        my_col.store.store(fake_mat2, "fake_soap", '455', **soapargs)
         seed =[0,0,0]
-        my_col.describe("ler",needs_store=True, collection=my_col, eps=2.0, rcut=rcut,nmax=nmax,lmax=lmax, seed=seed)
-        #check results
-        U = my_col.get("ler", 'U', collection=my_col, eps=2.0, rcut=rcut, nmax=nmax, lmax=lmax, metric='euclidean', n_trees=10, search_k=-1)
-        assert len(U['clusters']) == 4# 4 clusters
-        print(len(U['centers']))
-        ler1=my_col.get("ler", aid1,collection=my_col, eps=2.0, rcut=rcut, lmax=lmax, nmax=nmax, seed=seed)
-        ler2=my_col.get("ler", aid2,collection=my_col, eps=2.0, rcut=rcut, lmax=lmax, nmax=nmax, seed=seed)
+        lerargs = {
+            'collection' : my_col,
+            'eps' : 0.025,
+            'seed': seed
+        }
+        my_col.describe("ler",**lerargs, **soapargs)
+        ler1=my_col.get("ler", '454', **lerargs, **soapargs)
+        ler2=my_col.get("ler", '455', **lerargs, **soapargs)
+        assert len(ler1) == 4 #4 clusters
         #when sorting is implemented into LER these will be in a different order
         assert np.array_equal(ler1, np.array([1/4,1/2,1/4,0]))
         assert np.array_equal(ler2, np.array([1/2,0,0,1/2]))
-
-        shutil.rmtree("./tests/results/")
+        #delete store?
