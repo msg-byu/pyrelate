@@ -28,19 +28,21 @@ def _initialize_collection_and_read(aids):
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
         my_col.read(data_path.format(aid),
-                28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+                    28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
     return my_col
+
 
 def _initialize_collection_and_describe(desc, aids, **kwargs):
     '''initialize collection with specified descriptor and aids and describe with no args'''
     my_col = _initialize_collection_and_read(aids)
-    my_col.describe(desc, fcn=_test_descriptor, **kwargs)
-    for aid in aids:
-        assert my_col.get(desc, aid, **kwargs) != None
+    for d in desc:
+        my_col.describe(d, fcn=_test_descriptor, **kwargs)
+        for aid in aids:
+            assert my_col.get(d, aid, **kwargs) != None
     return my_col
 
+
 class TestCollection(unittest.TestCase):
-    '''
     def test_read_aid(self):
         t1 = AtomsCollection("t1", "./tests/store")
         rxid = r'ni.p(?P<gbid>\d+).out'
@@ -103,7 +105,7 @@ class TestCollection(unittest.TestCase):
     def test_read_list_with_atomic_num_list(self):
         t1 = AtomsCollection("Test_1", "./tests/store")
         # list of input files with atomic num list (corresponding to one file)
-        t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28,28],
+        t1.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p453.out"], [28, 28],
                 "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
                 prefix="TEST")
         assert 2 == len(t1)
@@ -180,31 +182,13 @@ class TestCollection(unittest.TestCase):
         shutil.rmtree("./tests/store")
 
     def test_read_no_filetype(self):
-        pass #TODO add unit test for automatic filetype reading through ASE
-        #test with xyz file
-    '''
-    def test_describe_built_in_function(self):
-        #FIXME change so test is not in descriptors.py, use one of functions already there
-        #maybe get rid of??
-        t1 = AtomsCollection("Test_1", "./tests/store")
-        t1.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
-                prefix="TEST")
-        desc = "test"
-        aid = "test_455"
-        args = {
-            'arg1' : 'huge',
-            'arg2' : 'not_as_huge'
-        }
-        t1.describe(desc, **args)
-        res = t1.get(desc, aid, **args)
-        assert res == "test result"
-        shutil.rmtree("./tests/store")
+        pass  # TODO add unit test for automatic filetype reading through ASE
+        # test with xyz file
 
     def test_describe_own_function(self):
         '''Test using descriptor function not built into descriptors.py'''
         my_col = _initialize_collection_and_read(['455'])
-        kwargs = {'arg1' : 1,'arg2' : 2,'arg3' : 3}
+        kwargs = {'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col.describe('desc', fcn=_test_descriptor, **kwargs)
         res = my_col.get('desc', '455', **kwargs)
         assert res == 'test result'
@@ -213,35 +197,65 @@ class TestCollection(unittest.TestCase):
     def test_describe_function_needs_store(self):
         '''Test that store is passed into descriptor function'''
         my_col = _initialize_collection_and_read(['455'])
-        kwargs = {'arg1' : 1,'arg2' : 2}
+        kwargs = {'arg1': 1, 'arg2': 2}
         try:
             my_col.describe('desc', fcn=_test_descriptor_with_store, **kwargs)
             assert True
-        except TypeError:#TypeError is thrown when 'store' parameter is not correctly included in descriptor function
+        except TypeError:  # TypeError is thrown when 'store' parameter is not correctly included in descriptor function
             assert False
         _delete_store(my_col)
 
     def test_describe_override(self):
         '''Put result in store, and check to make sure override indeed overrides it'''
-        kwargs = {'arg1' : 1,'arg2' : 2,'arg3' : 3}
-        my_col = _initialize_collection_and_describe('test', ['455'], **kwargs)
+        kwargs = {'arg1': 1, 'arg2': 2, 'arg3': 3}
+        my_col = _initialize_collection_and_describe(
+            ['test'], ['455'], **kwargs)
         assert my_col.get('test', '455', **kwargs) == "test result"
-        #fcn name is not included in file name, so this will appear to be a previously computed result that can be overridden
-        my_col.describe('test', fcn=_test_descriptor_with_store, override=True, **kwargs)
+        # fcn name is not included in file name, so this will appear to be a previously computed result that can be overridden
+        my_col.describe('test', fcn=_test_descriptor_with_store,
+                        override=True, **kwargs)
         assert my_col.get('test', '455', **kwargs) != "test result"
         _delete_store(my_col)
 
     def test_clear_single_result(self):
-        pass
+        my_col = _initialize_collection_and_describe(
+            ['test'], ['454', '455'], arg1=1)
+        my_col.clear('test', '454', arg1=1)
+        assert my_col.store.check_exists('test', '454', arg1=1) == False
+        assert my_col.store.check_exists('test', '455', arg1=1) == True
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(my_col.store.root) == True
 
     def test_clear_specific_results_for_collection(self):
-        pass
+        my_col = _initialize_collection_and_describe(
+            ['test'], ['454', '455'], arg1=1)
+        my_col.clear('test', arg1=1)
+        assert my_col.store.check_exists('test', '454', arg1=1) == False
+        assert my_col.store.check_exists('test', '455', arg1=1) == False
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        assert os.path.exists(my_col.store.root) == True
 
-    def test_clear_results_for_descriptor_type(self):
-        pass
+    def test_clear_results_for_descriptor(self):
+        my_col = _initialize_collection_and_describe(
+            ['test', 'test2'], ['454'], arg1=1)
+        my_col.clear('test')
+        assert my_col.store.check_exists('test', '454', arg1=1) == False
+        assert my_col.store.check_exists('test2', '454', arg1=1) == True
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
 
     def test_clear_all(self):
-        pass
+        my_col = _initialize_collection_and_describe(
+            ['test', 'test2'], ['454', '455'], arg1=1)
+        my_col.clear()
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test2')) == False
+        assert os.path.exists(my_col.store.root) == True
 
     def test_get(self):
         my_col = AtomsCollection("A", "./tests/results")

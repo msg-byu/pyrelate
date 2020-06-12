@@ -5,6 +5,7 @@ import numpy as np
 import pickle
 import shutil
 
+
 class Store:
     """Class for efficient storing of description of the AtomsCollection"""
 
@@ -97,7 +98,8 @@ class Store:
         except FileNotFoundError:
             pass
         except Exception as exception:
-            print("%s when loading file %s, consider deleting result and recomputing" % (type(exception).__name__, fname))
+            print("%s when loading file %s, consider deleting result and recomputing" % (
+                type(exception).__name__, fname))
 
         return result
 
@@ -110,7 +112,7 @@ class Store:
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
         if type(idd) is list:
-            result ={}
+            result = {}
             for i in idd:
                 result[i] = self._get_file(descriptor, i, **kwargs)
         else:
@@ -119,6 +121,13 @@ class Store:
         return result
 
     def _clear_result(self, descriptor, idd, **kwargs):
+        '''Function to remove a single result from the store
+
+        Parameters:
+            descriptor (str): name of descriptor
+            idd (str): atoms id
+            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+        '''
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)
         if os.path.exists(path):
@@ -128,6 +137,14 @@ class Store:
             os.rmdir(directory)
 
     def clear(self, descriptor, idd, **kwargs):
+        '''More general clear function
+
+        Parameters:
+            descriptor (str): name of descriptor
+            idd (str **or** list(str)): atoms id (or list of atom id's)
+            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+
+        '''
         if type(idd) is list:
             for i in idd:
                 self._clear_result(descriptor, i, **kwargs)
@@ -138,12 +155,19 @@ class Store:
             os.rmdir(directory)
 
     def clear_descriptor(self, descriptor):
+        '''Function to remove all descriptions of a certiain type
+
+        Parameters:
+            descriptor (str): name of descriptor
+
+        '''
         path = os.path.join(self.root, descriptor)
         if os.path.exists(path):
             shutil.rmtree(path)
 
     def clear_all(self):
+        '''Function to remove all results from the Store'''
         for item in os.listdir(self.root):
-            path = os.path.join(self.root,item)
+            path = os.path.join(self.root, item)
             if os.path.isdir(path):
                 shutil.rmtree(path)

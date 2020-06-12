@@ -8,144 +8,107 @@ def _delete_store(my_col):
     '''function to help in testing'''
     shutil.rmtree(my_col.store.root)
 
-def _initialize_collection_and_read(aids, store_loc ="tests/results"):
+
+def _initialize_collection_and_read(aids, store_loc="tests/results"):
     '''initialize collection and read specified atoms files'''
     my_col = AtomsCollection("Test", store_loc)
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
         my_col.read(data_path.format(aid),
-                28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+                    28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
     return my_col
 
+
 class TestDescriptors():
-    def test_describe(self):
-        '''Function to test descriptors built into pyrelate, held in pyrelate/descriptors.py'''
-
-        t1 = AtomsCollection("Test_1", "./tests/store")
-        t1.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out',
-                prefix="TEST")
-        desc = "test"
-        aid = "test_455"
-        t1.describe(desc, rcut='huge', nmax='not_as_huge')
-        res = t1.get(desc, aid, rcut='huge', nmax='not_as_huge')
-        assert res == "test result"
-        shutil.rmtree("./tests/store")
-
     def test_soap(self):
-        pass
-        '''SOAP
-        t3 = AtomsCollection("Test_SOAP", "./tests/results")
-        t3.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
-        desc = 'soap'
-        aid = '455'
-        t3.describe(desc, rcut=5.0, nmax=9, lmax=9)
-        fname = t3.store._generate_file_name(
-            desc, aid, rcut=5.0, nmax=9, lmax=9)
-        fpath = os.path.join(t3.store.root, desc, aid, fname)
-        assert os.path.exists(fpath)
-        res = t3.get(desc, aid, rcut=5.0, nmax=9, lmax=9)
+        '''SOAP'''
+        my_col = _initialize_collection_and_read(['455'])
+        soapargs = {'rcut': 5.0, 'nmax': 9, 'lmax': 9}
+        my_col.describe('soap', **soapargs)
+        assert my_col.store.check_exists('soap', '455', **soapargs)
+        res = my_col.get('soap', '455', **soapargs)
         assert type(res) is np.ndarray
-        shutil.rmtree("./tests/results/")
-        '''
+        _delete_store(my_col)
 
     def test_asr(self):
-        '''ASR
-        # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
-        t4 = AtomsCollection("Test_ASR", "./tests/test_paths")
-        t4.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
-        desc = 'asr'
-        aid = 'fake_455'
-        t4.describe(desc, needs_store=True, rcut=0, nmax=0, lmax=0)
-        res = t4.get(desc, aid, rcut=0, nmax=0, lmax=0)
-        exp = np.array([1, 2, 4, 4])  # expected  result of ASR
-        assert np.array_equal(res, exp)
-        fname = t4.store._generate_file_name(desc, aid, rcut=0, nmax=0, lmax=0)
-        fpath = os.path.join(t4.store.root, desc, aid, fname)
-        assert os.path.exists(fpath)
-        shutil.rmtree("./tests/test_paths/asr")'''
+        '''ASR'''
+        my_col = _initialize_collection_and_read(['455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
+        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
+        my_col.describe('asr', res_needed='fake_soap', **soapargs)
+        exp_res = np.array([1, 2, 4, 4])
+        res = my_col.get('asr', '455', res_needed='fake_soap', **soapargs)
+        assert np.array_equal(res, exp_res)
+        _delete_store(my_col)
 
     def test_asr_normalize(self):
         '''ASR'''
-        # dummy SOAP array that ASR is run on np.array([[1,2,3,4],[3,4,5,6],[-1,0,4,2]])
-        '''
-        my_col = AtomsCollection("test_col", "./tests/results")
-        my_col.read("./tests/test_data/ni.p456.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="asr_unit_test")
-        #store fake SOAP arrays
-        rcut=0
-        nmax=0
-        lmax=0
-        fake_mat1 = np.array([[1,1,1],[1,0,0]])
-        aid1="asr_unit_test_456"
-        my_col.store.store(fake_mat1, "soap", aid1, rcut=rcut, nmax=nmax, lmax=lmax)
-        ############################################
-        t4 = AtomsCollection("Test_ASR", "./tests/test_paths")
-        t4.read("./tests/test_data/ni.p455.out", 28,
-                "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix='fake')
-        desc = 'asr'
-        aid = 'fake_455'
-        t4.describe(desc, needs_store=True,normalize=True, rcut=0, nmax=0, lmax=0)
-        res = t4.get(desc, aid, normalize=True, rcut=0, nmax=0, lmax=0)
-        exp_mag = 6.0827625303 #np.sqrt(37) #Sqrt(4^2+4^2+2^2+1^1) = Sqrt(37)
-        exp = np.array([1, 2, 4, 4]) / exp_mag  # expected  result of ASR
-        assert np.all(np.isclose(res, exp))
-        fname = t4.store._generate_file_name(desc, aid, normalize=True, rcut=0, nmax=0, lmax=0)
-        fpath = os.path.join(t4.store.root, desc, aid, fname)
-        assert os.path.exists(fpath)
-        shutil.rmtree("./tests/test_paths/asr")'''
+        my_col = _initialize_collection_and_read(['455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        asrargs = {'res_needed': 'fake_soap', 'norm_asr': True}
+        fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
+        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
+        my_col.describe('asr', **asrargs, **soapargs)
+        res = my_col.get('asr', '455', **asrargs, **soapargs)
+        exp_mag = 6.0827625303  # np.sqrt(37) #Sqrt(4^2+4^2+2^2+1^1) = Sqrt(37)
+        # [1,2,4,4] is the expected  result of ASR
+        exp_res = np.array([1, 2, 4, 4]) / exp_mag
+        assert np.all(np.isclose(res, exp_res))
+        _delete_store(my_col)
 
     def test_ler_runs(self):
         '''LER'''
-        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/")
+        my_col = _initialize_collection_and_read(
+            ['455'], store_loc="tests/test_paths/")
         lerargs = {
-            'collection' : my_col,
-            'eps' : 0.025,
-            'rcut' : 5.0,
-            'nmax' : 9,
-            'lmax' : 9
+            'collection': my_col,
+            'eps': 0.025,
+            'rcut': 5.0,
+            'nmax': 9,
+            'lmax': 9
         }
         my_col.describe('ler', **lerargs)
         assert my_col.store.check_exists('ler', '455', **lerargs)
         my_col.clear('ler')
 
     def test_ler_runs_pass_in_soapfcn(self):
-        #LER
-        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/")
+        # LER
+        my_col = _initialize_collection_and_read(
+            ['455'], store_loc="tests/test_paths/")
         from pyrelate.descriptors import soap as soapfcn
         lerargs = {
-            'collection' : my_col,
-            'eps' : 0.025,
-            'rcut' : 5.0,
-            'nmax' : 9,
-            'lmax' : 9,
-            'soapfcn' : soapfcn
+            'collection': my_col,
+            'eps': 0.025,
+            'rcut': 5.0,
+            'nmax': 9,
+            'lmax': 9,
+            'soapfcn': soapfcn
         }
         my_col.describe('ler', **lerargs)
         assert my_col.store.check_exists('ler', '455', **lerargs)
         my_col.clear('ler')
 
     def test_ler_functionality(self):
-        my_col = _initialize_collection_and_read(['454','455'])
-        soapargs = {'rcut':0, 'nmax':0, 'lmax':0}
-        fake_mat1 = np.array([[1,2,1],[4,4,4],[5,4,5], [1,0,0]])
-        fake_mat2 = np.array([[1,1,1],[10,10,9],[10,9,10],[1,1,2]])
+        my_col = _initialize_collection_and_read(['454', '455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        fake_mat1 = np.array([[1, 2, 1], [4, 4, 4], [5, 4, 5], [1, 0, 0]])
+        fake_mat2 = np.array([[1, 1, 1], [10, 10, 9], [10, 9, 10], [1, 1, 2]])
         my_col.store.store(fake_mat1, "fake_soap", '454', **soapargs)
         my_col.store.store(fake_mat2, "fake_soap", '455', **soapargs)
-        seed =[0,0,0]
+        seed = [0, 0, 0]
         lerargs = {
-            'collection' : my_col,
-            'eps' : 2.0,
+            'collection': my_col,
+            'eps': 2.0,
             'seed': seed,
             'res_needed': 'fake_soap'
         }
         my_col.describe("ler", **lerargs, **soapargs)
-        ler1=my_col.get("ler", '454', **lerargs, **soapargs)
-        ler2=my_col.get("ler", '455', **lerargs, **soapargs)
-        assert len(ler1) == 4 #4 clusters
-        #when sorting is implemented into LER these will be in a different order
-        assert np.array_equal(ler1, np.array([1/4,1/2,1/4,0]))
-        assert np.array_equal(ler2, np.array([1/2,0,0,1/2]))
+        ler1 = my_col.get("ler", '454', **lerargs, **soapargs)
+        ler2 = my_col.get("ler", '455', **lerargs, **soapargs)
+        assert len(ler1) == 4  # 4 clusters
+        # when sorting is implemented into LER these will be in a different order
+        assert np.array_equal(ler1, np.array([1 / 4, 1 / 2, 1 / 4, 0]))
+        assert np.array_equal(ler2, np.array([1 / 2, 0, 0, 1 / 2]))
         _delete_store(my_col)
-        #delete store?
+        # delete store?

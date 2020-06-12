@@ -6,12 +6,16 @@ import sys
 import numpy as np
 import shutil
 import unittest
+# FIXME clean up and simplify unit tests
+
 
 def _delete_store(store):
     shutil.rmtree(store.root)
 
+
 def _test_descriptor(atoms, **kwargs):
     return 'test result'
+
 
 def _initialize_collection_and_read(aids):
     '''initialize collection and read specified atoms files'''
@@ -19,8 +23,9 @@ def _initialize_collection_and_read(aids):
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
         my_col.read(data_path.format(aid),
-                28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+                    28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
     return my_col
+
 
 def _initialize_collection_and_describe(desc, aids, **kwargs):
     '''initialize collection with specified descriptor and aids and describe'''
@@ -34,7 +39,7 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
 
 class TestStore(unittest.TestCase):
 
-    #test initialization
+    # test initialization
     def test_init_store(self):
         try:
             r = Store('./tests/test_paths/')
@@ -42,7 +47,7 @@ class TestStore(unittest.TestCase):
             assert False
         assert True
 
-    #test default initialization
+    # test default initialization
     def test_init_store_default(self):
         try:
             r = Store()
@@ -51,7 +56,7 @@ class TestStore(unittest.TestCase):
         shutil.rmtree("./store")
         assert True
 
-    #check_results function
+    # check_results function
     def test_check_exists_true(self):
         r1 = Store('./tests/test_paths/')
         e1 = r1.check_exists('desc', 'aid1', a="result")
@@ -64,7 +69,7 @@ class TestStore(unittest.TestCase):
         e2 = r1.check_exists('no_file', 'aid1', a='result1')
         assert e2 == False
 
-    #test generate_file_name function
+    # test generate_file_name function
     def test_generate_file_name(self):
         r1 = Store(".")
         f1 = r1._generate_file_name("soap", "111", rcut=9.0, nmax=11, lmax=11)
@@ -102,7 +107,7 @@ class TestStore(unittest.TestCase):
         r = Store("./tests/test_paths/")
         output = io.StringIO()
         sys.stdout = output
-        r.get(desc,aid,arg1="1")
+        r.get(desc, aid, arg1="1")
         assert "UnpicklingError when loading file desc__fakepkl___arg1_1.pkl, consider deleting result and recomputing\n" == output.getvalue()
 
     def test_get_file_numpy_array(self):
@@ -150,32 +155,41 @@ class TestStore(unittest.TestCase):
         assert len(res) == 1
 
     def test_clear_result(self):
-        my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
+        my_col = _initialize_collection_and_describe(
+            ['test'], ['454', '455'], arg1=1)
         my_col.store._clear_result('test', '454', arg1=1)
         assert my_col.store.check_exists('test', '454', arg1=1) == False
         assert my_col.store.check_exists('test', '455', arg1=1) == True
-        assert os.path.exists(os.path.join(my_col.store.root, 'test', '454'))==False
-        assert os.path.exists(my_col.store.root)==True
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(my_col.store.root) == True
 
-    def test_clear_results_for_all_aids(self):
-        my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
-        my_col.store.clear('test',['454','455'], arg1=1)
+    def test_clear_specific_results_for_collection(self):
+        my_col = _initialize_collection_and_describe(
+            ['test'], ['454', '455'], arg1=1)
+        my_col.store.clear('test', ['454', '455'], arg1=1)
         assert my_col.store.check_exists('test', '454', arg1=1) == False
         assert my_col.store.check_exists('test', '455', arg1=1) == False
-        assert os.path.exists(os.path.join(my_col.store.root, 'test', '454'))==False
-        assert os.path.exists(os.path.join(my_col.store.root, 'test'))==False
-        assert os.path.exists(my_col.store.root)==True
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        assert os.path.exists(my_col.store.root) == True
 
     def test_clear_descriptor(self):
-        my_col = _initialize_collection_and_describe(['test', 'test2'], ['454'], arg1=1)
+        my_col = _initialize_collection_and_describe(
+            ['test', 'test2'], ['454'], arg1=1)
         my_col.store.clear_descriptor('test')
         assert my_col.store.check_exists('test', '454', arg1=1) == False
         assert my_col.store.check_exists('test2', '454', arg1=1) == True
-        assert os.path.exists(os.path.join(my_col.store.root, 'test'))==False
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
 
     def test_clear_all(self):
-        my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
+        my_col = _initialize_collection_and_describe(
+            ['test', 'test2'], ['454', '455'], arg1=1)
         my_col.store.clear_all()
-        assert os.path.exists(os.path.join(my_col.store.root, 'test', '454'))==False
-        assert os.path.exists(os.path.join(my_col.store.root, 'test'))==False
-        assert os.path.exists(my_col.store.root)==True
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test', '454')) == False
+        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        assert os.path.exists(os.path.join(
+            my_col.store.root, 'test2')) == False
+        assert os.path.exists(my_col.store.root) == True

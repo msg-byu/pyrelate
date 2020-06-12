@@ -1,6 +1,10 @@
 import numpy as np
-'''Built-in descriptors for use with AtomsCollection's describe function
+'''Built-in descriptors for use with AtomsCollection's describe function.
+
+Some guidelines for writing your own descriptor function
+    - Some descriptions (including built in ASR and LER) require previously computed results, if you want to write your own descriptor function that accesses the store, one of your included parameters must be 'store'. 'Res_needed' is also a suggested parameter to include, it indicates which results to use when computing the new descriptor.
 '''
+
 
 def soap(atoms, rcut, nmax, lmax, **kwargs):
     """Smooth Overlap of Atomic Positions-- pycsoap implementation
@@ -20,17 +24,17 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
     P = soap_desc.create(atoms)
     return P
 
+# TODO write a sum function
 
-def asr(atoms, store, res_needed, normalize=False, **kwargs):
+
+def asr(atoms, store, res_needed='soap', norm_asr=False, **kwargs):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
-        rcut (float): local environment finite cutoff parameter.
-        kwargs (dict): Parameters associated with the description function
+        res_needed (str): What results to compute the ASR on. Defaults to 'soap'.
+        norm_asr (bool): Normalize ASR vector. Default is False, not normalized.
     """
     magnitude = 1
     aid = atoms.get_array("aid")[0]
@@ -40,20 +44,22 @@ def asr(atoms, store, res_needed, normalize=False, **kwargs):
         return None
     else:
         asr_res = np.average(matrix, axis=0)
-        if normalize is True:
+        if norm_asr is True:
             magnitude = np.linalg.norm(asr_res)
-        return asr_res/magnitude
+        return asr_res / magnitude
 
 
-def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
+def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
     '''Local Environment Representation
     TODO fix for updated describe function
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
-        collection(pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
+        collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
+        res_needed (str): What results to compute the LER with. Defaults to 'soap'.
+        soapfcn (function): optional parameter for a function to compute SOAP for perfect FCC atom, defaults to None and SOAP in descriptors.py will be used.
         seed(): perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.
         metric(str): For approximate nearest neighbor calculation. See annoys documentation for more details.
         n_trees(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
@@ -122,7 +128,3 @@ def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None
             np.array([c[0] for c in cluster]) == aid)
     result = result / np.sum(result)
     return result
-
-
-def test(self, **args):
-    return 'test result'
