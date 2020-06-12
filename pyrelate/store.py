@@ -3,6 +3,7 @@
 import os
 import numpy as np
 import pickle
+import shutil
 
 
 class Store:
@@ -36,6 +37,9 @@ class Store:
         sep = ""
         name = sep.join([descriptor, "__", idd])
         for key in sorted(kwargs.keys()):
+            import types
+            if isinstance(key, types.FunctionType):
+                kwargs[key] = kwargs[keys].__name__
             name = sep.join([name, "___", key, "_", str(kwargs[key])])
         name += '.pkl'
 
@@ -93,6 +97,9 @@ class Store:
                 result = pickle.load(f)
         except FileNotFoundError:
             pass
+        except Exception as exception:
+            print("%s when loading file %s, consider deleting result and recomputing" % (
+                type(exception).__name__, fname))
 
         return result
 
@@ -105,10 +112,62 @@ class Store:
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
         if type(idd) is list:
-            result ={}
+            result = {}
             for i in idd:
                 result[i] = self._get_file(descriptor, i, **kwargs)
         else:
             result = self._get_file(descriptor, idd, **kwargs)
 
         return result
+
+    def _clear_result(self, descriptor, idd, **kwargs):
+        '''Function to remove a single result from the store
+
+        Parameters:
+            descriptor (str): name of descriptor
+            idd (str): atoms id
+            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+        '''
+        fname = self._generate_file_name(descriptor, idd, **kwargs)
+        path = os.path.join(self.root, descriptor, idd, fname)
+        if os.path.exists(path):
+            os.remove(path)
+        directory = os.path.dirname(path)
+        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+            os.rmdir(directory)
+
+    def clear(self, descriptor, idd, **kwargs):
+        '''More general clear function
+
+        Parameters:
+            descriptor (str): name of descriptor
+            idd (str **or** list(str)): atoms id (or list of atom id's)
+            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+
+        '''
+        if type(idd) is list:
+            for i in idd:
+                self._clear_result(descriptor, i, **kwargs)
+        else:
+            self._clear_result(descriptor, idd, **kwargs)
+        directory = os.path.join(self.root, descriptor)
+        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+            os.rmdir(directory)
+
+    def clear_descriptor(self, descriptor):
+        '''Function to remove all descriptions of a certiain type
+
+        Parameters:
+            descriptor (str): name of descriptor
+
+        '''
+        path = os.path.join(self.root, descriptor)
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+    def clear_all(self):
+        '''Function to remove all results from the Store'''
+        for item in os.listdir(self.root):
+            path = os.path.join(self.root, item)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
