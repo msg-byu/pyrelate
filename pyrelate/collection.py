@@ -106,7 +106,7 @@ class AtomsCollection(dict):
         except ValueError:
             print("Invalid file path,", root, "was not read.")
 
-    def describe(self, descriptor, fcn=None, **kwargs):
+    def describe(self, descriptor, fcn=None, override=False, **kwargs):
         """Function to call specified description function and store the result
 
         Parameters:
@@ -134,7 +134,7 @@ class AtomsCollection(dict):
         for aid in tqdm(self):
             exists = self.store.check_exists(
                 descriptor, aid, **kwargs)
-            if not exists:
+            if not exists or override:
                 if self._descriptor_needs_store(fcn):
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
@@ -143,6 +143,7 @@ class AtomsCollection(dict):
                 if result is not None:
                     self.store.store(
                         result, descriptor, aid, **kwargs)
+        self.clear("temp")
 
     def _descriptor_needs_store(self, fcn):
         from inspect import signature
@@ -152,8 +153,8 @@ class AtomsCollection(dict):
         except:
             return False
 
-    def clear(self, descriptor, idd, **kwargs):
-        has_kwargs = len(kwargs) == 0
+    def clear(self, descriptor=None, idd=None, **kwargs):
+        has_kwargs = len(kwargs) != 0
         if descriptor is not None:
             if has_kwargs:
                 if idd is not None:

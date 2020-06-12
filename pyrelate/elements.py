@@ -38,7 +38,7 @@ def atoms(element):
             a.set_atomic_numbers([Z for i in a])
             return a
 
-def seed(element, lmax, nmax, rcut, **kwargs):
+def seed(element, soapfcn, **soapargs):
     """Computes the :math:`P` matrix for the given element.
 
     Parameters:
@@ -49,4 +49,6 @@ def seed(element, lmax, nmax, rcut, **kwargs):
     """
     lattice, latpar, Z, basis = elements[element]
     a = atoms(element)
-    return descriptors.soap(a, rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)[0]
+    if soapfcn is None:
+        soapfcn = descriptors.soap
+    return soapfcn(a, **soapargs)[0]

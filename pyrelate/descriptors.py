@@ -45,7 +45,7 @@ def asr(atoms, store, res_needed, normalize=False, **kwargs):
         return asr_res/magnitude
 
 
-def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):
+def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
     '''Local Environment Representation
     TODO fix for updated describe function
 
@@ -64,7 +64,7 @@ def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None
 
     '''
     U = store.get(
-        "ler", 'U', collection=collection, eps=eps, rcut=rcut, nmax=nmax, lmax=lmax, metric=metric, n_trees=n_trees, search_k=search_k, **kwargs)  # add seed? or hash?
+        "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soapfcn=soapfcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash?
     if U is None:
         from collections import OrderedDict
         U = {
@@ -76,10 +76,10 @@ def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None
         import pyrelate.elements as elements
         if seed is None:
             seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[
-                                 0], rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)
+                                 0], soapfcn, **soapargs)
         U['centers'][('0', 0)] = seed
         for aid in collection:
-            for lae_num, lae in enumerate(store.get("soap", aid, rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)):
+            for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
                 if lae is None:
                     raise RuntimeError(
                         "LER requries SOAP to be generated first")
@@ -100,7 +100,7 @@ def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None
         a.build(n_trees)
         a.save('tmp')  # TODO find better way to save temporary file
         for aid in collection:
-            for lae_num, lae in enumerate(store.get("soap", aid, rcut=rcut, nmax=nmax, lmax=lmax, **kwargs)):
+            for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
                 nni = a.get_nns_by_vector(
                     lae, 1, search_k=search_k, include_distances=False)[0]
                 cluster = list(U['centers'].keys())[nni]
@@ -112,7 +112,7 @@ def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None
         os.remove('tmp')
 
         store.store(
-            U, "ler", 'U', collection=collection, eps=eps, rcut=rcut, nmax=nmax, lmax=lmax, metric=metric, n_trees=n_trees, search_k=search_k, **kwargs)
+            U, "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soapfcn=soapfcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
 
     # Calculate LER
     aid = atoms.get_array('aid')[0]

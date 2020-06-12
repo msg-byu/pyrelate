@@ -36,6 +36,9 @@ class Store:
         sep = ""
         name = sep.join([descriptor, "__", idd])
         for key in sorted(kwargs.keys()):
+            import types
+            if isinstance(key, types.FunctionType):
+                kwargs[key] = kwargs[keys].__name__
             name = sep.join([name, "___", key, "_", str(kwargs[key])])
         name += '.pkl'
 
