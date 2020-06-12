@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import pickle
-
+import shutil
 
 class Store:
     """Class for efficient storing of description of the AtomsCollection"""
@@ -114,3 +114,34 @@ class Store:
             result = self._get_file(descriptor, idd, **kwargs)
 
         return result
+
+    def _clear_result(self, descriptor, idd, **kwargs):
+        fname = self._generate_file_name(descriptor, idd, **kwargs)
+        path = os.path.join(self.root, descriptor, idd, fname)
+        if os.path.exists(path):
+            os.remove(path)
+        directory = os.path.dirname(path)
+        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+            os.rmdir(directory)
+
+    def clear(self, descriptor, idd, **kwargs):
+        if type(idd) is list:
+            for i in idd:
+                self._clear_result(descriptor, i, **kwargs)
+        else:
+            self._clear_result(descriptor, idd, **kwargs)
+        directory = os.path.join(self.root, descriptor)
+        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+            os.rmdir(directory)
+
+    def clear_descriptor(self, descriptor):
+        path = os.path.join(self.root, descriptor)
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+    def clear_all(self):
+        #for all descriptors, delete descriptor files
+        for item in os.listdir(self.root):
+            path = os.path.join(self.root,item)
+            if os.path.isdir(path):
+                shutil.rmtree(path)

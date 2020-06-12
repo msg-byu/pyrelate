@@ -135,7 +135,7 @@ class AtomsCollection(dict):
             exists = self.store.check_exists(
                 descriptor, aid, **kwargs)
             if not exists:
-                if res_needed is not None:
+                if self._descriptor_needs_store(fcn):
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
                     result = fcn(self[aid], **kwargs)
@@ -144,13 +144,23 @@ class AtomsCollection(dict):
                     self.store.store(
                         result, descriptor, aid, **kwargs)
 
-    def clear(self, descriptor, aid, **kwargs):
+    def _descriptor_needs_store(self, fcn):
+        from inspect import signature
+        try:
+            signature(fcn).parameters['store']
+            return True
+        except:
+            return False
+
+    def clear(self, descriptor, idd, **kwargs):
+        has_kwargs = len(kwargs) == 0
         if descriptor is not None:
             if has_kwargs:
                 if idd is not None:
-                    self.store.clear(descriptor, aid, **kwargs)
+                    self.store.clear(descriptor, idd, **kwargs)
                 else:
-                    self.store.clear(descriptor, **kwargs)
+                    idds =self.aids()
+                    self.store.clear(descriptor, idds, **kwargs)
             else:
                 self.store.clear_descriptor(descriptor)
         else:

@@ -45,18 +45,15 @@ def asr(atoms, store, res_needed, normalize=False, **kwargs):
         return asr_res/magnitude
 
 
-def ler(atoms, store, collection, eps, rcut, nmax, lmax, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):
+def ler(atoms, store, collection, eps, res_needed='soap',soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **kwargs):
     '''Local Environment Representation
     TODO fix for updated describe function
-    
+
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
         collection(pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
-        rcut (float): local environment finite cutoff parameter.
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
         seed(): perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.
         metric(str): For approximate nearest neighbor calculation. See annoys documentation for more details.
         n_trees(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
