@@ -98,16 +98,28 @@
 <dt id="pyrelate.collection.AtomsCollection.clear">
 <code class="sig-name descname">clear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to delete specified results from Store. You can:</p>
-<ul class="simple">
+<blockquote>
+<div><ul class="simple">
 <li><p>remove a result for a specific Atoms object</p></li>
 <li><p>remove specific results for all Atoms objects in the collection</p></li>
 <li><p>remove all results for a certain type of descriptor, and</p></li>
 <li><p>remove all results in the store</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="s2">&quot;aid1&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
-<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
-<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">)</span>
-<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – descriptor to be applied to AtomsCollection.</p></li>
+<li><p><strong>idd</strong> (<em>str</em>) – Idd of Atoms object who’s results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function specified.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="s2">&quot;aid1&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span> <span class="c1">#clears single SOAP result with given parameters</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span> <span class="c1">#clears SOAP results for whole collection with given parameters</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">)</span> <span class="c1">#clears all soap results from store</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span> <span class="c1">#clears all results from store</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -137,13 +149,16 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shell function to call Store’s get method
-:param descriptor: descriptor to be applied to AtomsCollection.
-:type descriptor: str
-:param idd: Idd of Atoms object who’s results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
-:type idd: str
-:param kwargs: Parameters associated with the description function specified.
-:type kwargs: dict</p>
+<dd><p>Shell function to call Store’s get method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>descriptor</strong> (<em>str</em>) – descriptor to be applied to AtomsCollection.</p></li>
+<li><p><strong>idd</strong> (<em>str</em>) – Idd of Atoms object who’s results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Parameters associated with the description function specified.</p></li>
+</ul>
+</dd>
+</dl>
 <p class="rubric">Example</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;soap&quot;</span><span class="p">,</span> <span class="s1">&#39;aid1&#39;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
 <span class="n">my_col</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;asr&quot;</span><span class="p">,</span> <span class="n">res_needed</span><span class="o">=</span><span class="s2">&quot;my_soap&quot;</span><span class="p">,</span> <span class="n">rcut</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">nmax</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
