@@ -211,7 +211,7 @@ class AtomsCollection(dict):
         return self.store.get(descriptor, idd, **kwargs)
 
     def aids(self):
-        '''Returns sorted list of atom id's (aids) in collection'''
+        '''Returns sorted list of atom ID's (aids) in collection'''
         a = list(self)
         a.sort()
         return a
