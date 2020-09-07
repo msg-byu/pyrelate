@@ -164,12 +164,18 @@ class AtomsCollection(dict):
 
             - remove all results in the store
 
+        Parameters:
+            descriptor (str): descriptor to be applied to AtomsCollection.
+            idd (str): Idd of Atoms object who's results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
+            kwargs (dict): Parameters associated with the description function specified.
+
+        Example:
             .. code-block:: python
 
-                my_col.clear("soap", "aid1", rcut=5.0, nmax=9, lmax=9)
-                my_col.clear("soap", rcut=5.0, nmax=9, lmax=9)
-                my_col.clear("soap")
-                my_col.clear()
+                my_col.clear("soap", "aid1", rcut=5.0, nmax=9, lmax=9) #clears single SOAP result with given parameters
+                my_col.clear("soap", rcut=5.0, nmax=9, lmax=9) #clears SOAP results for whole collection with given parameters
+                my_col.clear("soap") #clears all soap results from store
+                my_col.clear() #clears all results from store
 
         '''
         has_kwargs = len(kwargs) != 0
@@ -187,6 +193,7 @@ class AtomsCollection(dict):
 
     def get(self, descriptor, idd=None, **kwargs):
         '''Shell function to call Store's get method
+
         Parameters:
             descriptor (str): descriptor to be applied to AtomsCollection.
             idd (str): Idd of Atoms object who's results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
