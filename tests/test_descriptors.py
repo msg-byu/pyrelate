@@ -4,24 +4,30 @@ import os
 import numpy as np
 
 
+'''Functions to help in writing and designing clear, functional unit tests'''
+
 def _delete_store(my_col):
-    '''function to help in testing'''
+    '''Function to delete store generated in testing'''
     shutil.rmtree(my_col.store.root)
 
 
-def _initialize_collection_and_read(aids, store_loc="tests/results"):
-    '''initialize collection and read specified atoms files'''
+def _initialize_collection_and_read(aids, store_loc="tests/store"):
+    '''Initialize collection and read specified atoms files
+
+    Parameters:
+        aids (list of str): list of aid's for all ASE Atoms objects to be read into collection from  test_data
+    '''
     my_col = AtomsCollection("Test", store_loc)
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
-        my_col.read(data_path.format(aid),
-                    28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+        my_col.read(data_path.format(aid),28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
     return my_col
 
+'''Unit Tests'''
 
 class TestDescriptors():
     def test_soap(self):
-        '''SOAP'''
+        '''Test SOAP descriptor'''
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 5.0, 'nmax': 9, 'lmax': 9}
         my_col.describe('soap', **soapargs)
@@ -31,7 +37,7 @@ class TestDescriptors():
         _delete_store(my_col)
 
     def test_asr(self):
-        '''ASR'''
+        '''Test ASR descriptor'''
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
@@ -43,7 +49,7 @@ class TestDescriptors():
         _delete_store(my_col)
 
     def test_asr_normalize(self):
-        '''ASR'''
+        '''Test ASR descriptor, norm_asr=True'''
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         asrargs = {'res_needed': 'fake_soap', 'norm_asr': True}
@@ -58,9 +64,8 @@ class TestDescriptors():
         _delete_store(my_col)
 
     def test_ler_runs(self):
-        '''LER'''
-        my_col = _initialize_collection_and_read(
-            ['455'], store_loc="tests/test_paths/")
+        '''Test LER function, previously computed SOAP'''
+        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/") #has previously computed SOAP results stored here
         lerargs = {
             'collection': my_col,
             'eps': 0.025,
@@ -73,23 +78,24 @@ class TestDescriptors():
         my_col.clear('ler')
 
     def test_ler_runs_pass_in_soapfcn(self):
-        # LER
+        '''Test LER runs, check that using user specified SOAP function works'''
         my_col = _initialize_collection_and_read(
             ['455'], store_loc="tests/test_paths/")
-        from pyrelate.descriptors import soap as soapfcn
+        from pyrelate.descriptors import soap as soap_fcn
         lerargs = {
             'collection': my_col,
             'eps': 0.025,
             'rcut': 5.0,
             'nmax': 9,
             'lmax': 9,
-            'soapfcn': soapfcn
+            'soap_fcn': soap_fcn
         }
         my_col.describe('ler', **lerargs)
         assert my_col.store.check_exists('ler', '455', **lerargs)
         my_col.clear('ler')
 
     def test_ler_functionality(self):
+        '''Test LER, see if gives expected results'''
         my_col = _initialize_collection_and_read(['454', '455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         fake_mat1 = np.array([[1, 2, 1], [4, 4, 4], [5, 4, 5], [1, 0, 0]])
@@ -111,4 +117,3 @@ class TestDescriptors():
         assert np.array_equal(ler1, np.array([1 / 4, 1 / 2, 1 / 4, 0]))
         assert np.array_equal(ler2, np.array([1 / 2, 0, 0, 1 / 2]))
         _delete_store(my_col)
-        # delete store?

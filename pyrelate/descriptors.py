@@ -49,28 +49,27 @@ def asr(atoms, store, res_needed='soap', norm_asr=False, **kwargs):
         return asr_res / magnitude
 
 
-def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
+def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
     '''Local Environment Representation
-    TODO fix for updated describe function
 
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())
         collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
-        eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar
-        res_needed (str): What results to compute the LER with. Defaults to 'soap'.
-        soapfcn (function): optional parameter for a function to compute SOAP for perfect FCC atom, defaults to None and SOAP in descriptors.py will be used.
-        seed(): perfect FCC seed for the element being considered. Defaults to None, so it will be generated on the fly.
-        metric(str): For approximate nearest neighbor calculation. See annoys documentation for more details.
-        n_trees(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
-        search_k(int): For approximate nearest neighbor calculation. See annoys documentation for more details.
-        kwargs (dict): Parameters associated with the description function
+        eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar #FIXME units?
+        res_needed (str): name of description whose results are needed to compute the LER. Defaults to 'soap'.
+        soap_fcn (function): optional parameter for a function to compute SOAP matrix for the element's perfect crystal on the fly. Defaults to None. When None, 'soap' function in descriptors.py will be used.
+        seed(np.ndarray or list): perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.
+        metric(str): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+        n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+        search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+        soapargs (dict): Parameters associated with the SOAP description being used.
 
     `Annoy's documentation <https://github.com/spotify/annoy>`_.
 
     '''
     U = store.get(
-        "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soapfcn=soapfcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash?
+        "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash for seed?
     if U is None:
         from collections import OrderedDict
         U = {
@@ -81,8 +80,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=Non
         # Part 1: Clustering
         import pyrelate.elements as elements
         if seed is None:
-            seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[
-                                 0], soapfcn, **soapargs)
+            seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[0], soap_fcn, **soapargs)
         U['centers'][('0', 0)] = seed
         for aid in collection:
             for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
@@ -95,7 +93,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=Non
                         break
                 else:
                     U['centers'][(aid, lae_num)] = np.copy(lae)
-        # FIXME sort the unique bins
+        # TODO sort the unique bins
 
         # Part 2: Classifying
         from annoy import AnnoyIndex
@@ -110,7 +108,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=Non
                 nni = a.get_nns_by_vector(
                     lae, 1, search_k=search_k, include_distances=False)[0]
                 cluster = list(U['centers'].keys())[nni]
-                # FIXME when we sort just fill the empty lists first
+                # TODO when we sort just fill the empty lists first
                 if cluster not in U['clusters']:
                     U['clusters'][cluster] = []
                 U['clusters'][cluster].append((aid, lae_num))
@@ -118,7 +116,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soapfcn=None, seed=Non
         os.remove('tmp')
 
         store.store(
-            U, "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soapfcn=soapfcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
+            U, "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
 
     # Calculate LER
     aid = atoms.get_array('aid')[0]

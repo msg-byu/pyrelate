@@ -1,12 +1,10 @@
-"""Crystal definitions and SOAP vector calculations for simple
+'''Crystal definitions and SOAP vector calculations for simple
 elements.
-"""
+'''
 import numpy as np
 from pyrelate import descriptors
 from ase import Atoms
-_shells = {}
-"""dict: keys are element names, values are lists of shells (in Angstroms).
-"""
+
 
 elements = {
     "Ni": ("FaceCenteredCubic", 3.52, 28, [0]),
@@ -20,11 +18,11 @@ elements = {
 
 
 def atoms(element):
-    """Returns a :class:`ase.Atoms` object for the given element, using the tabulated lattice parameters.
+    '''Returns an :class:`ase.Atoms` object for the given element, using the tabulated lattice parameters.
 
     Parameters:
         element (str): name of the element.
-    """
+    '''
     lattice = "unknown"
     if element in elements:
         lattice, latpar, Z, basis = elements[element]
@@ -38,19 +36,19 @@ def atoms(element):
             a.set_cell(lat.cell)
             a.set_atomic_numbers([Z for i in a])
             return a
+    #FIXME throw error if structure not included
 
 
-def seed(element, soapfcn, **soapargs):
+def seed(element, soap_fcn, **soapargs):
     """Computes the :math:`P` matrix for the given element.
 
     Parameters:
         element (str): name of the element.
-        nmax (int): bandwidth limits for the SOAP descriptor radial basis functions.
-        lmax (int): bandwidth limits for the SOAP descriptor spherical harmonics.
-        rcut (float): local environment finite cutoff parameter.
+        soap_fcn (function): function to compute SOAP matrix.
+        soapargs (dict): Parameters associated with the SOAP description being used.
     """
-    lattice, latpar, Z, basis = elements[element]
+
     a = atoms(element)
-    if soapfcn is None:
-        soapfcn = descriptors.soap
-    return soapfcn(a, **soapargs)[0]
+    if soap_fcn is None:
+        soap_fcn = descriptors.soap
+    return soap_fcn(a, **soapargs)[0]
