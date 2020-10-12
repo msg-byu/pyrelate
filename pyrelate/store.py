@@ -9,12 +9,12 @@ import shutil
 class Store:
     """Class for efficient storing of description of the AtomsCollection"""
 
-    def __init__(self, location=None):
+    def __init__(self, store_path=None):
         """Default initiation creates a Store entitled 'store' in current directory"""
-        if location is None:
+        if store_path is None:
             self.root = os.path.join(os.getcwd(), "store")
         else:
-            self.root = location
+            self.root = os.path.expanduser(store_path)
         if not os.path.exists(self.root):
             os.mkdir(self.root)
 
@@ -38,8 +38,8 @@ class Store:
         name = sep.join([descriptor, "__", idd])
         for key in sorted(kwargs.keys()):
             import types
-            if isinstance(key, types.FunctionType):
-                kwargs[key] = kwargs[keys].__name__
+            if isinstance(kwargs[key], types.FunctionType):
+                kwargs[key] = kwargs[key].__name__
             name = sep.join([name, "___", key, "_", str(kwargs[key])])
         name += '.pkl'
 
@@ -87,6 +87,9 @@ class Store:
             idd (str): atoms id
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
+
+        if type(idd) != np.str_ and type(idd) != str:
+            raise ValueError("IDD must be a string.")
 
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)

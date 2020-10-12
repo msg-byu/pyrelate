@@ -79,7 +79,8 @@ class AtomsCollection(dict):
         Example:
             .. code-block:: python
 
-                c.read(["/Ni/ni.p454.out", "/Ni/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
+                my_col.read(["/Ni/ni.p454.out", "/Ni/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
+                my_col.read("/Ni/", 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
 
         """
         # TODO add functionality to pass a collection into read
@@ -122,16 +123,29 @@ class AtomsCollection(dict):
 
         Parameters:
             descriptor (str): descriptor to be applied to AtomsCollection.
-            fcn (str): function to apply said description. Defaults to none, and built in functions in descriptors.py are used.
+            fcn (str): function to apply said description. Defaults to none. When none, built in functions in descriptors.py are used.
             override (bool): if True, descriptor will override any matching results in the store. Defaults to False.
             kwargs (dict): Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
         Example:
             .. code-block:: python
+            
+                soap_args = {
+                    "rcut" : 5,
+                    "lmax" : 9,
+                    "nmax" : 9
+                }
+                my_col.describe("soap", **soap_args)
+                my_col.describe("my_soap", fcn=soap, **soap_args)
+                my_col.describe("asr", res_needed="my_soap", **soap_args)
 
-                my_col.describe("soap", rcut=5.0, nmax=9, lmax=9)
-                my_col.describe("my_soap", fcn=soap, rcut=5.0, nmax=9, lmax=9)
-                my_col.describe("asr", res_needed="my_soap", rcut=5.0, nmax=9, lmax=9)
+                ler_args = {
+                    "collection": my_col,
+                    "eps": 0.025,
+                    "res_needed": "soap",
+                    **soap_args
+                }
+                my_col.describe("ler", **ler_args)
 
         """
 
@@ -208,10 +222,11 @@ class AtomsCollection(dict):
         '''
         if idd is None:
             idd = self.aids()
+
         return self.store.get(descriptor, idd, **kwargs)
 
     def aids(self):
-        '''Returns sorted list of atom id's (aids) in collection'''
+        '''Returns sorted list of atom ID's (aids) in collection'''
         a = list(self)
         a.sort()
         return a
