@@ -109,6 +109,9 @@ class AtomsCollection(dict):
                 aid = self._read_aid(root, comp_rxid, prefix)
                 a.new_array("aid", [aid for i in a], dtype="str")
                 self[aid] = a
+
+                #NEW - initialize mask to all ones (keep all)
+                a.new_array("mask", np.array([1 for i in range(len(a))]), dtype="int")
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
                     fpath = os.path.join(root, afile)
@@ -117,6 +120,32 @@ class AtomsCollection(dict):
                 raise ValueError(root)
         except ValueError:
             print("Invalid file path,", root, "was not read.")
+
+    def trim(self, trim, dim, pad=True):
+        if pad is True:
+            pad = trim*2
+        elif pad is False:
+            pad = 0
+
+        if not (isinstance(pad, int) or isinstance(pad, float)):
+            raise TypeError("Pad should be int, float, or boolean type")
+        if not (isinstance(trim, int) or isinstance(trim, float)):
+            raise TypeError("Trim should be int or float type")
+        if dim not in [0,1,2]:
+            raise TypeError("Dimension should equal 0, 1, or 2")
+
+        slice_width = trim + pad
+        for aid in tqdm(self):
+            atoms = self[aid]
+            pos = atoms.get_positions()[:,dim]
+            #TODO verify gbcenter = 0
+            gbcenter = 0
+            #delete atoms outside of trim and pad
+            del atoms[[atom.index for atom in atoms if atom.position[dim] < (gbcenter - slice_width) or atom.position[dim] > (gbcenter + slice_width) ]]
+
+            #update mask - 1 for inside trim, and 0 for pad
+            mask = np.array([atom.position[dim] > (gbcenter - trim) for atom in atoms])*np.array([atom.position[dim] < (gbcenter + trim) for atom in atoms])*1
+            atoms.set_array("mask", mask)
 
     def describe(self, descriptor, fcn=None, override=False, **kwargs):
         """Function to call specified description function and store the result
@@ -129,7 +158,7 @@ class AtomsCollection(dict):
 
         Example:
             .. code-block:: python
-            
+
                 soap_args = {
                     "rcut" : 5,
                     "lmax" : 9,
