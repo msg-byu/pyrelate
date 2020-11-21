@@ -268,7 +268,7 @@ class TestCollection(unittest.TestCase):
         try:
             value = my_col.get('test', a="arg1")
             assert type(value) is dict
-            assert len(value) is 2
+            assert len(value) == 2
         finally:
             _delete_store(my_col)
 
@@ -292,4 +292,4 @@ class TestCollection(unittest.TestCase):
         aid_list = my_col.aids()
         assert type(aid_list) is list
         assert aid_list[0] == "454"
-        assert len(aid_list) is 2
+        assert len(aid_list) == 2

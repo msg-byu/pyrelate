@@ -31,7 +31,7 @@ def asr(atoms, store, res_needed='soap', norm_asr=False, **kwargs):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
     Parameters:
-        atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
+        atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on (automatically passed by describe() function)
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
         res_needed (str): What results to compute the ASR on. Defaults to 'soap'.
         norm_asr (bool): Normalize ASR vector. Default is False, not normalized.
@@ -47,6 +47,24 @@ def asr(atoms, store, res_needed='soap', norm_asr=False, **kwargs):
         if norm_asr is True:
             magnitude = np.linalg.norm(asr_res)
         return asr_res / magnitude
+
+
+def sum(atoms, store, res_needed='soap', **kwargs ):
+    """Sum all rows of a descriptor matrix into a single vector
+
+    Parameters:
+        atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on (automatically passed by describe() function)
+        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with the 'needs_info' parameter in describe())
+        res_needed (str): What results to compute the ASR on. Defaults to 'soap'.
+    """
+    aid = atoms.get_array("aid")[0]
+    matrix = store.get(
+        res_needed, aid, **kwargs)
+    if matrix is None:
+        return None
+    else:
+        sum_res = np.sum(matrix, axis=0)
+        return sum_res
 
 
 def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
@@ -86,7 +104,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=No
             for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
                 if lae is None:
                     raise RuntimeError(
-                        "LER requries SOAP to be generated first")
+                        "LER requires SOAP to be generated first")
                 for unique in U['centers'].values():
                     dist = np.linalg.norm(unique - lae)
                     if dist < eps:
