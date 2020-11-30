@@ -49,7 +49,7 @@ def asr(atoms, store, res_needed='soap', norm_asr=False, **kwargs):
         return asr_res / magnitude
 
 
-def sum(atoms, store, res_needed='soap', **kwargs ):
+def sum(atoms, store, res_needed='soap', **kwargs):
     """Sum all rows of a descriptor matrix into a single vector
 
     Parameters:

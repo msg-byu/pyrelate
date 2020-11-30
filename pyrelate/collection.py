@@ -123,7 +123,7 @@ class AtomsCollection(dict):
 
     def trim(self, trim, dim, pad=True):
         if pad is True:
-            pad = trim*2
+            pad = trim
         elif pad is False:
             pad = 0
 
@@ -131,20 +131,24 @@ class AtomsCollection(dict):
             raise TypeError("Pad should be int, float, or boolean type")
         if not (isinstance(trim, int) or isinstance(trim, float)):
             raise TypeError("Trim should be int or float type")
-        if dim not in [0,1,2]:
-            raise TypeError("Dimension should equal 0, 1, or 2")
+        if not isinstance(dim, list):
+            dim = [dim for i in range(len(self))]
 
         slice_width = trim + pad
-        for aid in tqdm(self):
+        for idx, aid in enumerate(tqdm(self)):
             atoms = self[aid]
-            pos = atoms.get_positions()[:,dim]
+            d = dim[idx]
+            if d not in [0,1,2]:
+                raise TypeError("Dimension should equal 0, 1, or 2")
+
+            pos = atoms.get_positions()[:,d]
             #TODO verify gbcenter = 0
             gbcenter = 0
             #delete atoms outside of trim and pad
-            del atoms[[atom.index for atom in atoms if atom.position[dim] < (gbcenter - slice_width) or atom.position[dim] > (gbcenter + slice_width) ]]
+            del atoms[[atom.index for atom in atoms if atom.position[d] < (gbcenter - slice_width) or atom.position[d] > (gbcenter + slice_width) ]]
 
-            #update mask - 1 for inside trim, and 0 for pad
-            mask = np.array([atom.position[dim] > (gbcenter - trim) for atom in atoms])*np.array([atom.position[dim] < (gbcenter + trim) for atom in atoms])*1
+            #update mask -- 1 for inside trim, and 0 for pad
+            mask = np.array([atom.position[d] > (gbcenter - trim) for atom in atoms])*np.array([atom.position[d] < (gbcenter + trim) for atom in atoms])*1
             atoms.set_array("mask", mask)
 
     def describe(self, descriptor, fcn=None, override=False, **kwargs):
@@ -190,6 +194,14 @@ class AtomsCollection(dict):
                     result = fcn(self[aid], self.store, **kwargs)
                 else:
                     result = fcn(self[aid], **kwargs)
+
+                #if length of result > length of just atoms in trim, trim
+                #print(f"Length of result before: {len(result)}")
+                if len(result) > np.count_nonzero(self[aid].get_array("mask")):
+                    #print("Trimming...")
+                    to_delete = np.logical_not(self[aid].get_array("mask"))
+                    result = np.delete(result, to_delete, axis=0)
+                #print(f"Length of result after: {len(result)}")
 
                 if result is not None:
                     self.store.store(
