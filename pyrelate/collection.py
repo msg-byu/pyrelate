@@ -134,6 +134,8 @@ class AtomsCollection(dict):
             dim (int): what dimension the grain boundary is in, 0 for x, 1 for y, 2 for z
             pad (boolean or float or int): 'True' (default) gives a padding value equal to that of the trim, 'False' gives no padding, or specify the amount of padding wanted (in Angstroms).
 
+        .. WARNING:: The user must keep track of what trim and pad parameters were used, as the results stored will not indicate if they have been trimmed or not
+
         Example:
             .. code-block:: python
 
