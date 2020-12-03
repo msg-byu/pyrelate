@@ -20,7 +20,8 @@ def _initialize_collection_and_read(aids, store_loc="tests/store"):
     my_col = AtomsCollection("Test", store_loc)
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
-        my_col.read(data_path.format(aid),28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+        my_col.read(data_path.format(aid), 28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+    my_col.trim(trim=2, dim=0, pad=1)
     return my_col
 
 '''Unit Tests'''
@@ -63,8 +64,31 @@ class TestDescriptors():
         assert np.all(np.isclose(res, exp_res))
         _delete_store(my_col)
 
+    def test_sum(self):
+        '''Test SUM descriptor'''
+        my_col = _initialize_collection_and_read(['455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
+        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
+        my_col.describe('sum', res_needed='fake_soap', **soapargs)
+        exp_res = np.array([3, 6, 12, 12])
+        res = my_col.get('sum', '455', res_needed='fake_soap', **soapargs)
+        assert np.array_equal(res, exp_res)
+        _delete_store(my_col)
+
+    def test_sum_fails(self):
+        '''Test SUM descriptor'''
+        my_col = _initialize_collection_and_read(['455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        my_col.describe('sum', res_needed='fake_soap', **soapargs)
+        res = my_col.get('sum', '455', res_needed='fake_soap', **soapargs)
+        assert res is None
+        _delete_store(my_col)
+
+
     def test_ler_runs(self):
         '''Test LER function, previously computed SOAP'''
+        #TODO store trimmed SOAP results to calculate LER on
         my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/") #has previously computed SOAP results stored here
         lerargs = {
             'collection': my_col,

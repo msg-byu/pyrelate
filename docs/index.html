@@ -97,7 +97,8 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.clear">
 <code class="sig-name descname">clear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.clear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to delete specified results from Store. You can:</p>
+<dd><p>Function to delete specified results from Store.</p>
+<p>Functionality includes:</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>remove a result for a specific Atoms object</p></li>
@@ -127,7 +128,8 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.describe">
 <code class="sig-name descname">describe</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">override</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.describe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to call specified description function and store the result</p>
+<dd><p>Function to calculate and store atomic description.</p>
+<p>User can specify a descriptor function to be used, or use those in descriptors.py. When there is a padding associated with the Atoms object, the padding atoms are deleted from the final description before being stored.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -162,7 +164,7 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.get">
 <code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">descriptor</span></em>, <em class="sig-param"><span class="n">idd</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.get" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shell function to call Store’s get method</p>
+<dd><p>Shell function to call Store’s get method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -182,7 +184,8 @@
 <dl class="py method">
 <dt id="pyrelate.collection.AtomsCollection.read">
 <code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">Z</span></em>, <em class="sig-param"><span class="n">f_format</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">rxid</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to read atoms data into ASE Atoms objects and add to AtomsCollection</p>
+<dd><p>Function to read atoms data into ASE Atoms objects and add to AtomsCollection.</p>
+<p>Utilizes functionality in ASE to read in atomic data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -201,6 +204,31 @@
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt id="pyrelate.collection.AtomsCollection.trim">
+<code class="sig-name descname">trim</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trim</span></em>, <em class="sig-param"><span class="n">dim</span></em>, <em class="sig-param"><span class="n">pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.collection.AtomsCollection.trim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trims off excess atoms and indicates padding (specified in a mask).</p>
+<p>Padding may want to be included so that atoms have a full atomic environments at the edge, some descriptors that perform better with full atomic environments. The “mask” array is attached to the Atoms object, with 1 indicating atoms to be kept in the final description, and 0 to indicate padding atoms. You may get the mask by calling ‘my_col.get_array(“mask”)’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trim</strong> (<em>float</em><em> or </em><em>int</em>) – value (in Angstroms) of the furthest atoms that you want included in the calculated results</p></li>
+<li><p><strong>dim</strong> (<em>int</em>) – what dimension the grain boundary is in, 0 for x, 1 for y, 2 for z</p></li>
+<li><p><strong>pad</strong> (<em>boolean</em><em> or </em><em>float</em><em> or </em><em>int</em>) – ‘True’ (default) gives a padding value equal to that of the trim, ‘False’ gives no padding, or specify the amount of padding wanted (in Angstroms).</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The user must keep track of what trim and pad parameters were used, as the results stored will not indicate if they have been trimmed or not</p>
+</div>
+<p class="rubric">Example</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_col</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">trim</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">my_col</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 <span class="target" id="module-pyrelate.descriptors"></span><dl class="py function">
@@ -210,7 +238,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
+<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on (automatically passed by describe() function)</p></li>
 <li><p><strong>store</strong> (<a class="reference internal" href="#pyrelate.store.Store" title="pyrelate.store.Store"><em>pyrelate.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
 <li><p><strong>res_needed</strong> (<em>str</em>) – What results to compute the ASR on. Defaults to ‘soap’.</p></li>
 <li><p><strong>norm_asr</strong> (<em>bool</em>) – Normalize ASR vector. Default is False, not normalized.</p></li>
@@ -259,6 +287,21 @@
 </dd>
 </dl>
 <p>To see <a class="reference external" href="https://pypi.org/project/pycsoap/">pycsoap’s documentation</a>.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="pyrelate.descriptors.sum">
+<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">sum</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">res_needed</span><span class="o">=</span><span class="default_value">'soap'</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sum all rows of a descriptor matrix into a single vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on (automatically passed by describe() function)</p></li>
+<li><p><strong>store</strong> (<a class="reference internal" href="#pyrelate.store.Store" title="pyrelate.store.Store"><em>pyrelate.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with the ‘needs_info’ parameter in describe())</p></li>
+<li><p><strong>res_needed</strong> (<em>str</em>) – What results to compute the ASR on. Defaults to ‘soap’.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <span class="target" id="module-pyrelate.store"></span><p>Functions and Store class for storing atomic descriptions</p>

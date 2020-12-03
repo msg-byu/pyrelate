@@ -46,6 +46,15 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
             assert my_col.get(d, aid, **kwargs) != None
     return my_col
 
+def _swap_x_y(positions):
+    """Function to swap x and y coordinates of position"""
+    transposed = positions.T.copy()
+    temp = transposed[0].copy()
+    transposed[0] = transposed[1].copy()
+    transposed[1] = temp
+
+    swapped_positions = transposed.T
+    return swapped_positions
 
 '''Toy descriptor functions to help in funtionality testing'''
 
@@ -185,6 +194,132 @@ class TestCollection(unittest.TestCase):
         pass  # TODO add unit test for automatic filetype reading through ASE
         # test with xyz file
 
+    def test_trim_correct_trim(self):
+        '''Test trim function, check that a) some atoms are trimmed, and b) no outside values kept in the Atoms object'''
+        aid = '454'
+        xdim = 0
+        trim_val = 3
+        pad_val = 3
+
+        my_col = _initialize_collection_and_read([aid])
+        pre_trim_size = len(my_col[aid])
+        my_col.trim(trim=trim_val, dim=xdim, pad=pad_val)
+        post_trim_size = len(my_col[aid])
+        assert pre_trim_size > post_trim_size, "No atoms were trimmed"
+
+        positions = my_col[aid].get_positions()[:, xdim]
+        mask = my_col[aid].get_array("mask")
+        for idx, atom in enumerate(positions):
+            if(positions[idx] > (trim_val + pad_val) or positions[idx] < (-1*(trim_val + pad_val))):
+                assert False, "Atoms object not trimmed correctly"
+        _delete_store(my_col)
+
+    def test_trim_correct_pad(self):
+        """Test that any atoms with a '0' value in the mask are supposed to be in the pad"""
+        aid = '454'
+        xdim = 0
+        trim_val = 3
+        pad_val = 3
+
+        my_col = _initialize_collection_and_read([aid])
+        my_col.trim(trim=trim_val, dim=xdim, pad=pad_val)
+
+        positions = my_col[aid].get_positions()[:, xdim]
+        mask = my_col[aid].get_array("mask")
+        for idx, atom in enumerate(positions):
+            if(mask[idx] == 0):
+                if(positions[idx] < trim_val and positions[idx] > (trim_val*-1)):
+                    assert False, "Mask was applied to atoms supposed to be included in final values"
+        _delete_store(my_col)
+
+    def test_trim_pad_True(self):
+        '''Test that when pad=True, default is the expected value (equal to trim)'''
+        aid = '454'
+        xdim = 0
+        trim_val = 3
+        expected_pad_val = 3
+
+        my_col = _initialize_collection_and_read([aid])
+        pre_trim_size = len(my_col[aid])
+        my_col.trim(trim=trim_val, dim=xdim, pad=True)
+
+        positions = my_col[aid].get_positions()[:, xdim]
+        mask = my_col[aid].get_array("mask")
+        for idx, atom in enumerate(positions):
+            if(positions[idx] > (trim_val + expected_pad_val) or positions[idx] < (-1*(trim_val + expected_pad_val))):
+                assert False, "Pad not set to same as trim value"
+        _delete_store(my_col)
+
+
+    def test_trim_pad_False(self):
+        '''Test that when pad=False, there is no pad'''
+        aid = '454'
+        xdim = 0
+        trim_val = 3
+
+        my_col = _initialize_collection_and_read([aid])
+        my_col.trim(trim=trim_val, dim=xdim, pad=False)
+
+        mask = my_col[aid].get_array("mask")
+        assert np.count_nonzero(mask) == len(my_col[aid]), "Padding atoms included in mask when not expected"
+        _delete_store(my_col)
+
+    def test_trim_fail_invalid_trim(self):
+        my_col = AtomsCollection("Test", "tests/store")
+        #self.assertRaises(TypeError, AtomsCollection.trim, trim="string", dim=0)
+        try:
+            my_col.trim(trim="string", dim=0)
+        except TypeError as e:
+            assert e.__str__() == "Trim should be int or float type"
+        else:
+            assert False, "Expected type error not thrown"
+        _delete_store(my_col)
+
+    def test_trim_fail_invalid_pad(self):
+        my_col = AtomsCollection("Test", "tests/store")
+        try:
+            my_col.trim(trim=4, dim=0, pad="string")
+        except TypeError as e:
+            assert e.__str__() == "Pad should be int, float, or boolean type"
+        else:
+            assert False, "Expected type error not thrown"
+        _delete_store(my_col)
+
+    def test_trim_fail_invalid_dimension(self):
+        aid = '454'
+        my_col = _initialize_collection_and_read([aid])
+        invalid_dim = 3
+        try:
+            my_col.trim(trim=4, dim=invalid_dim)
+        except TypeError as e:
+            assert e.__str__() == "Dimension should equal 0, 1, or 2"
+        else:
+            assert False, "Expected error not thrown"
+        _delete_store(my_col)
+
+
+    def test_trim_specify_diff_dimensions(self):
+        """Test that specifying the dimension correctly trims different dimensions"""
+        aid = '454'
+        xdim = 0
+        ydim = 1
+        trim_val = 3
+
+        my_col_A = _initialize_collection_and_read([aid])
+        my_col_B = _initialize_collection_and_read([aid])
+        new_positions = _swap_x_y(my_col_B[aid].get_positions())
+        my_col_B[aid].set_positions(new_positions)
+
+        my_col_A.trim(trim=trim_val, dim=xdim)
+        my_col_B.trim(trim=trim_val, dim=ydim)
+
+        mask_A = my_col_A[aid].get_array("mask")
+        mask_B = my_col_B[aid].get_array("mask")
+        assert np.array_equal(mask_A, mask_B), "Masks not equal, so atoms were trimmed differently for different dimensions"
+        _delete_store(my_col_A)
+        #deletes store b coincidentally
+
+
     def test_describe_own_function(self):
         '''Test using descriptor function not built into descriptors.py'''
         my_col = _initialize_collection_and_read(['455'])
@@ -216,6 +351,18 @@ class TestCollection(unittest.TestCase):
         finally:
             _delete_store(my_col)
 
+    def test_describe_trim_post_descriptor(self):
+        aid = '455'
+        my_col = _initialize_collection_and_read([aid])
+        my_col.trim(trim=2, dim=0, pad=1)
+        num_atoms_with_mask = len(my_col[aid])
+        soapargs = {'rcut': 5.0, 'nmax': 3, 'lmax': 3}
+        my_col.describe('soap', **soapargs)
+        res = my_col.get('soap', aid, **soapargs)
+        assert res is not None
+        assert num_atoms_with_mask > len(res), f"Result not correctly trimmed following description"
+        _delete_store(my_col)
+
     def test_clear_single_result(self):
         '''Test clear, clear single result with given descriptor, parameters, and aid'''
         my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
@@ -224,6 +371,8 @@ class TestCollection(unittest.TestCase):
         assert my_col.store.check_exists('test', '455', arg1=1) == True
         assert os.path.exists(os.path.join(my_col.store.root, 'test', '454')) == False
         assert os.path.exists(my_col.store.root) == True
+        _delete_store(my_col)
+
 
     def test_clear_specific_results_for_collection(self):
         '''Test clear, no aid given, clears results of given parameters for all aids in collection'''
@@ -234,6 +383,8 @@ class TestCollection(unittest.TestCase):
         assert os.path.exists(os.path.join( my_col.store.root, 'test', '454')) == False
         assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
         assert os.path.exists(my_col.store.root) == True
+        _delete_store(my_col)
+
 
     def test_clear_results_for_descriptor(self):
         '''Test clear, clear all results for given descriptor'''
@@ -242,6 +393,8 @@ class TestCollection(unittest.TestCase):
         assert my_col.store.check_exists('test', '454', arg1=1) == False
         assert my_col.store.check_exists('test2', '454', arg1=1) == True
         assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        _delete_store(my_col)
+
 
     def test_clear_all(self):
         '''Test clear, clear all'''
@@ -251,6 +404,8 @@ class TestCollection(unittest.TestCase):
         assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
         assert os.path.exists(os.path.join(my_col.store.root, 'test2')) == False
         assert os.path.exists(my_col.store.root) == True
+        _delete_store(my_col)
+
 
     def test_get(self):
         '''Test AtomsCollection "get" function with aid provided'''
@@ -268,7 +423,7 @@ class TestCollection(unittest.TestCase):
         try:
             value = my_col.get('test', a="arg1")
             assert type(value) is dict
-            assert len(value) is 2
+            assert len(value) == 2
         finally:
             _delete_store(my_col)
 
@@ -292,4 +447,5 @@ class TestCollection(unittest.TestCase):
         aid_list = my_col.aids()
         assert type(aid_list) is list
         assert aid_list[0] == "454"
-        assert len(aid_list) is 2
+        assert len(aid_list) == 2
+        _delete_store(my_col)
