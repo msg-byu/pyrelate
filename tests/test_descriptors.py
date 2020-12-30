@@ -21,6 +21,7 @@ def _initialize_collection_and_read(aids, store_loc="tests/store"):
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
         my_col.read(data_path.format(aid), 28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+    my_col.trim(trim=2, dim=0, pad=1)
     return my_col
 
 '''Unit Tests'''
@@ -87,6 +88,7 @@ class TestDescriptors():
 
     def test_ler_runs(self):
         '''Test LER function, previously computed SOAP'''
+        #TODO store trimmed SOAP results to calculate LER on
         my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/") #has previously computed SOAP results stored here
         lerargs = {
             'collection': my_col,
