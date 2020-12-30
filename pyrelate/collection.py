@@ -218,8 +218,8 @@ class AtomsCollection(dict):
                 else:
                     result = fcn(self[aid], **kwargs)
 
-                if (result is not None) and (not self._descriptor_needs_store(fcn)):
-                    if len(result) > np.count_nonzero(self[aid].get_array( "mask")):
+                if result is not None:
+                    if (not self._descriptor_needs_store(fcn)) and (len(result) > np.count_nonzero(self[aid].get_array( "mask"))):
                         to_delete = np.logical_not(self[aid].get_array("mask"))
                         result = np.delete(result, to_delete, axis=0)
 
