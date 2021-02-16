@@ -67,27 +67,42 @@ def sum(atoms, store, res_needed='soap', **kwargs):
         return sum_res
 
 
-def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
-    '''Local Environment Representation
+def _gaussian_dissimilarity(lae1, lae2, gamma):
+    """Gaussian dissimilarity metric that varies between 0 and 1.
 
+    This metric is given by :math: `1 - \exp{-\gamma*||lae_1 - lae_2||^2}`. A dissimilarity value
+    closer to 0 means the LAEs are more similar, while closer to 1 means more dissimilar.
+
+    Parameters:
+        lae1 (np.array): first lae to compare
+        lae2 (np.array): second lae to compare
+        gamma (float): gamma value
+    """
+    diff = lae1 - lae2
+    gker = 1 - np.exp((-gamma*(np.linalg.norm(diff)**2)))
+    return gker
+
+def ler(atoms, store, collection, eps, res_needed='soap', dissimilarity=_gaussian_dissimilarity, dissim_args={}, soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
+    '''Local Environment Representation
     Parameters:
         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())
         collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
-        eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar #FIXME units?
+        eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar. Descriptor and dissimilarity metric specific.
         res_needed (str): name of description whose results are needed to compute the LER. Defaults to 'soap'.
+        dissimilarity (function): dissimilarity metric function that has the first 2 parameters as the 2 LAE's to be compared.
+        dissim_args (dict): dictionary with any additional hyperparameter arguments for the given dissimilarity metric.
         soap_fcn (function): optional parameter for a function to compute SOAP matrix for the element's perfect crystal on the fly. Defaults to None. When None, 'soap' function in descriptors.py will be used.
         seed(np.ndarray or list): perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.
         metric(str): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
         n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
         search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
         soapargs (dict): Parameters associated with the SOAP description being used.
-
     `Annoy's documentation <https://github.com/spotify/annoy>`_.
-
     '''
     U = store.get(
-        "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash for seed?
+        "temp", 'U_ler', collection=collection, eps=eps, dissim_args=dissim_args, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash for seed?
+
     if U is None:
         from collections import OrderedDict
         U = {
@@ -100,13 +115,14 @@ def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=No
         if seed is None:
             seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[0], soap_fcn, **soapargs)
         U['centers'][('0', 0)] = seed
+        #print("Part 1: Clustering (for each LAE in each GB)")
         for aid in collection:
             for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
                 if lae is None:
                     raise RuntimeError(
                         "LER requires SOAP to be generated first")
                 for unique in U['centers'].values():
-                    dist = np.linalg.norm(unique - lae)
+                    dist = dissimilarity(unique, lae, **dissim_args)
                     if dist < eps:
                         break
                 else:
@@ -134,7 +150,7 @@ def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=No
         os.remove('tmp')
 
         store.store(
-            U, "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
+            U, "temp", 'U_ler', collection=collection, eps=eps, dissim_args=dissim_args, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
 
     # Calculate LER
     aid = atoms.get_array('aid')[0]
@@ -144,3 +160,84 @@ def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=No
             np.array([c[0] for c in cluster]) == aid)
     result = result / np.sum(result)
     return result
+
+
+
+
+# def ler(atoms, store, collection, eps, res_needed='soap', soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
+#     '''Local Environment Representation
+#
+#     Parameters:
+#         atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
+#         store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())
+#         collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
+#         eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar #FIXME units?
+#         res_needed (str): name of description whose results are needed to compute the LER. Defaults to 'soap'.
+#         soap_fcn (function): optional parameter for a function to compute SOAP matrix for the element's perfect crystal on the fly. Defaults to None. When None, 'soap' function in descriptors.py will be used.
+#         seed(np.ndarray or list): perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.
+#         metric(str): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+#         n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+#         search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+#         soapargs (dict): Parameters associated with the SOAP description being used.
+#
+#     `Annoy's documentation <https://github.com/spotify/annoy>`_.
+#
+#     '''
+#     U = store.get(
+#         "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash for seed?
+#     if U is None:
+#         from collections import OrderedDict
+#         U = {
+#             'centers': OrderedDict(),
+#             'clusters': {}
+#         }
+#
+#         # Part 1: Clustering
+#         import pyrelate.elements as elements
+#         if seed is None:
+#             seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[0], soap_fcn, **soapargs)
+#         U['centers'][('0', 0)] = seed
+#         for aid in collection:
+#             for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
+#                 if lae is None:
+#                     raise RuntimeError(
+#                         "LER requires SOAP to be generated first")
+#                 for unique in U['centers'].values():
+#                     dist = np.linalg.norm(unique - lae)
+#                     if dist < eps:
+#                         break
+#                 else:
+#                     U['centers'][(aid, lae_num)] = np.copy(lae)
+#         # TODO sort the unique bins
+#
+#         # Part 2: Classifying
+#         from annoy import AnnoyIndex
+#         dim = len(seed)
+#         a = AnnoyIndex(dim, metric)
+#         for i, unique in enumerate(U['centers'].values()):
+#             a.add_item(i, unique)
+#         a.build(n_trees)
+#         a.save('tmp')  # TODO find better way to save temporary file
+#         for aid in collection:
+#             for lae_num, lae in enumerate(store.get(res_needed, aid, **soapargs)):
+#                 nni = a.get_nns_by_vector(
+#                     lae, 1, search_k=search_k, include_distances=False)[0]
+#                 cluster = list(U['centers'].keys())[nni]
+#                 # TODO when we sort just fill the empty lists first
+#                 if cluster not in U['clusters']:
+#                     U['clusters'][cluster] = []
+#                 U['clusters'][cluster].append((aid, lae_num))
+#         import os
+#         os.remove('tmp')
+#
+#         store.store(
+#             U, "temp", 'U_ler', collection=collection, eps=eps, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)
+#
+#     # Calculate LER
+#     aid = atoms.get_array('aid')[0]
+#     result = np.zeros(len(U['clusters']))
+#     for uid, (center, cluster) in enumerate(U['clusters'].items()):
+#         result[uid] = np.count_nonzero(
+#             np.array([c[0] for c in cluster]) == aid)
+#     result = result / np.sum(result)
+#     return result
