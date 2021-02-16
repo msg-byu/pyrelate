@@ -92,7 +92,8 @@ class TestDescriptors():
         my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/") #has previously computed SOAP results stored here
         lerargs = {
             'collection': my_col,
-            'eps': 0.025,
+            'eps': 0.25,
+            'dissim_args':{"gamma":4000},
             'rcut': 5.0,
             'nmax': 9,
             'lmax': 9
@@ -108,7 +109,8 @@ class TestDescriptors():
         from pyrelate.descriptors import soap as soap_fcn
         lerargs = {
             'collection': my_col,
-            'eps': 0.025,
+            'eps': 0.25,
+            'dissim_args':{"gamma":4000},
             'rcut': 5.0,
             'nmax': 9,
             'lmax': 9,
@@ -122,14 +124,15 @@ class TestDescriptors():
         '''Test LER, see if gives expected results'''
         my_col = _initialize_collection_and_read(['454', '455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
-        fake_mat1 = np.array([[1, 2, 1], [4, 4, 4], [5, 4, 5], [1, 0, 0]])
-        fake_mat2 = np.array([[1, 1, 1], [10, 10, 9], [10, 9, 10], [1, 1, 2]])
+        fake_mat1 = np.array([[-14, -13, -11], [4, 4, 4], [5, 4, 5], [1, 0, 1]])
+        fake_mat2 = np.array([[1, 1, 1], [10, 10, 9], [10, 9, 10], [-14,-12,-12]])
         my_col.store.store(fake_mat1, "fake_soap", '454', **soapargs)
         my_col.store.store(fake_mat2, "fake_soap", '455', **soapargs)
         seed = [0, 0, 0]
         lerargs = {
             'collection': my_col,
-            'eps': 2.0,
+            'eps': 0.3,
+            'dissim_args':{"gamma":0.1},
             'seed': seed,
             'res_needed': 'fake_soap'
         }
@@ -138,6 +141,6 @@ class TestDescriptors():
         ler2 = my_col.get("ler", '455', **lerargs, **soapargs)
         assert len(ler1) == 4  # 4 clusters
         # when sorting is implemented into LER these will be in a different order
-        assert np.array_equal(ler1, np.array([1 / 4, 1 / 2, 1 / 4, 0]))
-        assert np.array_equal(ler2, np.array([1 / 2, 0, 0, 1 / 2]))
+        assert np.array_equal(ler1, np.array([1/4, 1/2, 1/4, 0]))
+        assert np.array_equal(ler2, np.array([1/4, 0, 1/4, 1/2]))
         _delete_store(my_col)
