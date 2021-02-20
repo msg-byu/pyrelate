@@ -197,8 +197,10 @@ class AtomsCollection(dict):
 
                 ler_args = {
                     "collection": my_col,
-                    "eps": 0.025,
-                    "res_needed": "soap",
+                    "res_needed": "my_soap",
+                    "soap_fcn": soap,
+                    "eps": 0.1,
+                    "dissim_args":{"gamma":4000},
                     **soap_args
                 }
                 my_col.describe("ler", **ler_args)

@@ -152,8 +152,10 @@
 
 <span class="n">ler_args</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">&quot;collection&quot;</span><span class="p">:</span> <span class="n">my_col</span><span class="p">,</span>
-    <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">0.025</span><span class="p">,</span>
-    <span class="s2">&quot;res_needed&quot;</span><span class="p">:</span> <span class="s2">&quot;soap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;res_needed&quot;</span><span class="p">:</span> <span class="s2">&quot;my_soap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;soap_fcn&quot;</span><span class="p">:</span> <span class="n">soap</span><span class="p">,</span>
+    <span class="s2">&quot;eps&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="s2">&quot;dissim_args&quot;</span><span class="p">:{</span><span class="s2">&quot;gamma&quot;</span><span class="p">:</span><span class="mi">4000</span><span class="p">},</span>
     <span class="o">**</span><span class="n">soap_args</span>
 <span class="p">}</span>
 <span class="n">my_col</span><span class="o">.</span><span class="n">describe</span><span class="p">(</span><span class="s2">&quot;ler&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">ler_args</span><span class="p">)</span>
@@ -248,8 +250,24 @@
 </dd></dl>
 
 <dl class="py function">
+<dt id="pyrelate.descriptors.gaussian_dissimilarity">
+<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">gaussian_dissimilarity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lae1</span></em>, <em class="sig-param"><span class="n">lae2</span></em>, <em class="sig-param"><span class="n">gamma</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.gaussian_dissimilarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gaussian (RBF) dissimilarity metric (used with LER) that varies between 0 and 1.</p>
+<p>This metric is given by <span class="math notranslate nohighlight">\(1 - \exp{(-\gamma*||x - x'||^2)}\)</span>. A dissimilarity value closer to 0 means the LAEs are more similar, while closer to 1 means more dissimilar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lae1</strong> (<em>np.array</em>) – first lae to compare</p></li>
+<li><p><strong>lae2</strong> (<em>np.array</em>) – second lae to compare</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – gamma value</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="pyrelate.descriptors.ler">
-<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">ler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">atoms</span></em>, <em class="sig-param"><span class="n">store</span></em>, <em class="sig-param"><span class="n">collection</span></em>, <em class="sig-param"><span class="n">eps</span></em>, <em class="sig-param"><span class="n">res_needed</span><span class="o">=</span><span class="default_value">'soap'</span></em>, <em class="sig-param"><span class="n">soap_fcn</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'euclidean'</span></em>, <em class="sig-param"><span class="n">n_trees</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">search_k</span><span class="o">=</span><span class="default_value">- 1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">soapargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.ler" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">pyrelate.descriptors.</code><code class="sig-name descname">ler</code><span class="sig-paren">(</span><em class="sig-param">atoms</em>, <em class="sig-param">store</em>, <em class="sig-param">collection</em>, <em class="sig-param">eps</em>, <em class="sig-param">res_needed='soap'</em>, <em class="sig-param">dissimilarity=&lt;function gaussian_dissimilarity&gt;</em>, <em class="sig-param">dissim_args={}</em>, <em class="sig-param">soap_fcn=None</em>, <em class="sig-param">seed=None</em>, <em class="sig-param">metric='euclidean'</em>, <em class="sig-param">n_trees=10</em>, <em class="sig-param">search_k=-1</em>, <em class="sig-param">**soapargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pyrelate.descriptors.ler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Local Environment Representation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -257,8 +275,10 @@
 <li><p><strong>atoms</strong> (<em>'ase.atoms.Atoms'</em>) – ASE atoms object to perform description on</p></li>
 <li><p><strong>store</strong> (<a class="reference internal" href="#pyrelate.store.Store" title="pyrelate.store.Store"><em>pyrelate.store.Store</em></a>) – store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())</p></li>
 <li><p><strong>collection</strong> (<a class="reference internal" href="#pyrelate.collection.AtomsCollection" title="pyrelate.collection.AtomsCollection"><em>pyrelate.collection.AtomsCollection</em></a>) – LER is collection specific, needed for computation</p></li>
-<li><p><strong>eps</strong> (<em>float</em>) – epsilon value indicating that any LAE’s outside this value are considered dissimilar #FIXME units?</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – epsilon value indicating that any LAE’s outside this value are considered dissimilar. Descriptor and dissimilarity metric specific.</p></li>
 <li><p><strong>res_needed</strong> (<em>str</em>) – name of description whose results are needed to compute the LER. Defaults to ‘soap’.</p></li>
+<li><p><strong>dissimilarity</strong> (<em>function</em>) – dissimilarity metric function that has the first 2 parameters as the 2 LAE’s to be compared.</p></li>
+<li><p><strong>dissim_args</strong> (<em>dict</em>) – dictionary with any additional hyperparameter arguments for the given dissimilarity metric.</p></li>
 <li><p><strong>soap_fcn</strong> (<em>function</em>) – optional parameter for a function to compute SOAP matrix for the element’s perfect crystal on the fly. Defaults to None. When None, ‘soap’ function in descriptors.py will be used.</p></li>
 <li><p><strong>seed</strong> (<em>np.ndarray</em><em> or </em><em>list</em>) – perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.</p></li>
 <li><p><strong>metric</strong> (<em>str</em>) – For approximate nearest neighbor calculation. See Annoy’s documentation for more details.</p></li>
