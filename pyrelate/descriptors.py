@@ -67,11 +67,10 @@ def sum(atoms, store, res_needed='soap', **kwargs):
         return sum_res
 
 
-def _gaussian_dissimilarity(lae1, lae2, gamma):
-    """Gaussian dissimilarity metric that varies between 0 and 1.
+def gaussian_dissimilarity(lae1, lae2, gamma):
+    """Gaussian (RBF) dissimilarity metric (used with LER) that varies between 0 and 1.
 
-    This metric is given by :math: `1 - \exp{-\gamma*||lae_1 - lae_2||^2}`. A dissimilarity value
-    closer to 0 means the LAEs are more similar, while closer to 1 means more dissimilar.
+    This metric is given by :math:`1 - \exp{(-\gamma*||x - x'||^2)}`. A dissimilarity value closer to 0 means the LAEs are more similar, while closer to 1 means more dissimilar.
 
     Parameters:
         lae1 (np.array): first lae to compare
@@ -82,24 +81,26 @@ def _gaussian_dissimilarity(lae1, lae2, gamma):
     gker = 1 - np.exp((-gamma*(np.linalg.norm(diff)**2)))
     return gker
 
-def ler(atoms, store, collection, eps, res_needed='soap', dissimilarity=_gaussian_dissimilarity, dissim_args={}, soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
+def ler(atoms, store, collection, eps, res_needed='soap', dissimilarity=gaussian_dissimilarity, dissim_args={}, soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
     '''Local Environment Representation
-    Parameters:
-        atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
-        store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())
-        collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
-        eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar. Descriptor and dissimilarity metric specific.
-        res_needed (str): name of description whose results are needed to compute the LER. Defaults to 'soap'.
-        dissimilarity (function): dissimilarity metric function that has the first 2 parameters as the 2 LAE's to be compared.
-        dissim_args (dict): dictionary with any additional hyperparameter arguments for the given dissimilarity metric.
-        soap_fcn (function): optional parameter for a function to compute SOAP matrix for the element's perfect crystal on the fly. Defaults to None. When None, 'soap' function in descriptors.py will be used.
-        seed(np.ndarray or list): perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.
-        metric(str): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
-        n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
-        search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
-        soapargs (dict): Parameters associated with the SOAP description being used.
-    `Annoy's documentation <https://github.com/spotify/annoy>`_.
+
+        Parameters:
+            atoms ('ase.atoms.Atoms'): ASE atoms object to perform description on
+            store (pyrelate.store.Store) : store to access previously computed SOAP matrix (automatically passed in with AtomsCollection.describe())
+            collection (pyrelate.collection.AtomsCollection): LER is collection specific, needed for computation
+            eps (float): epsilon value indicating that any LAE's outside this value are considered dissimilar. Descriptor and dissimilarity metric specific.
+            res_needed (str): name of description whose results are needed to compute the LER. Defaults to 'soap'.
+            dissimilarity (function): dissimilarity metric function that has the first 2 parameters as the 2 LAE's to be compared.
+            dissim_args (dict): dictionary with any additional hyperparameter arguments for the given dissimilarity metric.
+            soap_fcn (function): optional parameter for a function to compute SOAP matrix for the element's perfect crystal on the fly. Defaults to None. When None, 'soap' function in descriptors.py will be used.
+            seed(np.ndarray or list): perfect seed for the element being considered. Defaults to None. When None, seed will be generated on the fly.
+            metric(str): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+            n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+            search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
+            soapargs (dict): Parameters associated with the SOAP description being used.
+        `Annoy's documentation <https://github.com/spotify/annoy>`_.
     '''
+
     U = store.get(
         "temp", 'U_ler', collection=collection, eps=eps, dissim_args=dissim_args, res_needed=res_needed, soap_fcn=soap_fcn, metric=metric, n_trees=n_trees, search_k=search_k, **soapargs)  # add seed? or hash for seed?
 
