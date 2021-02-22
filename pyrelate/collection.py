@@ -1,4 +1,4 @@
-"""Functions and AtomsCollection class for interacting with collections of ASE Atoms objects"""
+"Functions and AtomsCollection class for interacting with collections of ASE Atoms objects"""
 import numpy as np
 from tqdm import tqdm
 from os import path
@@ -197,8 +197,10 @@ class AtomsCollection(dict):
 
                 ler_args = {
                     "collection": my_col,
-                    "eps": 0.025,
-                    "res_needed": "soap",
+                    "res_needed": "my_soap",
+                    "soap_fcn": soap,
+                    "eps": 0.1,
+                    "dissim_args":{"gamma":4000},
                     **soap_args
                 }
                 my_col.describe("ler", **ler_args)
@@ -219,7 +221,7 @@ class AtomsCollection(dict):
                     result = fcn(self[aid], **kwargs)
 
                 if result is not None:
-                    if len(result) > np.count_nonzero(self[aid].get_array( "mask")):
+                    if (not self._descriptor_needs_store(fcn)) and (len(result) > np.count_nonzero(self[aid].get_array( "mask"))):
                         to_delete = np.logical_not(self[aid].get_array("mask"))
                         result = np.delete(result, to_delete, axis=0)
 
