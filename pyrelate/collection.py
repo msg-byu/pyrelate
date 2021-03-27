@@ -19,15 +19,44 @@ class AtomsCollection(dict):
 
     """
 
-    def __init__(self, name, store_path=None):
+    def __init__(self, name, data=None, store=None):
         """Initializer which calls dict's and Store's initializers."""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
-        self.store = Store(store_path)
+        if type(store) == Store:
+            self.store = store
+        elif type(store) == str:
+            self.store = Store(store)
+
+        if data is not None:
+            self.update(data)
 
     def __str__(self):
         """String representation of the AtomsCollection object (name of collection)."""
         return self.name
+
+    def subset(self, aids, name=None, store=None):
+        """Return an AtomsCollection containing the specified subset of the original collection.
+
+        Parameters:
+            aids (list): List containing the strings of all the aids to include in the new collection.
+            name (string): Name of the new collection, default is the name of the original collection.
+            store (string): String representing the location of the store, default (None) sets the current
+                store as the store for the new collection, which is probably what you want most of the time.
+
+        Returns:
+            pyrelate.AtomsCollection
+        """
+        if name is None:
+            name = self.name
+        if store is None:
+            store = self.store
+        data = {aid: self[aid] for aid in aids}
+        return AtomsCollection(name, data=data, store=store)
+
+    def process(self):
+        #have a "store_as" parameter
+        pass
 
     def _read_aid(self, fpath, comp_rxid, prefix=None):
         """Private function to read the aid for the Atoms object from filename.
