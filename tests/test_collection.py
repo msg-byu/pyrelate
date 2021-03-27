@@ -23,7 +23,7 @@ def _initialize_collection_and_read(aids):
     Parameters:
         aids (list of str): list of aid's for all ASE Atoms objects to be read into collection from  test_data
     '''
-    my_col = AtomsCollection("Test", "tests/store")
+    my_col = AtomsCollection("Test", store="tests/store")
     data_path = 'tests/test_data/ni.p{0:s}.out'
     for aid in aids:
         my_col.read(data_path.format(aid), 28, 'lammps-dump-text',
@@ -71,9 +71,42 @@ def _test_descriptor_with_store(atoms, store, **kwargs):
 
 
 class TestCollection(unittest.TestCase):
+    def test_subset_defaults(self):
+        aids = ['454','455']
+        my_col = _initialize_collection_and_read(aids)
+        data_loc = "tests/test_data/sub1"
+        my_col.read(data_loc, 28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
+        aids.append('456')
+
+        new_col = my_col.subset(aids[:2])
+        assert new_col.aids() == aids[:2]
+        assert new_col.store.root == my_col.store.root
+        assert new_col.name == my_col.name
+        _delete_store(my_col)
+
+    def test_subset_new_name(self):
+        aids = ['454','455']
+        my_col = _initialize_collection_and_read(aids)
+
+        new_col = my_col.subset(aids[:1], name="Test_sub")
+        assert new_col.name == "test_sub"
+        assert my_col.name == "test"
+        assert new_col.aids() == aids[:1]
+        _delete_store(my_col)
+
+    def test_subset_new_store(self):
+        aids = ['454','455']
+        my_col = _initialize_collection_and_read(aids)
+
+        new_col = my_col.subset(aids[:1], store="tests/store_2")
+        assert my_col.store.root != new_col.store.root
+        assert new_col.aids() == aids[:1]
+        _delete_store(my_col)
+        _delete_store(new_col)
+
     def test_read_aid(self):
         '''Test _read_aid function'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         rxid = r'ni.p(?P<gbid>\d+).out'
         c_rxid = re.compile(rxid)
         filename = "./tests/test_data/ni.p454.out"
@@ -83,7 +116,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_aid_with_prefix(self):
         '''Test _read_aid, with prefix'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         rxid = r'ni.p(?P<gbid>\d+).out'
         c_rxid = re.compile(rxid)
         filename = "./tests/test_data/ni.p454.out"
@@ -94,7 +127,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_aid_no_regex(self):
         '''Test _read_aid, no regex'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         filename = "./tests/test_data/ni.p454.out"
         aid = my_col._read_aid(filename, None)
         assert aid == "ni.p454.out"
@@ -102,7 +135,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_aid_no_regex_with_prefix(self):
         '''Test _read_aid, no regex but with prefix'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         filename = "./tests/test_data/ni.p454.out"
         prefix = "Test"
         aid = my_col._read_aid(filename, None, prefix)
@@ -111,7 +144,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_aid_invalid_regex(self):
         '''Test _read_aid, invaid regex prints error and sets aid as filename'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         filename = "./tests/test_data/ni.p454.out"
         prefix = "Test"
         output = io.StringIO()
@@ -125,7 +158,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_list(self):
         '''Test read function, read list of input files'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 2 == len(my_col)
         assert "test_454" == list(my_col)[0]
@@ -133,7 +166,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_list_with_atomic_num_list(self):
         '''Test read, list of input files with atomic number list'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], [28, 28], "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 2 == len(my_col)
         assert "test_454" == list(my_col)[0]
@@ -141,28 +174,28 @@ class TestCollection(unittest.TestCase):
 
     def test_read_single_file(self):
         '''Test read function, read single file'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_directory(self):
         '''Test read, read all input files in directory'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read("./tests/test_data/sub1/", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_empty_dir_with_file(self):
         '''Test read, read empty directory + single file'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read(["./tests/test_data/ni.p455.out", "./tests/test_data/empty"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_empty_list(self):
         '''Test read, empty list'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         my_col.read([], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 0 == len(my_col)
         _delete_store(my_col)
@@ -176,7 +209,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_nonexistent_directory(self):
         '''Test read, try to read nonexistent directory and throw error'''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         output = io.StringIO()
         sys.stdout = output
         my_col.read("definitely_wrong", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
@@ -185,7 +218,7 @@ class TestCollection(unittest.TestCase):
 
     def test_read_ASE_read_error(self):
         '''Test read, ASE read error if filetype not included '''
-        my_col = AtomsCollection("Test", "./tests/store")
+        my_col = AtomsCollection("Test", store="./tests/store")
         # ASE io.read() cannot automatically determine filetype
         self.assertRaises(StopIteration, AtomsCollection.read, my_col, "./tests/test_data/ni.p454.out", 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         _delete_store(my_col)
@@ -276,7 +309,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_trim_fail_invalid_pad(self):
-        my_col = AtomsCollection("Test", "tests/store")
+        my_col = AtomsCollection("Test", store="tests/store")
         try:
             my_col.trim(trim=4, dim=0, pad="string")
         except TypeError as e:

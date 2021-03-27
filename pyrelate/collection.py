@@ -19,7 +19,7 @@ class AtomsCollection(dict):
 
     """
 
-    def __init__(self, name, data=None, store=None):
+    def __init__(self, name, store=None, data=None):
         """Initializer which calls dict's and Store's initializers."""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
@@ -52,7 +52,7 @@ class AtomsCollection(dict):
         if store is None:
             store = self.store
         data = {aid: self[aid] for aid in aids}
-        return AtomsCollection(name, data=data, store=store)
+        return AtomsCollection(name, store=store, data=data)
 
     def process(self):
         #have a "store_as" parameter
