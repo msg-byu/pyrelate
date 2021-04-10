@@ -56,11 +56,13 @@ class Store:
         Returns:
             bool: True if file results already exists, false if they do not
         """
+        #TODO: adjust for new file structure
         fname = self._generate_file_name(descriptor, idd, **kwargs)
         path = os.path.join(self.root, descriptor, idd, fname)
         return os.path.exists(path)
 
     def store(self, result, descriptor, idd, **kwargs):
+        #TODO: change to be 'store_descriptor'
         """
         Function to store information into result store
 
@@ -79,6 +81,15 @@ class Store:
         with open(path, 'wb') as f:
             pickle.dump(result, f)
 
+    def store_collection_description(self):
+        pass
+
+    def store_additional(self, result, store_as, info=None):
+        pass
+
+    def _store_file(self):
+        pass
+
     def _get_file(self, descriptor, idd, **kwargs):
         """Function to retrieve information from a file in the Store
 
@@ -87,7 +98,7 @@ class Store:
             idd (str): atoms id
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
-
+        # TODO: adjust for new file structure
         if type(idd) != np.str_ and type(idd) != str:
             raise ValueError("IDD must be a string.")
 
@@ -114,6 +125,7 @@ class Store:
             idd (str **or** list(str)): atoms id (or list of atom id's)
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         """
+        # TODO: adjust for new file structure
         if type(idd) is list:
             result = {}
             for i in idd:
@@ -158,7 +170,7 @@ class Store:
             os.rmdir(directory)
 
     def clear_descriptor(self, descriptor):
-        '''Function to remove all descriptions of a certiain type
+        '''Function to remove all descriptions of a certain type
 
         Parameters:
             descriptor (str): name of descriptor

@@ -54,10 +54,6 @@ class AtomsCollection(dict):
         data = {aid: self[aid] for aid in aids}
         return AtomsCollection(name, store=store, data=data)
 
-    def process(self):
-        #have a "store_as" parameter
-        pass
-
     def _read_aid(self, fpath, comp_rxid, prefix=None):
         """Private function to read the aid for the Atoms object from filename.
 
@@ -86,15 +82,6 @@ class AtomsCollection(dict):
             aid = prefix.lower() + "_" + aid
 
         return aid
-
-    def _descriptor_needs_store(self, fcn):
-        """Check descriptor function to see if 'store' is a parameter."""
-        from inspect import signature
-        try:
-            signature(fcn).parameters['store']
-            return True
-        except:
-            return False
 
     def read(self, root, Z, f_format=None, rxid=None, prefix=None):
         """Function to read atoms data into ASE Atoms objects and add to AtomsCollection.
@@ -241,22 +228,41 @@ class AtomsCollection(dict):
             fcn = getattr(descriptors, descriptor)
 
         for aid in tqdm(self):
-            exists = self.store.check_exists(
-                descriptor, aid, **kwargs)
+            exists = self.store.check_exists(descriptor, aid, **kwargs)
             if not exists or override:
-                if self._descriptor_needs_store(fcn):
-                    result = fcn(self[aid], self.store, **kwargs)
-                else:
-                    result = fcn(self[aid], **kwargs)
+                result = fcn(self[aid], **kwargs)
 
-                if result is not None:
-                    if (not self._descriptor_needs_store(fcn)) and (len(result) > np.count_nonzero(self[aid].get_array( "mask"))):
-                        to_delete = np.logical_not(self[aid].get_array("mask"))
-                        result = np.delete(result, to_delete, axis=0)
+            if result is not None:
+                if (len(result) > np.count_nonzero(self[aid].get_array( "mask"))):
+                    to_delete = np.logical_not(self[aid].get_array("mask"))
+                    result = np.delete(result, to_delete, axis=0)
 
-                    self.store.store(
-                        result, descriptor, aid, **kwargs)
-        self.clear("temp")
+                self.store.store(
+                    result, descriptor, aid, **kwargs)
+        # self.clear("temp")
+
+    def process(self, method, based_on, fcn=None, override=None, **kwargs):
+        """Calculate and store collection specific results
+
+        Parameters:
+            - method (str): string indicating the name of the descriptor to be applied
+            - based_on (str, dict): tuple holding the information necessary to get previously calculated results for use in processing
+        """
+
+        if fcn is None:
+            from pyrelate import descriptors
+            fcn = getattr(descriptors, method)
+
+        #processing for the entire collection of results
+        #go through GB by GB to get your rows of the vector to add to your feature matrix
+        exists = False
+        #exists = self.store.check_exists_collection(self.name, method, based_on, **kwargs)
+        if not exists or override:
+            result, info = fcn(self, method, based_on, **kwargs)
+        #self.store.store_collection_results(result, info, self.name, method, based_on, **kwargs)
+        return result, info
+
+
 
     def clear(self, descriptor=None, idd=None, **kwargs):
         '''Function to delete specified results from Store.
