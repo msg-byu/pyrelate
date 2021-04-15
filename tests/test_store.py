@@ -67,14 +67,18 @@ class TestStore(unittest.TestCase):
 
     #Functions to test:
     ## check_exists (when done writing)
-    ## _store_file
-    ## store_description
-    ## store_collection_result
     ## store_additional (when written)
-    ## _unpickle
     ## _equal_args
     ## _get_description
     ## _get_collection_result
+
+    #Done
+    ## _generate_default_file_name
+    ## _store_file
+    ## store_description
+    ## store_collection_result
+    ## _unpickle
+
 
     """
     def test_check_exists_true(self):
@@ -112,21 +116,12 @@ class TestStore(unittest.TestCase):
         _delete_store(store)
 
     def test_store_file(self):
-        pass
-
-    # def test_store(self):
-    #     '''Tests storing results as a pickle'''
-    #     store = Store("./tests/results")
-    #     result = "Random test result"
-    #     desc = "test_desc"
-    #     aid = "111"
-    #     kw1 = "option_1"
-    #     kw2 = "option_2"
-    #     store.store(result, desc, aid, a=kw1, b=kw2)
-    #     fname = store._generate_file_name(desc, aid, a=kw1, b=kw2)
-    #     fpath = os.path.join(store.root, desc, aid, fname)
-    #     assert os.path.exists(fpath)
-    #     _delete_store(store)
+        test = "thing"
+        store = Store("./tests/results")
+        path = os.path.join(store.root, "thing.pkl")
+        store._store_file(test, path)
+        assert os.path.exists(path)
+        _delete_store(store)
 
     def test_store_description(self):
         #called in describe()
@@ -137,11 +132,39 @@ class TestStore(unittest.TestCase):
         aid = "111"
         kw1 = "option_1"
         kw2 = "option_2"
-        store.store_description(result, desc, aid, a=kw1, b=kw2)
-        fname = store._generate_file_name(desc, aid, a=kw1, b=kw2)
+        store.store_description(result, aid, desc, a=kw1, b=kw2)
+
+        fname = store._generate_default_file_name(desc)
         fpath = os.path.join(store.root, "Descriptions", aid, desc, fname)
+        info_fpath = os.path.join(store.root, "Descriptions", aid, desc, "info_" + fname)
         assert os.path.exists(fpath)
+        assert os.path.exists(info_fpath)
         _delete_store(store)
+
+    def test_store_description_with_info(self):
+        # called in describe()
+        # result, descriptor, aid, argmuments
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kw1 = "option_1"
+        kw2 = "option_2"
+        info = {"num":47, "important_info":12 }
+        store.store_description(result, aid, desc, info=info, a=kw1, b=kw2)
+
+        fname = store._generate_default_file_name(desc)
+        fpath = os.path.join(store.root, "Descriptions", aid, desc, fname)
+        info_fpath = os.path.join(store.root, "Descriptions", aid, desc, "info_" + fname)
+        assert os.path.exists(fpath)
+        assert os.path.exists(info_fpath)
+        fetched_info = store._unpickle(info_fpath)
+        assert fetched_info['num'] == info['num']
+        assert fetched_info['important_info'] == info['important_info']
+        assert fetched_info['desc_args'] == {"a":kw1,"b":kw2}
+
+        _delete_store(store)
+
 
     def test_store_collection_description(self):
         #called in the process() method
@@ -164,16 +187,63 @@ class TestStore(unittest.TestCase):
         }
 
         #ler_0412211113
-        store.store_collection_description(result, info, method, name, (desc, desc_args), **method_args)
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
         fname = store._generate_default_file_name(method)
         fpath = os.path.join(store.root, "Collections", name, method, fname)
         info_fpath = os.path.join(store.root, "Collections", name, method, "info_" + fname)
         assert os.path.exists(fpath)
         assert os.path.exists(info_fpath)
+        fetched_info = store._unpickle(info_fpath)
+        assert fetched_info['method_args'] == method_args
+        assert fetched_info['desc_name'] == desc
+        assert fetched_info['desc_args'] == desc_args
+        assert fetched_info['additional_info'] == info['additional_info']
         _delete_store(store)
 
     def test_store_additional(self):
         pass
+
+    def test_unpickle_path_and_fname(self):
+        store = Store("./tests/results")
+        test = "thing"
+        fname = "thing.pkl"
+        path = os.path.join(store.root, fname)
+        store._store_file(test, path)
+
+        fetched = store._unpickle(store.root, fname)
+        assert fetched == test
+        _delete_store(store)
+
+    def test_unpickle_path(self):
+        store = Store("./tests/results")
+        test = "thing"
+        fname = "thing.pkl"
+        path = os.path.join(store.root, fname)
+        store._store_file(test, path)
+
+        fetched = store._unpickle(path)
+        assert fetched == test
+        _delete_store(store)
+
+    def test_unpickle_does_not_exist(self):
+        store = Store("./tests/results")
+        try:
+            store._unpickle("fakepath", "fake_fname")
+        except FileNotFoundError as e:
+            assert True
+        else:
+            assert False, "Expected error not thrown"
+
+    def test_unpickle_unpickling_error(self):
+        import pickle
+        store = Store("./tests/test_paths/")
+        fname = "fakepkl.pkl"
+        try:
+            store._unpickle(store.root, fname)
+        except pickle.UnpicklingError as e:
+            assert True
+        else:
+            assert False, "Expected error not thrown"
 
     """
     def test_get_file_unpickling_error(self):
@@ -184,7 +254,7 @@ class TestStore(unittest.TestCase):
         output = io.StringIO()
         sys.stdout = output
         store.get(desc, aid, arg1="1")
-        assert "UnpicklingError when loading file desc__fakepkl___arg1_1.pkl, consider deleting result and recomputing\n" == output.getvalue()
+        assert "UnpicklingError when loading file fakepkl.pkl, consider deleting result and recomputing\n" == output.getvalue()
 
     def test_get_file_numpy_array(self):
         '''Tests _get_file, make sure get_descriptor returns expected value'''

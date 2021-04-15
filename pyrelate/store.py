@@ -100,8 +100,9 @@ class Store:
     def store_additional(self, result, store_as, info=None):
         pass
 
-    def _unpickle(self, path, filename):
-        path = os.path.join(path, filename)
+    def _unpickle(self, path, filename=None):
+        if filename is not None:
+            path = os.path.join(path, filename)
         result = None
         try:
             with open(path, 'rb') as f:
@@ -109,7 +110,7 @@ class Store:
         except FileNotFoundError as e:
             raise e
         except pickle.UnpicklingError:
-            raise pickle.UnpicklingError("Exception when loading file %s, consider deleting result and recomputing" % (fname))
+            raise pickle.UnpicklingError("Exception when loading file %s, consider deleting result and recomputing" % (filename))
         return result
 
     def _equal_args(self, args_given, args_store):
@@ -134,7 +135,7 @@ class Store:
                     return False
         return True
 
-    def _get_description(self, idd, descriptor, **desc_args):
+    def get_description(self, idd, descriptor, **desc_args):
         path = os.path.join(self.root, "Descriptions", idd, descriptor)
         if os.path.exists(path):
             directory = os.fsencode(path)
@@ -151,7 +152,7 @@ class Store:
         else:
             raise FileNotFoundError(f"Directory {path} does not exist.")
 
-    def _get_collection_result(self, method, collection_name, based_on, **method_args):
+    def get_collection_result(self, method, collection_name, based_on, **method_args):
         path = os.path.join(self.root, "Collections", collection_name, method)
         if os.path.exists(path):
             directory = os.fsencode(path)
