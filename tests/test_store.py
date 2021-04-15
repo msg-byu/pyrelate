@@ -65,6 +65,18 @@ class TestStore(unittest.TestCase):
         assert True
         _delete_store(store)
 
+    #Functions to test:
+    ## check_exists (when done writing)
+    ## _store_file
+    ## store_description
+    ## store_collection_result
+    ## store_additional (when written)
+    ## _unpickle
+    ## _equal_args
+    ## _get_description
+    ## _get_collection_result
+
+    """
     def test_check_exists_true(self):
         '''Test check_exists, result does exist'''
         store = Store('./tests/test_paths/')
@@ -89,53 +101,81 @@ class TestStore(unittest.TestCase):
         exists = store.check_exists('desc', 'wrong_aid', a='result1')
         assert exists == False
 
-    def test_generate_file_name(self):
-        '''Test _generate_file_name'''
+    """
+    def test_generate_default_file_name(self):
+        '''Test _generate_default_file_name'''
         store = Store("./tests/results")
-        filename = store._generate_file_name(
-            "soap", "111", rcut=9.0, nmax=11, lmax=11)
-        assert filename == "soap__111___lmax_11___nmax_11___rcut_9.0.pkl"
+        desc = "soap"
+        filename = store._generate_default_file_name(desc)
+        assert filename[:len(desc)] == desc
+        assert filename[-4:] == ".pkl"
         _delete_store(store)
 
-    def test_generate_file_name_diff_order(self):
-        '''Test _generate_file_name, check same filename for parameters in different order'''
-        store = Store("./tests/results")
-        filename = store._generate_file_name(
-            "soap", "111",  nmax=11, rcut=9.0, lmax=11)
-        assert filename == "soap__111___lmax_11___nmax_11___rcut_9.0.pkl"
-        _delete_store(store)
+    def test_store_file(self):
+        pass
 
-    def test_generate_file_name_with_collection(self):
-        '''Test _generate_file_name with collection as one parameter (make sure __str__ method called)'''
-        my_col = AtomsCollection("A", "./tests/results")
-        filename = my_col.store._generate_file_name(
-            "ler", 'U', collection=my_col, eps=0.025, rcut=5.0, nmax=9, lmax=9, metric="euclidean", n_trees=10, search_k=-1)
-        assert filename == "ler__U___collection_a___eps_0.025___lmax_9___metric_euclidean___n_trees_10___nmax_9___rcut_5.0___search_k_-1.pkl"
-        _delete_store(my_col.store)
+    # def test_store(self):
+    #     '''Tests storing results as a pickle'''
+    #     store = Store("./tests/results")
+    #     result = "Random test result"
+    #     desc = "test_desc"
+    #     aid = "111"
+    #     kw1 = "option_1"
+    #     kw2 = "option_2"
+    #     store.store(result, desc, aid, a=kw1, b=kw2)
+    #     fname = store._generate_file_name(desc, aid, a=kw1, b=kw2)
+    #     fpath = os.path.join(store.root, desc, aid, fname)
+    #     assert os.path.exists(fpath)
+    #     _delete_store(store)
 
-    def test_generate_file_name_with_function(self):
-        '''Test _generate_file_name with function as one of the inputs'''
-        my_col = AtomsCollection("A", "./tests/results")
-        filename = my_col.store._generate_file_name(
-            "desc", 'aid', fcn_required = _test_descriptor)
-        assert filename == "desc__aid___fcn_required__test_descriptor.pkl"
-        _delete_store(my_col.store)
-
-
-    def test_store(self):
-        '''Tests storing results as a pickle'''
+    def test_store_description(self):
+        #called in describe()
+        #result, descriptor, aid, argmuments
         store = Store("./tests/results")
         result = "Random test result"
         desc = "test_desc"
         aid = "111"
         kw1 = "option_1"
         kw2 = "option_2"
-        store.store(result, desc, aid, a=kw1, b=kw2)
+        store.store_description(result, desc, aid, a=kw1, b=kw2)
         fname = store._generate_file_name(desc, aid, a=kw1, b=kw2)
-        fpath = os.path.join(store.root, desc, aid, fname)
+        fpath = os.path.join(store.root, "Descriptions", aid, desc, fname)
         assert os.path.exists(fpath)
         _delete_store(store)
 
+    def test_store_collection_description(self):
+        #called in the process() method
+        #result, info, collection name, arguments, descriptor_args
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1,2,3,4,5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num":50
+        }
+
+        #ler_0412211113
+        store.store_collection_description(result, info, method, name, (desc, desc_args), **method_args)
+        fname = store._generate_default_file_name(method)
+        fpath = os.path.join(store.root, "Collections", name, method, fname)
+        info_fpath = os.path.join(store.root, "Collections", name, method, "info_" + fname)
+        assert os.path.exists(fpath)
+        assert os.path.exists(info_fpath)
+        _delete_store(store)
+
+    def test_store_additional(self):
+        pass
+
+    """
     def test_get_file_unpickling_error(self):
         '''Test get, unpickling error'''
         desc = "desc"
@@ -243,3 +283,4 @@ class TestStore(unittest.TestCase):
         assert os.path.exists(os.path.join(
             my_col.store.root, 'test2')) == False
         assert os.path.exists(my_col.store.root) == True
+"""
