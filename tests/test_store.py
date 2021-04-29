@@ -79,39 +79,122 @@ class TestStore(unittest.TestCase):
     ## store_collection_result
     ## _unpickle
 
+    def test_based_on_is_correct_1(self):
+        # if based_on is None, and not in dict, true
+        store = Store("./tests/results")
+        based_on = None
+        info = {"other": 1}
+        assert store._based_on_is_correct(based_on, info)
+        _delete_store(store)
 
-    """
-    def test_check_exists_true(self):
-        '''Test check_exists, result does exist'''
-        store = Store('./tests/test_paths/')
-        exists = store.check_exists('desc', 'aid1', a="result")
-        assert exists == True
+    def test_based_on_is_correct_2(self):
+        # if based_on is None, and is in dict, false
+        store = Store("./tests/results")
+        based_on = None
+        info = {"other": 1, "based_on_name":"name", "based_on_args":{"a":1,"b":2}}
+        assert not store._based_on_is_correct(based_on, info)
+        _delete_store(store)
 
-    def test_check_exists_wrong_kwargs(self):
-        '''Test check_exists, result with given params doesn't exist'''
-        store = Store('./tests/test_paths/')
-        exists = store.check_exists('desc', 'aid1', a="b")
-        assert exists == False
+    def test_based_on_is_correct_3(self):
+        # if based_on is not None, and not in dict, false
+        store = Store("./tests/results")
+        desc_args = {"a":1,"b":2}
+        based_on = ("desc", desc_args)
+        info = {"other": 1}
+        assert not store._based_on_is_correct(based_on, info)
+        _delete_store(store)
 
-    def test_check_exists_wrong_descriptor(self):
-        '''Test check_exists, result with given descriptor doesn't exist'''
-        store = Store('./tests/test_paths/')
-        exists = store.check_exists('wrong_desc', 'aid1', a='result1')
-        assert exists == False
+    def test_based_on_is_correct_4(self):
+        # if based_on is not None, and wrong based_on_args, false
+        store = Store("./tests/results")
+        desc_args = {"a":1,"b":2}
+        name = "desc"
+        based_on = (name, desc_args)
+        info = {"other": 1, "based_on_name":name, "based_on_args":{"a":1,"b":22}}
+        assert not store._based_on_is_correct(based_on, info)
+        _delete_store(store)
 
-    def test_check_exists_wrong_aid(self):
-        '''Test check_exists, result for given aid doesn't exist'''
-        store = Store('./tests/test_paths/')
-        exists = store.check_exists('desc', 'wrong_aid', a='result1')
-        assert exists == False
+    def test_based_on_is_correct_5(self):
+        # if based_on is not None, and info matches, true
+        store = Store("./tests/results")
+        desc_args = {"a": 1, "b": 2}
+        name = "desc"
+        based_on = (name, desc_args)
+        info = {"other": 1, "based_on_name": name, "based_on_args": desc_args}
+        assert store._based_on_is_correct(based_on, info)
+        _delete_store(store)
 
-    """
+    def test_check_exists_description_true(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kw1 = "option_1"
+        kw2 = "option_2"
+        info = {}
+        store.store_description(result, aid, desc, info, a=kw1, b=kw2)
+
+        assert store.check_exists("Descriptions", aid, desc, a=kw1, b=kw2)
+        assert type(store.check_exists("Descriptions", aid, desc, a=kw1, b=kw2, explicit=True)) is str
+        _delete_store(store)
+
+    def test_check_exists_description_false(self):
+        store = Store("./tests/results")
+        desc = "test_desc"
+        aid = "111"
+        kw1 = "option_1"
+        kw2 = "option_2"
+
+        assert not store.check_exists("Descriptions", aid, desc, a=kw1, b=kw2)
+        _delete_store(store)
+
+    def test_check_exists_collection_true(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num": 50
+        }
+
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
+
+        assert store.check_exists("Collections", name, method, based_on=(desc, desc_args), **method_args)
+        _delete_store(store)
+
+    def test_check_exists_collection_false(self):
+        store = Store("./tests/results")
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num": 50
+        }
+
+        assert not store.check_exists("Collections", name, method, based_on=(desc, desc_args), **method_args)
+        _delete_store(store)
+
     def test_generate_default_file_name(self):
         '''Test _generate_default_file_name'''
         store = Store("./tests/results")
+        aid = "455"
         desc = "soap"
-        filename = store._generate_default_file_name(desc)
-        assert filename[:len(desc)] == desc
+        filename = store._generate_default_file_name(aid, desc)
+        assert filename[:-20] == aid + "_" + desc
         assert filename[-4:] == ".pkl"
         _delete_store(store)
 
@@ -132,13 +215,22 @@ class TestStore(unittest.TestCase):
         aid = "111"
         kw1 = "option_1"
         kw2 = "option_2"
-        store.store_description(result, aid, desc, a=kw1, b=kw2)
+        info = {}
+        store.store_description(result, aid, desc, info, a=kw1, b=kw2)
 
-        fname = store._generate_default_file_name(desc)
-        fpath = os.path.join(store.root, "Descriptions", aid, desc, fname)
-        info_fpath = os.path.join(store.root, "Descriptions", aid, desc, "info_" + fname)
+        fpath = os.path.join(store.root, "Descriptions", aid, desc)
+        info_fpath = os.path.join(store.root, "Descriptions", aid, desc)
         assert os.path.exists(fpath)
-        assert os.path.exists(info_fpath)
+
+        directory = os.fsencode(fpath)
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            if filename[:-20] == aid + "_" + desc:
+                fullpath = os.path.join(fpath, filename)
+                assert os.path.exists(fullpath)
+                break
+        else:
+            assert False, "No correct file found"
         _delete_store(store)
 
     def test_store_description_with_info(self):
@@ -153,16 +245,24 @@ class TestStore(unittest.TestCase):
         info = {"num":47, "important_info":12 }
         store.store_description(result, aid, desc, info=info, a=kw1, b=kw2)
 
-        fname = store._generate_default_file_name(desc)
-        fpath = os.path.join(store.root, "Descriptions", aid, desc, fname)
-        info_fpath = os.path.join(store.root, "Descriptions", aid, desc, "info_" + fname)
+        fpath = os.path.join(store.root, "Descriptions", aid, desc)
         assert os.path.exists(fpath)
-        assert os.path.exists(info_fpath)
-        fetched_info = store._unpickle(info_fpath)
-        assert fetched_info['num'] == info['num']
-        assert fetched_info['important_info'] == info['important_info']
-        assert fetched_info['desc_args'] == {"a":kw1,"b":kw2}
 
+        directory = os.fsencode(fpath)
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            if filename[:-20] == aid + "_" + desc:
+                fullpath = os.path.join(fpath, filename)
+                assert os.path.exists(fullpath)
+                info_fullpath = os.path.join(fpath, "info_" + filename)
+                assert os.path.exists(info_fullpath)
+                fetched_info = store._unpickle(info_fullpath)
+                assert fetched_info['num'] == info['num']
+                assert fetched_info['important_info'] == info['important_info']
+                assert fetched_info['desc_args'] == {"a": kw1, "b": kw2}
+                break
+        else:
+            assert False, "No correct file found"
         _delete_store(store)
 
 
@@ -186,18 +286,28 @@ class TestStore(unittest.TestCase):
             "num":50
         }
 
-        #ler_0412211113
         store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
-        fname = store._generate_default_file_name(method)
-        fpath = os.path.join(store.root, "Collections", name, method, fname)
-        info_fpath = os.path.join(store.root, "Collections", name, method, "info_" + fname)
+
+        fpath = os.path.join(store.root, "Collections", name, method)
         assert os.path.exists(fpath)
-        assert os.path.exists(info_fpath)
-        fetched_info = store._unpickle(info_fpath)
-        assert fetched_info['method_args'] == method_args
-        assert fetched_info['desc_name'] == desc
-        assert fetched_info['desc_args'] == desc_args
-        assert fetched_info['additional_info'] == info['additional_info']
+
+        directory = os.fsencode(fpath)
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            print(filename[:-20], name + "_" + method)
+            if filename[:-20] == name + "_" + method:
+                fullpath = os.path.join(fpath, filename)
+                assert os.path.exists(fullpath)
+                info_fullpath = os.path.join(fpath, "info_" + filename)
+                assert os.path.exists(info_fullpath)
+                fetched_info = store._unpickle(info_fullpath)
+                assert fetched_info['method_args'] == method_args
+                assert fetched_info['based_on_name'] == desc
+                assert fetched_info['based_on_args'] == desc_args
+                assert fetched_info['additional_info'] == info['additional_info']
+                break
+        else:
+            assert False, "No correct file found"
         _delete_store(store)
 
     def test_store_additional(self):

@@ -43,7 +43,7 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
     for d in desc:
         my_col.describe(d, fcn=_test_descriptor, **kwargs)
         for aid in aids:
-            assert my_col.get(d, aid, **kwargs) != None
+            assert my_col.get_description(aid, d, **kwargs) != None
     return my_col
 
 def _swap_x_y(positions):
@@ -65,13 +65,15 @@ def _test_descriptor(atoms, num=0, **kwargs):
     else:
         return 'test result 2'
 
-def _processing_method(self, collection, method, based_on, **kwargs):
+def _processing_method(collection, method, based_on, **kwargs):
     #process collection of results
     new_string = method + "__"
     for aid in collection.aids():
-        new_string += collection.get(based_on[0], aid, **based_on[1]) #str 'test result 1'
+        res, info = collection.get_description(aid, based_on[0], **based_on[1]) #str 'test result 1'
+        new_string += res
         new_string += "_"
-    return new_string
+    info = {}
+    return new_string, info
 
 
 '''Unit tests'''
@@ -290,7 +292,6 @@ class TestCollection(unittest.TestCase):
                 assert False, "Pad not set to same as trim value"
         _delete_store(my_col)
 
-
     def test_trim_pad_False(self):
         '''Test that when pad=False, there is no pad'''
         aid = '454'
@@ -337,7 +338,6 @@ class TestCollection(unittest.TestCase):
             assert False, "Expected error not thrown"
         _delete_store(my_col)
 
-
     def test_trim_specify_diff_dimensions(self):
         """Test that specifying the dimension correctly trims different dimensions"""
         aid = '454'
@@ -359,26 +359,27 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col_A)
         #deletes store b coincidentally
 
-
     def test_describe_own_function(self):
         '''Test using descriptor function not built into descriptors.py'''
         my_col = _initialize_collection_and_read(['455'])
         kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col.describe('desc', fcn=_test_descriptor, **kwargs)
-        res = my_col.get('desc', '455', **kwargs)
+        res, info = my_col.get_description('455', 'desc', **kwargs)
         assert res == 'test result 1'
+        assert info['desc_args'] == kwargs
         _delete_store(my_col)
 
 
     def test_describe_override(self):
         '''Put result in store, and check to make sure 'override' parameter overrides previous result'''
         kwargs = {'arg1': 1, 'arg2': 2, 'arg3': 3}
-        my_col = _initialize_collection_and_describe( ['test'], ['455'], num=0, **kwargs)
-        #assert my_col.get('test', '455', **kwargs) == "test result"
-        # fcn name is not included in file name, so this will appear to be a previously computed result that can be overridden
+        my_col = _initialize_collection_and_read(['455'])
+        my_col.store.store_description("fake result", '455', "test", {}, **kwargs) #store result, can be overridden
         try:
-            my_col.describe('test', fcn=_test_descriptor, override=True, num=1, **kwargs)
-            assert my_col.get('test', '455', **kwargs) != "test result 1"
+            my_col.describe('test', fcn=_test_descriptor, override=True, **kwargs)
+            res, info = my_col.get_description('455', 'test', **kwargs)
+            assert res != "fake result"
+            assert res == "test result 1"
         finally:
             _delete_store(my_col)
 
@@ -389,10 +390,14 @@ class TestCollection(unittest.TestCase):
         num_atoms_with_mask = len(my_col[aid])
         soapargs = {'rcut': 5.0, 'nmax': 3, 'lmax': 3}
         my_col.describe('soap', **soapargs)
-        res = my_col.get('soap', aid, **soapargs)
+        res, info = my_col.get_description(aid, 'soap', **soapargs)
         assert res is not None
+        assert info['desc_args'] == soapargs
         assert num_atoms_with_mask > len(res), f"Result not correctly trimmed following description"
         _delete_store(my_col)
+
+    def test_describe_specific_atomic_systems(self):
+        pass
 
     def test_process(self):
         desc_args = {
@@ -403,8 +408,11 @@ class TestCollection(unittest.TestCase):
             "b": 1
         }
         my_col = _initialize_collection_and_describe(['test'], ['454', '455'], **desc_args)
-        res = my_col.process("method", ("test", desc_args), fcn=_processing_method, **method_args)
+        res, info = my_col.process("method", ("test", desc_args), fcn=_processing_method, **method_args)
         assert res == "method__test result 1_test result 1_"
+
+    def test_calculating_descriptor_results_if_not_previously_generated(self):
+        pass
 
 
     # def test_clear_single_result(self):

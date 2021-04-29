@@ -23,13 +23,18 @@ class AtomsCollection(dict):
         """Initializer which calls dict's and Store's initializers."""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
+        #TODO make trim and pad more general (have FIRM for entire collection, apply to new atoms read in, cannot trim
+        # to be wider than it is, when you do "subset" the trim/pad values must be applied, update trim function)
+        # self.trim = trim
+        # self.pad = pad
+
         if type(store) == Store:
             self.store = store
         elif type(store) == str:
             self.store = Store(store)
 
         if data is not None:
-            self.update(data)
+            self.update(data) #allows you to initialize a collection beginning with another collection (dictionary)
 
     def __str__(self):
         """String representation of the AtomsCollection object (name of collection)."""
@@ -102,7 +107,6 @@ class AtomsCollection(dict):
                 my_col.read("/Ni/", 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
 
         """
-        # TODO add functionality to pass a collection into read
         comp_rxid = None
         if rxid is not None:
             import re
@@ -142,6 +146,7 @@ class AtomsCollection(dict):
 
     def trim(self, trim, dim, pad=True):
         """Trims off excess atoms and indicates padding (specified in a mask).
+        #FIXME store trim and pad values for the entire collection
 
         Padding may want to be included so that atoms have a full atomic environments at the edge, some descriptors that perform better with full atomic environments. The "mask" array is attached to the Atoms object, with 1 indicating atoms to be kept in the final description, and 0 to indicate padding atoms. You may get the mask by calling 'my_col.get_array("mask")'.
 
@@ -188,18 +193,21 @@ class AtomsCollection(dict):
             mask = np.array([atom.position[d] > (gbcenter - trim) for atom in atoms])*np.array([atom.position[d] < (gbcenter + trim) for atom in atoms])*1
             atoms.set_array("mask", mask)
 
-    def describe(self, descriptor, fcn=None, override=False, **kwargs):
+    def describe(self, descriptor, aid=None, fcn=None, override=False, **desc_args):
         """Function to calculate and store atomic description.
 
         User can specify a descriptor function to be used, or use those in descriptors.py. When there is a padding associated with the Atoms object, the padding atoms are deleted from the final description before being stored.
 
         Parameters:
-            descriptor (str): descriptor to be applied to AtomsCollection.
-            fcn (str): function to apply said description. Defaults to none. When none, built in functions in descriptors.py are used.
+            descriptor (str): descriptor to be applied.
+            aid (iterable or string): Atoms ID's (aid) of atomic systems to be described. Can pass in single aid string, or an iterable
+            of aids. Defaults to None. When None, all ASE Atoms objects in AtomsCollection are described.
+            fcn: function to apply said description. Defaults to none. When none, built in functions in descriptors.py are used.
             override (bool): if True, descriptor will override any matching results in the store. Defaults to False.
-            kwargs (dict): Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
+            desc_args (dict): Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
-        Example:
+        Examples:
+            #FIXME old examples
             .. code-block:: python
 
                 soap_args = {
@@ -227,44 +235,69 @@ class AtomsCollection(dict):
             from pyrelate import descriptors
             fcn = getattr(descriptors, descriptor)
 
-        for aid in tqdm(self):
-            exists = self.store.check_exists(descriptor, aid, **kwargs)
+        if aid is None:
+            to_calculate = self.aids()
+        else:
+            to_calculate = [aid] if type(aid) is str else aid
+
+        for aid in tqdm(to_calculate):
+            if aid not in self.aids():
+                raise ValueError(f"{aid} is not a valid atoms ID.")
+
+            exists = self.store.check_exists("Descriptions", descriptor, aid, **desc_args)
             if not exists or override:
-                result = fcn(self[aid], **kwargs)
+                result = fcn(self[aid], **desc_args)
 
             if result is not None:
-                if (len(result) > np.count_nonzero(self[aid].get_array( "mask"))):
+                if len(result) > np.count_nonzero(self[aid].get_array( "mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
 
-                self.store.store(
-                    result, descriptor, aid, **kwargs)
+                #FIXME store trim/pad data in info dict
+                info = {} #"trim":None, "pad":None}
+
+                self.store.store_description(
+                    result, aid, descriptor, info, **desc_args)
         # self.clear("temp")
 
     def process(self, method, based_on, fcn=None, override=None, **kwargs):
         """Calculate and store collection specific results
 
         Parameters:
-            - method (str): string indicating the name of the descriptor to be applied
-            - based_on (str, dict): tuple holding the information necessary to get previously calculated results for use in processing
+            method (str): string indicating the name of the descriptor to be applied
+            based_on (str, dict): tuple holding the information necessary to get previously calculated results for use in processing. If the previously
+            generated results do not exist, they will be recalculated and stored.
+            fcn (str): function to apply said processing method. Defaults to none. When none, built in functions in descriptors.py are used.
+            override (bool): if True, results will override any matching results in the store. Defaults to False.
+            kwargs (dict): Parameters associated with the processing function specified. See documentation in descriptors.py for function details and parameters.
+
+        Examples:
+
         """
 
         if fcn is None:
             from pyrelate import descriptors
             fcn = getattr(descriptors, method)
 
-        #processing for the entire collection of results
-        #go through GB by GB to get your rows of the vector to add to your feature matrix
-        exists = False
-        #exists = self.store.check_exists_collection(self.name, method, based_on, **kwargs)
-        if not exists or override:
-            result, info = fcn(self, method, based_on, **kwargs)
-        #self.store.store_collection_results(result, info, self.name, method, based_on, **kwargs)
-        return result, info
+        #if soap not calculated, calculate
+        desc = based_on[0]
+        desc_args = based_on[1]
+        for aid in self.aids():
+            if not self.store.check_exists("Descriptions", aid, desc, **desc_args):
+                self.describe(desc, aid=aid, **desc_args)
 
+        # exists = False
+        exists = self.store.check_exists("Collections", self.name, method, based_on, **kwargs)
+        if not exists or override:
+            print("Calculate and store")
+            result, info = fcn(self, method, based_on, **kwargs)
+            self.store.store_collection_result(result, info, method, self.name, based_on, **kwargs)
+
+        return self.store.get_collection_result(method, self.name, based_on, **kwargs) #return result and info dict
 
 
     def clear(self, descriptor=None, idd=None, **kwargs):
+        #FIXME
         '''Function to delete specified results from Store.
 
         Functionality includes:
@@ -291,38 +324,28 @@ class AtomsCollection(dict):
                 my_col.clear() #clears all results from store
 
         '''
-        has_kwargs = len(kwargs) != 0
-        if descriptor is not None:
-            if has_kwargs:
-                if idd is not None:
-                    self.store.clear(descriptor, idd, **kwargs)
-                else:
-                    idds = self.aids()
-                    self.store.clear(descriptor, idds, **kwargs)
-            else:
-                self.store.clear_descriptor(descriptor)
-        else:
-            self.store.clear_all()
+        #FIXME rewrite how change works, and it is implemented differently in store.py
+        # has_kwargs = len(kwargs) != 0
+        # if descriptor is not None:
+        #     if has_kwargs:
+        #         if idd is not None:
+        #             self.store.clear(descriptor, idd, **kwargs)
+        #         else:
+        #             idds = self.aids()
+        #             self.store.clear(descriptor, idds, **kwargs)
+        #     else:
+        #         self.store.clear_descriptor(descriptor)
+        # else:
+        #     self.store.clear_all()
+        pass
 
-    def get(self, descriptor, idd=None, **kwargs):
-        '''Shell function to call Store's get method.
+    def get_description(self, idd, descriptor, **desc_args):
+        """Wrapper function to retrieve descriptor results from the store"""
+        return self.store.get_description(idd, descriptor, **desc_args)
 
-        Parameters:
-            descriptor (str): descriptor to be applied to AtomsCollection.
-            idd (str): Idd of Atoms object who's results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
-            kwargs (dict): Parameters associated with the description function specified.
-
-        Example:
-            .. code-block:: python
-
-                my_col.get("soap", 'aid1', rcut=5.0, nmax=9, lmax=9)
-                my_col.get("asr", res_needed="my_soap", rcut=5.0, nmax=9, lmax=9)
-
-        '''
-        if idd is None:
-            idd = self.aids()
-
-        return self.store.get(descriptor, idd, **kwargs)
+    def get_collection_result(self, method, collection_name, based_on, **method_args):
+        """Wrapper function to retrieve collection specific results from the store"""
+        return self.store.get_collection_result(method, collection_name, based_on, **method_args)
 
     def aids(self):
         '''Returns sorted list of atom ID's (aids) in collection'''
