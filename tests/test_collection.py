@@ -397,9 +397,26 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_describe_specific_atomic_systems(self):
-        pass
+        a1 = '454'
+        a2 = '455'
+        my_col = _initialize_collection_and_read([a1, a2])
+        kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
+        my_col.describe('desc', aid = a1, fcn=_test_descriptor, **kwargs)
+
+        res1, info1 = my_col.get_description(a1, 'desc', **kwargs)
+        assert res1 == 'test result 1'
+        assert info1['desc_args'] == kwargs
+
+        try:
+            res2, info2 = my_col.get_description(a2, 'desc', **kwargs)
+            assert False, "No result was calculated previously so an exception should be raised"
+        except FileNotFoundError:
+            assert True
+
+        _delete_store(my_col)
 
     def test_process(self):
+        desc = "test"
         desc_args = {
             'num': 1
         }
@@ -407,13 +424,9 @@ class TestCollection(unittest.TestCase):
             "a": 0,
             "b": 1
         }
-        my_col = _initialize_collection_and_describe(['test'], ['454', '455'], **desc_args)
-        res, info = my_col.process("method", ("test", desc_args), fcn=_processing_method, **method_args)
-        assert res == "method__test result 1_test result 1_"
-
-    def test_calculating_descriptor_results_if_not_previously_generated(self):
-        pass
-
+        my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
+        res, info = my_col.process("method", (desc, desc_args), fcn=_processing_method, **method_args)
+        assert res == "method__test result 2_test result 2_"
 
     # def test_clear_single_result(self):
     #     '''Test clear, clear single result with given descriptor, parameters, and aid'''
@@ -457,41 +470,7 @@ class TestCollection(unittest.TestCase):
     #     assert os.path.exists(os.path.join(my_col.store.root, 'test2')) == False
     #     assert os.path.exists(my_col.store.root) == True
     #     _delete_store(my_col)
-    #
-    #
-    # def test_get(self):
-    #     '''Test AtomsCollection "get" function with aid provided'''
-    #     my_col = _initialize_collection_and_describe(['test'], ['454'], a="arg1")
-    #     try:
-    #         fetched_result = my_col.get('test', '454', a="arg1")
-    #         result = "test result"  # see function _test_descriptor
-    #         assert fetched_result == result
-    #     finally:
-    #         _delete_store(my_col)
-    #
-    # def test_get_no_aid(self):
-    #     '''Test AtomsCollection "get" function when no aid provided'''
-    #     my_col = _initialize_collection_and_describe(['test', 'test2'], ['454', '455'], a="arg1")
-    #     try:
-    #         value = my_col.get('test', a="arg1")
-    #         assert type(value) is dict
-    #         assert len(value) == 2
-    #     finally:
-    #         _delete_store(my_col)
-    #
-    # def test_get_aid_not_str(self):
-    #     my_col = _initialize_collection_and_describe(['test'], ['454'], a="arg1")
-    #     try:
-    #         self.assertRaises(ValueError, AtomsCollection.get, my_col, descriptor="test", idd=454, a="arg1")
-    #     finally:
-    #         _delete_store(my_col)
-    #
-    # def test_get_with_list(self):
-    #     my_col = _initialize_collection_and_describe(['test'], ['454','455'], a="arg1")
-    #     try:
-    #         assert type(my_col.get('test', ['454','455'], a="arg1")) is dict
-    #     finally:
-    #         _delete_store(my_col)
+
 
     def test_aids(self):
         '''Test function to get list of all aid's in collection'''

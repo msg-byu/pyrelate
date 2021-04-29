@@ -265,8 +265,7 @@ class AtomsCollection(dict):
 
         Parameters:
             method (str): string indicating the name of the descriptor to be applied
-            based_on (str, dict): tuple holding the information necessary to get previously calculated results for use in processing. If the previously
-            generated results do not exist, they will be recalculated and stored.
+            based_on (str, dict): tuple holding the information necessary to get previously calculated results for use in processing.
             fcn (str): function to apply said processing method. Defaults to none. When none, built in functions in descriptors.py are used.
             override (bool): if True, results will override any matching results in the store. Defaults to False.
             kwargs (dict): Parameters associated with the processing function specified. See documentation in descriptors.py for function details and parameters.
@@ -279,14 +278,14 @@ class AtomsCollection(dict):
             from pyrelate import descriptors
             fcn = getattr(descriptors, method)
 
-        #if soap not calculated, calculate
-        desc = based_on[0]
-        desc_args = based_on[1]
-        for aid in self.aids():
-            if not self.store.check_exists("Descriptions", aid, desc, **desc_args):
-                self.describe(desc, aid=aid, **desc_args)
+        # TODO: if soap not calculated, calculate
+        # would require the function used to be passed in somehow...
+        # desc = based_on[0]
+        # desc_args = based_on[1]
+        # for aid in self.aids():
+        #     if not self.store.check_exists("Descriptions", aid, desc, **desc_args):
+        #         self.describe(desc, aid=aid, **desc_args)
 
-        # exists = False
         exists = self.store.check_exists("Collections", self.name, method, based_on, **kwargs)
         if not exists or override:
             print("Calculate and store")
@@ -297,7 +296,6 @@ class AtomsCollection(dict):
 
 
     def clear(self, descriptor=None, idd=None, **kwargs):
-        #FIXME
         '''Function to delete specified results from Store.
 
         Functionality includes:

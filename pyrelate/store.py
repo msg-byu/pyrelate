@@ -26,6 +26,7 @@ class Store:
 
     def list_store_results(self):
         """Print results currently stored in the Store"""
+        #TODO
         pass
 
     def _generate_default_file_name(self, param_1, param_2):
@@ -97,6 +98,7 @@ class Store:
 
     def store_additional(self, result, store_as, info=None):
         """Function to store any arbitrary results specified by the user"""
+        #TODO
         pass
 
     def _unpickle(self, path, filename=None):
@@ -222,7 +224,7 @@ class Store:
             return res, info
 
     def get_collection_result(self, method, collection_name, based_on, **method_args):
-        filename = self.check_exists("Collections", collection_name, method,  explicit=True, **method_args)
+        filename = self.check_exists("Collections", collection_name, method, based_on=based_on, explicit=True, **method_args)
         if filename is False:
             raise FileNotFoundError("No such results found for given parameters")
         else:
