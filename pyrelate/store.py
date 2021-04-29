@@ -39,7 +39,7 @@ class Store:
         with open(path, 'wb') as f:
             pickle.dump(to_store, f)
 
-    def store_description(self, result, aid, descriptor, info, **desc_args):
+    def store_description(self, result, info, aid, descriptor, **desc_args):
         """Function to store information into result store
 
         Parameters:

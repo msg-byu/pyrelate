@@ -257,7 +257,7 @@ class AtomsCollection(dict):
                 info = {} #"trim":None, "pad":None}
 
                 self.store.store_description(
-                    result, aid, descriptor, info, **desc_args)
+                    result, info, aid, descriptor,  **desc_args)
         # self.clear("temp")
 
     def process(self, method, based_on, fcn=None, override=None, **kwargs):

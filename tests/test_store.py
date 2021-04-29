@@ -132,7 +132,7 @@ class TestStore(unittest.TestCase):
         kw1 = "option_1"
         kw2 = "option_2"
         info = {}
-        store.store_description(result, aid, desc, info, a=kw1, b=kw2)
+        store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         assert store.check_exists("Descriptions", aid, desc, a=kw1, b=kw2)
         assert type(store.check_exists("Descriptions", aid, desc, a=kw1, b=kw2, explicit=True)) is str
@@ -216,7 +216,7 @@ class TestStore(unittest.TestCase):
         kw1 = "option_1"
         kw2 = "option_2"
         info = {}
-        store.store_description(result, aid, desc, info, a=kw1, b=kw2)
+        store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         fpath = os.path.join(store.root, "Descriptions", aid, desc)
         info_fpath = os.path.join(store.root, "Descriptions", aid, desc)
@@ -243,7 +243,7 @@ class TestStore(unittest.TestCase):
         kw1 = "option_1"
         kw2 = "option_2"
         info = {"num":47, "important_info":12 }
-        store.store_description(result, aid, desc, info=info, a=kw1, b=kw2)
+        store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         fpath = os.path.join(store.root, "Descriptions", aid, desc)
         assert os.path.exists(fpath)
@@ -312,6 +312,71 @@ class TestStore(unittest.TestCase):
 
     def test_store_additional(self):
         pass
+
+    def test_equal_args_true(self):
+        dic1 = {"a": 1, "b": 2, "c": 3}
+        dic2 = {"a": 1, "b": 2, "c": 3}
+        store = Store("./tests/results")
+        assert store._equal_args(dic1, dic2)
+        _delete_store(store)
+
+    def test_equal_args_false(self):
+        dic1 = {"a": 1, "b": 2, "c": 3}
+        dic2 = {"a": 1, "b": 2, "c": 4}
+        store = Store("./tests/results")
+        assert not store._equal_args(dic1, dic2)
+        _delete_store(store)
+
+    def test_equal_args_with_function(self):
+        store = Store("./tests/results")
+        func = _test_descriptor
+        dic1 = {"func": func, "b": 2, "c": 3}
+        dic2 = {"func": func, "b": 2, "c": 3}
+        assert store._equal_args(dic1, dic2)
+        _delete_store(store)
+
+    def test_get_description(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kw1 = "option_1"
+        kw2 = "option_2"
+        info = {}
+        store.store_description(result, info, aid, desc, a=kw1, b=kw2)
+
+        res, info = store.get_description(aid, desc, a=kw1, b=kw2)
+
+        assert res == result
+        assert info["desc_args"] == {"a": kw1, "b": kw2}
+        _delete_store(store)
+
+    def test_get_collection_results(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num": 50
+        }
+
+        # ler_0412211113
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
+        res, info = store.get_collection_result(method, name, (desc, desc_args), **method_args)
+
+        assert res == result
+        assert info["based_on_args"] == desc_args
+        assert info["method_args"] == method_args
+        _delete_store(store)
 
     def test_unpickle_path_and_fname(self):
         store = Store("./tests/results")

@@ -374,7 +374,7 @@ class TestCollection(unittest.TestCase):
         '''Put result in store, and check to make sure 'override' parameter overrides previous result'''
         kwargs = {'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col = _initialize_collection_and_read(['455'])
-        my_col.store.store_description("fake result", '455', "test", {}, **kwargs) #store result, can be overridden
+        my_col.store.store_description("fake result", {}, '455', "test", **kwargs) #store result, can be overridden
         try:
             my_col.describe('test', fcn=_test_descriptor, override=True, **kwargs)
             res, info = my_col.get_description('455', 'test', **kwargs)
