@@ -32,8 +32,8 @@ class TestDescriptors():
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 5.0, 'nmax': 9, 'lmax': 9}
         my_col.describe('soap', **soapargs)
-        assert my_col.store.check_exists('soap', '455', **soapargs)
-        res = my_col.get('soap', '455', **soapargs)
+        # assert my_col.store.check_exists('soap', '455', **soapargs)
+        res = my_col.get_description('455', 'soap', **soapargs)
         assert type(res) is np.ndarray
         _delete_store(my_col)
 
@@ -42,26 +42,26 @@ class TestDescriptors():
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
-        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
-        my_col.describe('asr', res_needed='fake_soap', **soapargs)
+        my_col.store.store_description(fake_mat, {}, '455', "fake_soap", **soapargs)
+        my_col.process('asr', ('fake_soap', soapargs))
         exp_res = np.array([1, 2, 4, 4])
-        res = my_col.get('asr', '455', res_needed='fake_soap', **soapargs)
-        assert np.array_equal(res, exp_res)
+        res = my_col.get_collection_result('asr', ('fake_soap', soapargs))
+        assert np.array_equal(res[0], exp_res)
         _delete_store(my_col)
 
     def test_asr_normalize(self):
         '''Test ASR descriptor, norm_asr=True'''
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
-        asrargs = {'res_needed': 'fake_soap', 'norm_asr': True}
+        asrargs = {'norm_asr': True}
         fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
-        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
-        my_col.describe('asr', **asrargs, **soapargs)
-        res = my_col.get('asr', '455', **asrargs, **soapargs)
+        my_col.store.store_description(fake_mat, {}, '455', "fake_soap", **soapargs)
+        my_col.process('asr', ('fake_soap', soapargs), **asrargs)
+        res = my_col.get_collection_result('asr',('fake_soap', soapargs), **asrargs)
         exp_mag = 6.0827625303  # np.sqrt(37) #Sqrt(4^2+4^2+2^2+1^1) = Sqrt(37)
         # [1,2,4,4] is the expected  result of ASR
         exp_res = np.array([1, 2, 4, 4]) / exp_mag
-        assert np.all(np.isclose(res, exp_res))
+        assert np.all(np.isclose(res[0], exp_res))
         _delete_store(my_col)
 
     def test_sum(self):
@@ -69,56 +69,24 @@ class TestDescriptors():
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         fake_mat = np.array([[1, 2, 3, 4], [3, 4, 5, 6], [-1, 0, 4, 2]])
-        my_col.store.store(fake_mat, "fake_soap", '455', **soapargs)
-        my_col.describe('sum', res_needed='fake_soap', **soapargs)
+        my_col.store.store_description(fake_mat, {}, "455", "fake_soap", **soapargs)
+        my_col.process('sum', ('fake_soap', soapargs))
         exp_res = np.array([3, 6, 12, 12])
-        res = my_col.get('sum', '455', res_needed='fake_soap', **soapargs)
-        assert np.array_equal(res, exp_res)
+        res = my_col.get_collection_result('sum', ('fake_soap', soapargs))
+        assert np.array_equal(res[0], exp_res)
         _delete_store(my_col)
 
     def test_sum_fails(self):
-        '''Test SUM descriptor'''
+        '''Test SUM descriptor. When the result it is based on is not calculated, it should raise an error.'''
         my_col = _initialize_collection_and_read(['455'])
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
-        my_col.describe('sum', res_needed='fake_soap', **soapargs)
-        res = my_col.get('sum', '455', res_needed='fake_soap', **soapargs)
-        assert res is None
+        try:
+            my_col.process('sum', ('fake_soap', soapargs))
+            assert False, "Exception should be raised."
+        except FileNotFoundError:
+            assert True
         _delete_store(my_col)
 
-
-    def test_ler_runs(self):
-        '''Test LER function, previously computed SOAP'''
-        #TODO store trimmed SOAP results to calculate LER on
-        my_col = _initialize_collection_and_read(['455'], store_loc="tests/test_paths/") #has previously computed SOAP results stored here
-        lerargs = {
-            'collection': my_col,
-            'eps': 0.25,
-            'dissim_args':{"gamma":4000},
-            'rcut': 5.0,
-            'nmax': 9,
-            'lmax': 9
-        }
-        my_col.describe('ler', **lerargs)
-        assert my_col.store.check_exists('ler', '455', **lerargs)
-        my_col.clear('ler')
-
-    def test_ler_runs_pass_in_soapfcn(self):
-        '''Test LER runs, check that using user specified SOAP function works'''
-        my_col = _initialize_collection_and_read(
-            ['455'], store_loc="tests/test_paths/")
-        from pyrelate.descriptors import soap as soap_fcn
-        lerargs = {
-            'collection': my_col,
-            'eps': 0.25,
-            'dissim_args':{"gamma":4000},
-            'rcut': 5.0,
-            'nmax': 9,
-            'lmax': 9,
-            'soap_fcn': soap_fcn
-        }
-        my_col.describe('ler', **lerargs)
-        assert my_col.store.check_exists('ler', '455', **lerargs)
-        my_col.clear('ler')
 
     def test_ler_functionality(self):
         '''Test LER, see if gives expected results'''
@@ -126,21 +94,49 @@ class TestDescriptors():
         soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
         fake_mat1 = np.array([[-14, -13, -11], [4, 4, 4], [5, 4, 5], [1, 0, 1]])
         fake_mat2 = np.array([[1, 1, 1], [10, 10, 9], [10, 9, 10], [-14,-12,-12]])
-        my_col.store.store(fake_mat1, "fake_soap", '454', **soapargs)
-        my_col.store.store(fake_mat2, "fake_soap", '455', **soapargs)
+        my_col.store.store_description(fake_mat1, {}, "454", "fake_soap", **soapargs)
+        my_col.store.store_description(fake_mat2, {}, "455", "fake_soap", **soapargs)
         seed = [0, 0, 0]
         lerargs = {
-            'collection': my_col,
             'eps': 0.3,
             'dissim_args':{"gamma":0.1},
             'seed': seed,
-            'res_needed': 'fake_soap'
         }
-        my_col.describe("ler", **lerargs, **soapargs)
-        ler1 = my_col.get("ler", '454', **lerargs, **soapargs)
-        ler2 = my_col.get("ler", '455', **lerargs, **soapargs)
-        assert len(ler1) == 4  # 4 clusters
+        my_col.process("ler", ("fake_soap",soapargs), **lerargs)
+        ler, info = my_col.get_collection_result("ler", ("fake_soap", soapargs), metadata=True, **lerargs)
+
+        assert len(ler[0]) == 4  # 4 clusters
+        assert info['num_clusters'] == 4
         # when sorting is implemented into LER these will be in a different order
-        assert np.array_equal(ler1, np.array([1/4, 1/2, 1/4, 0]))
-        assert np.array_equal(ler2, np.array([1/4, 0, 1/4, 1/2]))
+        assert np.array_equal(ler[0], np.array([1/4, 1/2, 1/4, 0]))
+        assert np.array_equal(ler[1], np.array([1/4, 0, 1/4, 1/2]))
         _delete_store(my_col)
+
+    def test_ler_runs_pass_in_soapfcn(self):
+        '''Test LER runs, check that using user specified SOAP function works'''
+        my_col = _initialize_collection_and_read(['454', '455'])
+        soapargs = {'rcut': 0, 'nmax': 0, 'lmax': 0}
+        fake_mat1 = np.array([[-14, -13, -11], [4, 4, 4], [5, 4, 5], [1, 0, 1]])
+        fake_mat2 = np.array([[1, 1, 1], [10, 10, 9], [10, 9, 10], [-14,-12,-12]])
+        my_col.store.store_description(fake_mat1, {}, "454", "fake_soap", **soapargs)
+        my_col.store.store_description(fake_mat2, {}, "455", "fake_soap", **soapargs)
+
+        def soap_fcn(atoms, **kwargs):
+            return [[0,0,0]]
+
+        lerargs = {
+            'eps': 0.3,
+            'dissim_args': {"gamma" : 0.1},
+            'soap_fcn':soap_fcn
+        }
+        try:
+            my_col.process("ler", ("fake_soap",soapargs), **lerargs)
+            ler, info = my_col.get_collection_result("ler", ("fake_soap", soapargs), metadata=True, **lerargs)
+        finally:
+            _delete_store(my_col)
+
+        assert len(ler[0]) == 4  # 4 clusters
+        assert info['num_clusters'] == 4
+        # when sorting is implemented into LER these will be in a different order
+        assert np.array_equal(ler[0], np.array([1/4, 1/2, 1/4, 0]))
+        assert np.array_equal(ler[1], np.array([1/4, 0, 1/4, 1/2]))

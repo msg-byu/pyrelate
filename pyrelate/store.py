@@ -60,7 +60,10 @@ class Store:
         self._store_file(result, full_path)
 
         #put description args in info dict
-        info["desc_args"] = desc_args
+        info["desc_args"] = self._replace_functions(desc_args)
+
+        #edit info to replace any "function" parameters with the string of the name
+        info = self._replace_functions(info)
 
         #store info dict
         info_path = os.path.join(path, info_fname)
@@ -76,7 +79,8 @@ class Store:
             collection_name (str): name of the collection
             based_on (tuple of type (str, dict)): tuple containting a) the name of the descriptor the method is based
             on, and b) a dictionary holding the arguments used in the calculation of the descriptor results
-            **method_args: additional arguments to used in generating the method result
+            **method_args: additional arguments to used in generating the method result, any function arguments will
+            be converted to a string of the function name before storing in the info dict
         """
         fname = self._generate_default_file_name(collection_name, method)
         info_fname = "info_" + fname
@@ -88,13 +92,25 @@ class Store:
         self._store_file(result, full_path)
 
         #put description and method args in info dict
+        # edit args to replace any "function" parameters with the string of the name
         info["based_on_name"] = based_on[0]
-        info["based_on_args"] = based_on[1]
-        info["method_args"] = method_args
+        info["based_on_args"] = self._replace_functions(based_on[1])
+        info["method_args"] = self._replace_functions(method_args)
+
+        #edit info to replace any "function" parameters with the string of the name
+        info = self._replace_functions(info)
 
         #store info dict
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
+
+    def _replace_functions(self, dictionary):
+        """Function to replace any items in dictionary that are functions with a string of its name."""
+        for key in dictionary.keys():
+            item = dictionary[key]
+            if isinstance(item, types.FunctionType):
+                dictionary[key] = item.__name__
+        return dictionary
 
     def store_additional(self, result, store_as, info=None):
         """Function to store any arbitrary results specified by the user"""
@@ -122,11 +138,11 @@ class Store:
         return result
 
     def _equal_args(self, args_given, args_store):
-        """Used in _get_collection_result to compare two argument dictionaries, specifically, it considers two functions the same
-        if they have the same name.
+        """Used in _get_collection_result to compare two argument dictionaries, specifically, if a function argument is given, it
+        will consider the string of the name of the function (which was stored as info instead of the function itself) as equal to the function.
         """
-        if args_given == args_store:
-            return True
+        # if args_given == args_store:
+        #     return True
         if len(args_given) != len(args_store):
             return False
 
@@ -137,8 +153,13 @@ class Store:
             except:
                 return False
 
-            if isinstance(item_given, types.FunctionType) and isinstance(item_store, types.FunctionType):
-                if item_given.__name__ != item_store.__name__:
+            if isinstance(item_given, types.FunctionType): # and isinstance(item_store, types.FunctionType):
+                if item_given.__name__ != item_store: #item_store.__name__:
+                    return False
+            elif type(item_given) is np.ndarray:
+                if type(item_store) is np.ndarray:
+                    return np.array_equal(item_given, item_store)
+                else:
                     return False
             else:
                 if item_given != item_store:
@@ -150,9 +171,10 @@ class Store:
 
         Parameters:
             store_section (str): corresponds to the store section being considered, the string "Descriptions" or "Collections".
-            level1 (str): In "Descriptions" section, corresponds to the aid. In the "Collections" section, corresponds to the method name.
-            level2 (str): In "Descriptions" section, corresponds to the descriptor name. In the "Collections" section, corresponds to the
-            collection name.
+            level1 (str): First level of directory in store. In "Descriptions" section, corresponds to the aid. In the "Collections"
+            section, corresponds to the method name.
+            level2 (str): Second level of directory in store. In "Descriptions" section, corresponds to the descriptor name. In the
+            "Collections" section, corresponds to the collection name.
             based_on (string, dict): If based_on is None, considered an atomic description. If not, considered a collection processing result.
         """
         path = os.path.join(self.root, store_section, level1, level2)
@@ -161,12 +183,9 @@ class Store:
 
             for file in os.listdir(directory):
                 filename = os.fsdecode(file)
-                print(level1 +"_" + level2, filename[:-20])
                 if (level1 + "_" + level2) == filename[:-20]: #remove the date/time and file end
                     info = self._unpickle(path, "info_" + filename)
                     check_args = info['desc_args'] if 'desc_args' in info else info['method_args']
-                    print("Based on: ",self._based_on_is_correct(based_on, info))
-                    print("Args: ", self._equal_args(kwargs, check_args))
                     if self._based_on_is_correct(based_on, info) and self._equal_args(kwargs, check_args):
                         if explicit:
                             return filename
@@ -192,27 +211,27 @@ class Store:
             name = info['based_on_name']
             args = info['based_on_args']
         except KeyError: #not found in dict, key error
-            print("a")
             pass
 
         if based_on is None and (name is not None or args is not None):
-            print("b")
-            print(f"based_on={based_on}, name={name}, args={args}")
             return False
         elif based_on is not None:
             if (name is None or args is None) or not self._equal_args(based_on[1], args) or name != based_on[0]:
-                print("c")
                 return False
 
         return True
 
-    def get_description(self, aid, descriptor, **desc_args):
+    def get_description(self, aid, descriptor, metadata=False, **desc_args):
         """Function to retrieve description results from the store for the given atoms id and parameters.
 
         Parameters:
             aid (str): atoms id
             descriptor (str): descriptor name
+            metadata (bool): If True, return info dictionary with the result. Default is False.
             **desc_args: arguments used in generating the result
+
+        Returns:
+
         """
         filename = self.check_exists("Descriptions", aid, descriptor, explicit=True, **desc_args)
         if filename is False:
@@ -220,18 +239,38 @@ class Store:
         else:
             path = os.path.join(self.root, "Descriptions", aid, descriptor)
             res = self._unpickle(path, filename)
-            info = self._unpickle(path, "info_" + filename)
-            return res, info
+            if metadata:
+                info = self._unpickle(path, "info_" + filename)
+                return res, info
+            else:
+                return res
 
-    def get_collection_result(self, method, collection_name, based_on, **method_args):
+    def get_collection_result(self, method, collection_name, based_on, metadata=False, **method_args):
+        """Function to retrieve collection specific results from the store for the given atoms id and parameters.
+
+        Parameters:
+            method (str): method name used to generate results
+            collection_name (str): collection name
+            based_on (Tuple of types (str, dict)): tuple holding the name of the descriptor the method uses the results of,
+            and the parameters used in generating the results.
+            **method_args: additional arguments to used in generating the method result
+            metadata (bool): If True, return info dictionary with the result. Default is False.
+            **method_args: arguments used in generating the result
+
+        Returns:
+
+        """
         filename = self.check_exists("Collections", collection_name, method, based_on=based_on, explicit=True, **method_args)
         if filename is False:
             raise FileNotFoundError("No such results found for given parameters")
         else:
             path = os.path.join(self.root, "Collections", collection_name, method)
             res = self._unpickle(path, filename)
-            info = self._unpickle(path, "info_" + filename)
-            return res, info
+            if metadata:
+                info = self._unpickle(path, "info_" + filename)
+                return res, info
+            else:
+                return res
 
     def _clear_result(self, descriptor, idd, **kwargs):
         '''Function to remove a single result from the store
