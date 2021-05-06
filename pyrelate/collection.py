@@ -130,10 +130,9 @@ class AtomsCollection(dict):
                 a.set_atomic_numbers([Z for i in a])
                 # TODO aid is stored as an array in the Atoms object, ideally want a single property for the Atoms object
                 aid = self._read_aid(root, comp_rxid, prefix)
-                a.new_array("aid", [aid for i in a], dtype="str")
                 self[aid] = a
 
-                #NEW - initialize mask to all ones (keep all)
+                #initialize mask to all ones (keep all)
                 a.new_array("mask", np.array([1 for i in range(len(a))]), dtype="int")
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
@@ -246,18 +245,23 @@ class AtomsCollection(dict):
 
             exists = self.store.check_exists("Descriptions", descriptor, aid, **desc_args)
             if not exists or override:
-                result = fcn(self[aid], **desc_args)
+                returned = fcn(self[aid], **desc_args)
+                if type(returned) is tuple:
+                    result = returned[0]
+                    info = returned[1]
+                else:
+                    result = returned
+                    info = {}
 
-            if result is not None:
                 if len(result) > np.count_nonzero(self[aid].get_array( "mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
 
                 #FIXME store trim/pad data in info dict
-                info = {} #"trim":None, "pad":None}
+                #"trim":None, "pad":None}
 
                 self.store.store_description(
-                    result, info, aid, descriptor,  **desc_args)
+                    result, info, aid, descriptor, **desc_args)
         # self.clear("temp")
 
     def process(self, method, based_on, fcn=None, override=None, **kwargs):
@@ -288,8 +292,14 @@ class AtomsCollection(dict):
 
         exists = self.store.check_exists("Collections", self.name, method, based_on, **kwargs)
         if not exists or override:
-            print("Calculate and store")
-            result, info = fcn(self, method, based_on, **kwargs)
+            returned = fcn(self, based_on, **kwargs)
+            if type(returned) is tuple:
+                result = returned[0]
+                info = returned[1]
+            else:
+                result = returned
+                info = {}
+
             self.store.store_collection_result(result, info, method, self.name, based_on, **kwargs)
 
         return self.store.get_collection_result(method, self.name, based_on, **kwargs) #return result and info dict
@@ -337,13 +347,13 @@ class AtomsCollection(dict):
         #     self.store.clear_all()
         pass
 
-    def get_description(self, idd, descriptor, **desc_args):
+    def get_description(self, idd, descriptor, metadata=False, **desc_args):
         """Wrapper function to retrieve descriptor results from the store"""
-        return self.store.get_description(idd, descriptor, **desc_args)
+        return self.store.get_description(idd, descriptor, metadata=metadata, **desc_args)
 
-    def get_collection_result(self, method, collection_name, based_on, **method_args):
+    def get_collection_result(self, method, based_on, metadata=False, **method_args):
         """Wrapper function to retrieve collection specific results from the store"""
-        return self.store.get_collection_result(method, collection_name, based_on, **method_args)
+        return self.store.get_collection_result(method, self.name, based_on, metadata=metadata, **method_args)
 
     def aids(self):
         '''Returns sorted list of atom ID's (aids) in collection'''

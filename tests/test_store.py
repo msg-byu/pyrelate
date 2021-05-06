@@ -32,7 +32,7 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
     for d in desc:
         my_col.describe(d, fcn=_test_descriptor, **kwargs)
         for aid in aids:
-            assert my_col.get(d, aid, **kwargs) != None
+            assert my_col.get_description(aid, d, **kwargs) != None
     return my_col
 
 
@@ -64,20 +64,6 @@ class TestStore(unittest.TestCase):
             assert False
         assert True
         _delete_store(store)
-
-    #Functions to test:
-    ## check_exists (when done writing)
-    ## store_additional (when written)
-    ## _equal_args
-    ## _get_description
-    ## _get_collection_result
-
-    #Done
-    ## _generate_default_file_name
-    ## _store_file
-    ## store_description
-    ## store_collection_result
-    ## _unpickle
 
     def test_based_on_is_correct_1(self):
         # if based_on is None, and not in dict, true
@@ -242,7 +228,7 @@ class TestStore(unittest.TestCase):
         aid = "111"
         kw1 = "option_1"
         kw2 = "option_2"
-        info = {"num":47, "important_info":12 }
+        info = {"num":47, "important_info":12, "fcn": _test_descriptor}
         store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         fpath = os.path.join(store.root, "Descriptions", aid, desc)
@@ -260,6 +246,7 @@ class TestStore(unittest.TestCase):
                 assert fetched_info['num'] == info['num']
                 assert fetched_info['important_info'] == info['important_info']
                 assert fetched_info['desc_args'] == {"a": kw1, "b": kw2}
+                assert fetched_info['fcn'] == "_test_descriptor"
                 break
         else:
             assert False, "No correct file found"
@@ -310,6 +297,52 @@ class TestStore(unittest.TestCase):
             assert False, "No correct file found"
         _delete_store(store)
 
+    def test_store_collection_description_with_function_in_args(self):
+        #called in the process() method
+        #result, info, collection name, arguments, descriptor_args
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1,2,3,4,5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num":50,
+            "fcn":_test_descriptor
+        }
+
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
+
+        fpath = os.path.join(store.root, "Collections", name, method)
+        assert os.path.exists(fpath)
+
+        directory = os.fsencode(fpath)
+        for file in os.listdir(directory):
+            filename = os.fsdecode(file)
+            print(filename[:-20], name + "_" + method)
+            if filename[:-20] == name + "_" + method:
+                fullpath = os.path.join(fpath, filename)
+                assert os.path.exists(fullpath)
+                info_fullpath = os.path.join(fpath, "info_" + filename)
+                assert os.path.exists(info_fullpath)
+                fetched_info = store._unpickle(info_fullpath)
+                assert fetched_info['method_args'] != method_args #function converted to string of name
+                assert fetched_info['method_args']['fcn'] == "_test_descriptor"
+                assert fetched_info['based_on_name'] == desc
+                assert fetched_info['based_on_args'] == desc_args
+                assert fetched_info['additional_info'] == info['additional_info']
+                break
+        else:
+            assert False, "No correct file found"
+        _delete_store(store)
+
     def test_store_additional(self):
         pass
 
@@ -331,7 +364,7 @@ class TestStore(unittest.TestCase):
         store = Store("./tests/results")
         func = _test_descriptor
         dic1 = {"func": func, "b": 2, "c": 3}
-        dic2 = {"func": func, "b": 2, "c": 3}
+        dic2 = {"func": func.__name__, "b": 2, "c": 3}
         assert store._equal_args(dic1, dic2)
         _delete_store(store)
 
@@ -340,15 +373,28 @@ class TestStore(unittest.TestCase):
         result = "Random test result"
         desc = "test_desc"
         aid = "111"
-        kw1 = "option_1"
-        kw2 = "option_2"
+        kwargs = {"a": "option_1", "b": "option_2"}
         info = {}
-        store.store_description(result, info, aid, desc, a=kw1, b=kw2)
+        store.store_description(result, info, aid, desc, **kwargs)
 
-        res, info = store.get_description(aid, desc, a=kw1, b=kw2)
+        res = store.get_description(aid, desc, **kwargs)
 
         assert res == result
-        assert info["desc_args"] == {"a": kw1, "b": kw2}
+        _delete_store(store)
+
+    def test_get_description_metadata(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kwargs = {"a": "option_1", "b": "option_2"}
+        info = {}
+        store.store_description(result, info, aid, desc, **kwargs)
+
+        res, info = store.get_description(aid, desc, metadata=True, **kwargs)
+
+        assert res == result
+        assert info["desc_args"] == kwargs
         _delete_store(store)
 
     def test_get_collection_results(self):
@@ -369,9 +415,32 @@ class TestStore(unittest.TestCase):
             "num": 50
         }
 
-        # ler_0412211113
         store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
-        res, info = store.get_collection_result(method, name, (desc, desc_args), **method_args)
+        res = store.get_collection_result(method, name, (desc, desc_args), **method_args)
+
+        assert res == result
+        _delete_store(store)
+
+    def test_get_collection_results_metadata(self):
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args = {
+            "eps": 1,
+            "num": 50
+        }
+
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
+        res, info = store.get_collection_result(method, name, (desc, desc_args), metadata=True, **method_args)
 
         assert res == result
         assert info["based_on_args"] == desc_args
@@ -408,80 +477,23 @@ class TestStore(unittest.TestCase):
             assert True
         else:
             assert False, "Expected error not thrown"
+        finally:
+            _delete_store(store)
 
     def test_unpickle_unpickling_error(self):
         import pickle
-        store = Store("./tests/test_paths/")
+        store = Store("./tests/results/")
         fname = "fakepkl.pkl"
         try:
-            store._unpickle(store.root, fname)
+            store._unpickle("./tests", fname)
         except pickle.UnpicklingError as e:
             assert True
         else:
             assert False, "Expected error not thrown"
+        finally:
+            _delete_store(store)
 
-    """
-    def test_get_file_unpickling_error(self):
-        '''Test get, unpickling error'''
-        desc = "desc"
-        aid = "fakepkl"
-        store = Store("./tests/test_paths/")
-        output = io.StringIO()
-        sys.stdout = output
-        store.get(desc, aid, arg1="1")
-        assert "UnpicklingError when loading file fakepkl.pkl, consider deleting result and recomputing\n" == output.getvalue()
-
-    def test_get_file_numpy_array(self):
-        '''Tests _get_file, make sure get_descriptor returns expected value'''
-        desc = "soap"
-        aid = "aid_111"
-        store = Store("./tests/results/")
-        res = np.array([[1, 2, 3], [4, 5, 6]])
-        store.store(res, desc, aid, rcut=9, nmax=10, lmax=10)
-        ret_val = store._get_file(desc, aid, rcut=9, nmax=10, lmax=10)
-        assert np.array_equal(ret_val, res)
-        _delete_store(store)
-        # shutil.rmtree("./tests/results/")
-
-    def test_get_file_missing_param(self):
-        '''Test _get_file, missing parameter return None'''
-        desc = "soap"
-        aid = "aid_111"
-        store = Store("./tests/results/")
-        res = np.array([[1, 2, 3], [4, 5, 6]])
-        store.store(res, desc, aid, rcut=9, nmax=10, lmax=10)
-        ret_val = store._get_file(aid, desc, rcut=9, lmax=10)
-        assert ret_val == None
-        _delete_store(store)
-        # shutil.rmtree("./tests/results/")
-
-    def test_get_file_string(self):
-        '''Test _get_file, result is string'''
-        store = Store("./tests/results")
-        result = "Random test result"
-        desc = "test"
-        aid = "12"
-        store.store(result, desc, aid, arg_a=1, arg_b=2)
-        ret_val = store._get_file(desc, aid, arg_a=1, arg_b=2)
-        assert ret_val == result
-        _delete_store(store)
-        # shutil.rmtree("./tests/results/")
-
-    def test_get(self):
-        '''Test get function'''
-        store = Store("./tests/test_paths")
-        #result is stored in test_paths
-        res = store.get("soap", '455', rcut=5.0, nmax=9, lmax=9)
-        assert type(res) is np.ndarray
-
-    def test_get_with_list(self):
-        '''Test get, pass in list of aids to get results for'''
-        store = Store("./tests/test_paths")
-        res = store.get("soap", ['455'], rcut=5.0, nmax=9, lmax=9)
-        assert type(res) == dict
-        assert type(res['455']) is not type(None)
-        assert len(res) == 1
-
+"""
     def test_clear_specific_result(self):
         '''Test clear, specific result'''
         my_col = _initialize_collection_and_describe(

@@ -61,15 +61,15 @@ def _swap_x_y(positions):
 
 def _test_descriptor(atoms, num=0, **kwargs):
     if num == 0:
-        return 'test result 1'
+        return 'test result 1', {}
     else:
-        return 'test result 2'
+        return 'test result 2', {}
 
-def _processing_method(collection, method, based_on, **kwargs):
+def _processing_method(collection, based_on, method_name, **kwargs):
     #process collection of results
-    new_string = method + "__"
+    new_string = method_name + "__"
     for aid in collection.aids():
-        res, info = collection.get_description(aid, based_on[0], **based_on[1]) #str 'test result 1'
+        res = collection.get_description(aid, based_on[0], **based_on[1]) #str 'test result 1'
         new_string += res
         new_string += "_"
     info = {}
@@ -364,7 +364,7 @@ class TestCollection(unittest.TestCase):
         my_col = _initialize_collection_and_read(['455'])
         kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col.describe('desc', fcn=_test_descriptor, **kwargs)
-        res, info = my_col.get_description('455', 'desc', **kwargs)
+        res, info = my_col.get_description('455', 'desc', metadata=True, **kwargs)
         assert res == 'test result 1'
         assert info['desc_args'] == kwargs
         _delete_store(my_col)
@@ -377,7 +377,7 @@ class TestCollection(unittest.TestCase):
         my_col.store.store_description("fake result", {}, '455', "test", **kwargs) #store result, can be overridden
         try:
             my_col.describe('test', fcn=_test_descriptor, override=True, **kwargs)
-            res, info = my_col.get_description('455', 'test', **kwargs)
+            res = my_col.get_description('455', 'test', **kwargs)
             assert res != "fake result"
             assert res == "test result 1"
         finally:
@@ -390,7 +390,7 @@ class TestCollection(unittest.TestCase):
         num_atoms_with_mask = len(my_col[aid])
         soapargs = {'rcut': 5.0, 'nmax': 3, 'lmax': 3}
         my_col.describe('soap', **soapargs)
-        res, info = my_col.get_description(aid, 'soap', **soapargs)
+        res, info = my_col.get_description(aid, 'soap', metadata=True, **soapargs)
         assert res is not None
         assert info['desc_args'] == soapargs
         assert num_atoms_with_mask > len(res), f"Result not correctly trimmed following description"
@@ -403,12 +403,12 @@ class TestCollection(unittest.TestCase):
         kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col.describe('desc', aid = a1, fcn=_test_descriptor, **kwargs)
 
-        res1, info1 = my_col.get_description(a1, 'desc', **kwargs)
+        res1, info1 = my_col.get_description(a1, 'desc', metadata=True, **kwargs)
         assert res1 == 'test result 1'
         assert info1['desc_args'] == kwargs
 
         try:
-            res2, info2 = my_col.get_description(a2, 'desc', **kwargs)
+            res2 = my_col.get_description(a2, 'desc', **kwargs)
             assert False, "No result was calculated previously so an exception should be raised"
         except FileNotFoundError:
             assert True
@@ -420,13 +420,15 @@ class TestCollection(unittest.TestCase):
         desc_args = {
             'num': 1
         }
+        method = "my_method"
         method_args = {
             "a": 0,
-            "b": 1
+            "b": 1,
+            "method_name": method
         }
         my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
-        res, info = my_col.process("method", (desc, desc_args), fcn=_processing_method, **method_args)
-        assert res == "method__test result 2_test result 2_"
+        res = my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args)
+        assert res == "my_method__test result 2_test result 2_"
 
     # def test_clear_single_result(self):
     #     '''Test clear, clear single result with given descriptor, parameters, and aid'''
