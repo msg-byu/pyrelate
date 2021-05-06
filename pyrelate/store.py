@@ -104,12 +104,13 @@ class Store:
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
 
-    def _replace_functions(self, info):
-        for key in info.keys():
-            item = info[key]
+    def _replace_functions(self, dictionary):
+        """Function to replace any items in dictionary that are functions with a string of its name."""
+        for key in dictionary.keys():
+            item = dictionary[key]
             if isinstance(item, types.FunctionType):
-                info[key] = item.__name__
-        return info
+                dictionary[key] = item.__name__
+        return dictionary
 
     def store_additional(self, result, store_as, info=None):
         """Function to store any arbitrary results specified by the user"""
