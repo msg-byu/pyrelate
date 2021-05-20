@@ -150,9 +150,9 @@ class AtomsCollection(dict):
         Padding may want to be included so that atoms have a full atomic environments at the edge, some descriptors that perform better with full atomic environments. The "mask" array is attached to the Atoms object, with 1 indicating atoms to be kept in the final description, and 0 to indicate padding atoms. You may get the mask by calling 'my_col.get_array("mask")'.
 
         Parameters:
-            trim (float or int): value (in Angstroms) of the furthest atoms that you want included in the calculated results
-            dim (int): what dimension the grain boundary is in, 0 for x, 1 for y, 2 for z
-            pad (boolean or float or int): 'True' (default) gives a padding value equal to that of the trim, 'False' gives no padding, or specify the amount of padding wanted (in Angstroms).
+            trim (float or int) : value (in Angstroms) of the furthest atoms that you want included in the calculated results
+            dim (int) : what dimension the grain boundary is in, 0 for x, 1 for y, 2 for z
+            pad (boolean or float or int) : 'True' (default) gives a padding value equal to that of the trim, 'False' gives no padding, or specify the amount of padding wanted (in Angstroms).
 
         .. WARNING:: The user must keep track of what trim and pad parameters were used, as the results stored will not indicate if they have been trimmed or not
 
@@ -198,15 +198,14 @@ class AtomsCollection(dict):
         User can specify a descriptor function to be used, or use those in descriptors.py. When there is a padding associated with the Atoms object, the padding atoms are deleted from the final description before being stored.
 
         Parameters:
-            descriptor (str): descriptor to be applied.
-            aid (iterable or string): Atoms ID's (aid) of atomic systems to be described. Can pass in single aid string, or an iterable
-            of aids. Defaults to None. When None, all ASE Atoms objects in AtomsCollection are described.
-            fcn: function to apply said description. Defaults to none. When none, built in functions in descriptors.py are used.
-            override (bool): if True, descriptor will override any matching results in the store. Defaults to False.
-            desc_args (dict): Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
+            descriptor (str) : descriptor to be applied.
+            aid (iterable or string) : Atoms ID's (aid) of atomic systems to be described. Can pass in single aid string, or an iterable of aids. Defaults to None. When None, all ASE Atoms objects in AtomsCollection are described.
+            fcn : function to apply said description. Defaults to none. When none, built in functions in descriptors.py are used.
+            override (bool) : if True, descriptor will override any matching results in the store. Defaults to False.
+            desc_args (dict) : Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
+        #FIXME old examples
         Examples:
-            #FIXME old examples
             .. code-block:: python
 
                 soap_args = {
@@ -214,18 +213,21 @@ class AtomsCollection(dict):
                     "lmax" : 9,
                     "nmax" : 9
                 }
+
                 my_col.describe("soap", **soap_args)
+
                 my_col.describe("my_soap", fcn=soap, **soap_args)
                 my_col.describe("asr", res_needed="my_soap", **soap_args)
-
+                
                 ler_args = {
-                    "collection": my_col,
-                    "res_needed": "my_soap",
-                    "soap_fcn": soap,
-                    "eps": 0.1,
-                    "dissim_args":{"gamma":4000},
+                    "collection" : my_col,
+                    "res_needed" : "my_soap",
+                    "soap_fcn" : soap,
+                    "eps" : 0.1,
+                    "dissim_args" : {"gamma":4000},
                     **soap_args
                 }
+
                 my_col.describe("ler", **ler_args)
 
         """
