@@ -25,7 +25,8 @@ import pyrelate
 
 # -- General configuration ---------------------------------------------
 
-html_static_path = []
+# Withought this pandoc will try and look everywhere for .ipynb files
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
@@ -33,7 +34,7 @@ html_static_path = []
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'nbsphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

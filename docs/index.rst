@@ -1,5 +1,5 @@
-Welcome to pyrelate's documentation!
-======================================
+pyrelate
+==========
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +12,8 @@ Welcome to pyrelate's documentation!
    contributing
    authors
    history
+   0_read
+   1_describe
 
 Indices and tables
 ==================
