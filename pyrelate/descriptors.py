@@ -170,7 +170,7 @@ def ler(collection, based_on, eps, dissimilarity=gaussian_dissimilarity, dissim_
             n_trees(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
             search_k(int): For approximate nearest neighbor calculation. See Annoy's documentation for more details.
             soapargs (dict): Parameters associated with the SOAP description being used.
-        `Annoy's documentation <https://github.com/spotify/annoy>`_.
+            `Annoy's documentation <https://github.com/spotify/annoy>`_.
     '''
 
     from collections import OrderedDict

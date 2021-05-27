@@ -78,7 +78,7 @@ class Store:
             collection_name (str): name of the collection
             based_on (tuple of type (str, dict)): tuple containting a) the name of the descriptor the method is based
             on, and b) a dictionary holding the arguments used in the calculation of the descriptor results
-            **method_args: additional arguments to used in generating the method result, any function arguments will
+            \*\*method_args: additional arguments to used in generating the method result, any function arguments will
             be converted to a string of the function name before storing in the info dict
         """
         fname = self._generate_default_file_name(collection_name, method)
@@ -226,7 +226,7 @@ class Store:
             aid (str): atoms id
             descriptor (str): descriptor name
             metadata (bool): If True, return info dictionary with the result. Default is False.
-            **desc_args: arguments used in generating the result
+            \*\*desc_args: arguments used in generating the result
 
         Returns:
 
@@ -251,9 +251,9 @@ class Store:
             collection_name (str): collection name
             based_on (Tuple of types (str, dict)): tuple holding the name of the descriptor the method uses the results of,
             and the parameters used in generating the results.
-            **method_args: additional arguments to used in generating the method result
+            \*\*method_args: additional arguments to used in generating the method result
             metadata (bool): If True, return info dictionary with the result. Default is False.
-            **method_args: arguments used in generating the result
+            \*\*method_args: arguments used in generating the result
 
         Returns:
 

@@ -47,7 +47,7 @@ class AtomsCollection(dict):
             aids (list): List containing the strings of all the aids to include in the new collection.
             name (string): Name of the new collection, default is the name of the original collection.
             store (string): String representing the location of the store, default (None) sets the current
-                store as the store for the new collection, which is probably what you want most of the time.
+            store as the store for the new collection, which is probably what you want most of the time.
 
         Returns:
             pyrelate.AtomsCollection
@@ -205,6 +205,7 @@ class AtomsCollection(dict):
             desc_args (dict) : Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
         #FIXME old examples
+
         Examples:
             .. code-block:: python
 
@@ -304,8 +305,7 @@ class AtomsCollection(dict):
 
             self.store.store_collection_result(result, info, method, self.name, based_on, **kwargs)
 
-        return self.store.get_collection_result(method, self.name, based_on, **kwargs) #return result and info dict
-
+        return self.store.get_collection_result(method, self.name, based_on, **kwargs) # return result and info dict
 
     def clear(self, descriptor=None, idd=None, **kwargs):
         '''Function to delete specified results from Store.
@@ -334,7 +334,7 @@ class AtomsCollection(dict):
                 my_col.clear() #clears all results from store
 
         '''
-        #FIXME rewrite how change works, and it is implemented differently in store.py
+        # FIXME rewrite how change works, and it is implemented differently in store.py
         # has_kwargs = len(kwargs) != 0
         # if descriptor is not None:
         #     if has_kwargs:
