@@ -1,7 +1,7 @@
 '''Crystal definitions and SOAP vector calculations for simple
 elements.
 '''
-import numpy as np
+# import numpy as np
 from pyrelate import descriptors
 from ase import Atoms
 
@@ -36,7 +36,7 @@ def atoms(element):
             a.set_cell(lat.cell)
             a.set_atomic_numbers([Z for i in a])
             return a
-    #FIXME throw error if structure not included
+    # FIXME throw error if structure not included
 
 
 def seed(element, soap_fcn, **soapargs):

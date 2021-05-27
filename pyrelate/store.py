@@ -3,7 +3,7 @@
 import os
 import numpy as np
 import pickle
-import shutil
+# This was included "import shutil"
 import time
 import types
 
@@ -12,7 +12,7 @@ class Store:
     """Class for efficient storing of description of the AtomsCollection"""
 
     def __init__(self, store_path=None):
-        """Default initiation creates a Store entitled 'store' in current directory"""
+        """Creates a Store entitled 'store' in current directory"""
         if store_path is None:
             self.root = os.path.join(os.getcwd(), "store")
         else:
@@ -26,7 +26,6 @@ class Store:
 
     def list_store_results(self):
         """Print results currently stored in the Store"""
-        #TODO
         pass
 
     def _generate_default_file_name(self, param_1, param_2):
@@ -59,13 +58,13 @@ class Store:
         full_path = os.path.join(path, fname)
         self._store_file(result, full_path)
 
-        #put description args in info dict
+        # put description args in info dict
         info["desc_args"] = self._replace_functions(desc_args)
 
-        #edit info to replace any "function" parameters with the string of the name
+        # edit info to replace any "function" parameters with the string of the name
         info = self._replace_functions(info)
 
-        #store info dict
+        # store info dict
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
 
@@ -87,20 +86,20 @@ class Store:
         path = os.path.join(self.root, "Collections", collection_name, method)
         os.makedirs(path, exist_ok=True)
 
-        #store result
+        # store result
         full_path = os.path.join(path, fname)
         self._store_file(result, full_path)
 
-        #put description and method args in info dict
+        # put description and method args in info dict
         # edit args to replace any "function" parameters with the string of the name
         info["based_on_name"] = based_on[0]
         info["based_on_args"] = self._replace_functions(based_on[1])
         info["method_args"] = self._replace_functions(method_args)
 
-        #edit info to replace any "function" parameters with the string of the name
+        # edit info to replace any "function" parameters with the string of the name
         info = self._replace_functions(info)
 
-        #store info dict
+        # store info dict
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
 
@@ -114,7 +113,7 @@ class Store:
 
     def store_additional(self, result, store_as, info=None):
         """Function to store any arbitrary results specified by the user"""
-        #TODO
+        # TODO
         pass
 
     def _unpickle(self, path, filename=None):
@@ -150,11 +149,11 @@ class Store:
             try:
                 item_given = args_given[key]
                 item_store = args_store[key]
-            except:
+            except ValueError:
                 return False
 
-            if isinstance(item_given, types.FunctionType): # and isinstance(item_store, types.FunctionType):
-                if item_given.__name__ != item_store: #item_store.__name__:
+            if isinstance(item_given, types.FunctionType):  # and isinstance(item_store, types.FunctionType):
+                if item_given.__name__ != item_store:   # item_store.__name__:
                     return False
             elif type(item_given) is np.ndarray:
                 if type(item_store) is np.ndarray:
@@ -183,7 +182,7 @@ class Store:
 
             for file in os.listdir(directory):
                 filename = os.fsdecode(file)
-                if (level1 + "_" + level2) == filename[:-20]: #remove the date/time and file end
+                if (level1 + "_" + level2) == filename[:-20]:  # remove the date/time and file end
                     info = self._unpickle(path, "info_" + filename)
                     check_args = info['desc_args'] if 'desc_args' in info else info['method_args']
                     if self._based_on_is_correct(based_on, info) and self._equal_args(kwargs, check_args):
@@ -196,21 +195,20 @@ class Store:
         else:
             return False
 
-
     def _based_on_is_correct(self, based_on, info):
         """Function used when checking if result exists, makes sure what the user expects for the 'based_on' parameter
         matches with what is in the info dictionary."""
-        #if based_on is None, and not in dict, true
-        #if based_on is None, and is in dict, false
-        #if based_on is not None, and not in dict or wrong in dict, false
-        #if based_on is not None, and info matches, true
+        # if based_on is None, and not in dict, true
+        # if based_on is None, and is in dict, false
+        # if based_on is not None, and not in dict or wrong in dict, false
+        # if based_on is not None, and info matches, true
 
         name = None
         args = None
         try:
             name = info['based_on_name']
             args = info['based_on_args']
-        except KeyError: #not found in dict, key error
+        except KeyError:  # not found in dict, key error
             pass
 
         if based_on is None and (name is not None or args is not None):
@@ -280,7 +278,7 @@ class Store:
             idd (str): atoms id
             kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
         '''
-        #FIXME: Store structure changed
+        # FIXME: Store structure changed
         # fname = self._generate_file_name(descriptor, idd, **kwargs)
         # path = os.path.join(self.root, descriptor, idd, fname)
         # if os.path.exists(path):

@@ -24,6 +24,7 @@ def soap(atoms, rcut, nmax, lmax, **kwargs):
     P = soap_desc.create(atoms)
     return P
 
+
 def asr(collection, based_on, norm_asr=False):
     """Average SOAP representation: average vectors from SOAP matrix into a single vector
 
@@ -40,6 +41,7 @@ def asr(collection, based_on, norm_asr=False):
             magnitude = np.linalg.norm(asr_row)
         asr_matrix.append(asr_row / magnitude)
     return np.array(asr_matrix)
+
 
 def sum(collection, based_on):
     """Sum all rows of a descriptor matrix into a single vector
@@ -66,7 +68,7 @@ def gaussian_dissimilarity(lae1, lae2, gamma):
         gamma (float): gamma value
     """
     diff = lae1 - lae2
-    gker = 1 - np.exp((-gamma*(np.linalg.norm(diff)**2)))
+    gker = 1 - np.exp((-gamma * (np.linalg.norm(diff)**2)))
     return gker
 
 # def ler(atoms, store, collection, eps, res_needed='soap', dissimilarity=gaussian_dissimilarity, dissim_args={}, soap_fcn=None, seed=None, metric='euclidean', n_trees=10, search_k=-1, **soapargs):
