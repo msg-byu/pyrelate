@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from os import path
 import os
-from ase import io, Atoms
+from ase import io
 from pyrelate.store import Store
 
 
@@ -23,7 +23,7 @@ class AtomsCollection(dict):
         """Initializer which calls dict's and Store's initializers."""
         super(AtomsCollection, self).__init__()
         self.name = name.lower()
-        #TODO make trim and pad more general (have FIRM for entire collection, apply to new atoms read in, cannot trim
+        # TODO make trim and pad more general (have FIRM for entire collection, apply to new atoms read in, cannot trim
         # to be wider than it is, when you do "subset" the trim/pad values must be applied, update trim function)
         # self.trim = trim
         # self.pad = pad
@@ -34,7 +34,7 @@ class AtomsCollection(dict):
             self.store = Store(store)
 
         if data is not None:
-            self.update(data) #allows you to initialize a collection beginning with another collection (dictionary)
+            self.update(data)  # allows you to initialize a collection beginning with another collection (dictionary)
 
     def __str__(self):
         """String representation of the AtomsCollection object (name of collection)."""
@@ -123,8 +123,7 @@ class AtomsCollection(dict):
                 a0 = io.read(root, format=f_format)
                 a = a0.copy()
                 # delete end blocks
-                del a[[atom.index for atom in a if atom.number ==
-                       4 or atom.number == 5]]
+                del a[[atom.index for atom in a if atom.number == 4 or atom.number == 5]]
                 a.new_array('type', a.get_array(
                     'numbers', copy=True), dtype=int)
                 a.set_atomic_numbers([Z for i in a])
@@ -132,7 +131,7 @@ class AtomsCollection(dict):
                 aid = self._read_aid(root, comp_rxid, prefix)
                 self[aid] = a
 
-                #initialize mask to all ones (keep all)
+                # initialize mask to all ones (keep all)
                 a.new_array("mask", np.array([1 for i in range(len(a))]), dtype="int")
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
@@ -179,17 +178,17 @@ class AtomsCollection(dict):
         for idx, aid in enumerate(tqdm(self)):
             atoms = self[aid]
             d = dim[idx]
-            if d not in [0,1,2]:
+            if d not in [0, 1, 2]:
                 raise TypeError("Dimension should equal 0, 1, or 2")
 
-            pos = atoms.get_positions()[:,d]
-            #TODO verify gbcenter = 0
+            atoms.get_positions()[:, d]
+            # TODO verify gbcenter = 0
             gbcenter = 0
-            #delete atoms outside of trim and pad
-            del atoms[[atom.index for atom in atoms if atom.position[d] < (gbcenter - slice_width) or atom.position[d] > (gbcenter + slice_width) ]]
+            # delete atoms outside of trim and pad
+            del atoms[[atom.index for atom in atoms if atom.position[d] < (gbcenter - slice_width) or atom.position[d] > (gbcenter + slice_width)]]
 
-            #update mask -- 1 for inside trim, and 0 for pad
-            mask = np.array([atom.position[d] > (gbcenter - trim) for atom in atoms])*np.array([atom.position[d] < (gbcenter + trim) for atom in atoms])*1
+            # update mask -- 1 for inside trim, and 0 for pad
+            mask = np.array([atom.position[d] > (gbcenter - trim) for atom in atoms]) * np.array([atom.position[d] < (gbcenter + trim) for atom in atoms]) * 1
             atoms.set_array("mask", mask)
 
     def describe(self, descriptor, aid=None, fcn=None, override=False, **desc_args):
@@ -219,7 +218,7 @@ class AtomsCollection(dict):
 
                 my_col.describe("my_soap", fcn=soap, **soap_args)
                 my_col.describe("asr", res_needed="my_soap", **soap_args)
-                
+
                 ler_args = {
                     "collection" : my_col,
                     "res_needed" : "my_soap",
@@ -256,12 +255,12 @@ class AtomsCollection(dict):
                     result = returned
                     info = {}
 
-                if len(result) > np.count_nonzero(self[aid].get_array( "mask")):
+                if len(result) > np.count_nonzero(self[aid].get_array("mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
 
-                #FIXME store trim/pad data in info dict
-                #"trim":None, "pad":None}
+                # FIXME store trim/pad data in info dict
+                # "trim":None, "pad":None}
 
                 self.store.store_description(
                     result, info, aid, descriptor, **desc_args)
@@ -305,7 +304,7 @@ class AtomsCollection(dict):
 
             self.store.store_collection_result(result, info, method, self.name, based_on, **kwargs)
 
-        return self.store.get_collection_result(method, self.name, based_on, **kwargs) # return result and info dict
+        return self.store.get_collection_result(method, self.name, based_on, **kwargs)  # return result and info dict
 
     def clear(self, descriptor=None, idd=None, **kwargs):
         '''Function to delete specified results from Store.

@@ -1,7 +1,6 @@
 """Tests collection.py
 """
 from pyrelate.collection import AtomsCollection
-import os.path
 import numpy as np
 import sys
 import shutil
@@ -43,8 +42,9 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
     for d in desc:
         my_col.describe(d, fcn=_test_descriptor, **kwargs)
         for aid in aids:
-            assert my_col.get_description(aid, d, **kwargs) != None
+            assert my_col.get_description(aid, d, **kwargs) is not None
     return my_col
+
 
 def _swap_x_y(positions):
     """Function to swap x and y coordinates of position"""
@@ -56,6 +56,7 @@ def _swap_x_y(positions):
     swapped_positions = transposed.T
     return swapped_positions
 
+
 '''Toy descriptor functions to help in funtionality testing'''
 
 
@@ -65,11 +66,12 @@ def _test_descriptor(atoms, num=0, **kwargs):
     else:
         return 'test result 2', {}
 
+
 def _processing_method(collection, based_on, method_name, **kwargs):
-    #process collection of results
+    # process collection of results
     new_string = method_name + "__"
     for aid in collection.aids():
-        res = collection.get_description(aid, based_on[0], **based_on[1]) #str 'test result 1'
+        res = collection.get_description(aid, based_on[0], **based_on[1])  # str 'test result 1'
         new_string += res
         new_string += "_"
     info = {}
@@ -81,7 +83,7 @@ def _processing_method(collection, based_on, method_name, **kwargs):
 
 class TestCollection(unittest.TestCase):
     def test_subset_defaults(self):
-        aids = ['454','455']
+        aids = ['454', '455']
         my_col = _initialize_collection_and_read(aids)
         data_loc = "tests/test_data/sub1"
         my_col.read(data_loc, 28, 'lammps-dump-text', rxid=r'ni.p(?P<aid>\d+).out')
@@ -94,7 +96,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_subset_new_name(self):
-        aids = ['454','455']
+        aids = ['454', '455']
         my_col = _initialize_collection_and_read(aids)
 
         new_col = my_col.subset(aids[:1], name="Test_sub")
@@ -104,7 +106,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_subset_new_store(self):
-        aids = ['454','455']
+        aids = ['454', '455']
         my_col = _initialize_collection_and_read(aids)
 
         new_col = my_col.subset(aids[:1], store="tests/store_2")
@@ -250,9 +252,9 @@ class TestCollection(unittest.TestCase):
         assert pre_trim_size > post_trim_size, "No atoms were trimmed"
 
         positions = my_col[aid].get_positions()[:, xdim]
-        mask = my_col[aid].get_array("mask")
+        my_col[aid].get_array("mask")
         for idx, atom in enumerate(positions):
-            if(positions[idx] > (trim_val + pad_val) or positions[idx] < (-1*(trim_val + pad_val))):
+            if(positions[idx] > (trim_val + pad_val) or positions[idx] < (-1 * (trim_val + pad_val))):
                 assert False, "Atoms object not trimmed correctly"
         _delete_store(my_col)
 
@@ -270,7 +272,7 @@ class TestCollection(unittest.TestCase):
         mask = my_col[aid].get_array("mask")
         for idx, atom in enumerate(positions):
             if(mask[idx] == 0):
-                if(positions[idx] < trim_val and positions[idx] > (trim_val*-1)):
+                if(positions[idx] < trim_val and positions[idx] > (trim_val * -1)):
                     assert False, "Mask was applied to atoms supposed to be included in final values"
         _delete_store(my_col)
 
@@ -282,13 +284,13 @@ class TestCollection(unittest.TestCase):
         expected_pad_val = 3
 
         my_col = _initialize_collection_and_read([aid])
-        pre_trim_size = len(my_col[aid])
+        len(my_col[aid])
         my_col.trim(trim=trim_val, dim=xdim, pad=True)
 
         positions = my_col[aid].get_positions()[:, xdim]
-        mask = my_col[aid].get_array("mask")
+        # I dont know why this was here "mask = my_col[aid].get_array("mask")"
         for idx, atom in enumerate(positions):
-            if(positions[idx] > (trim_val + expected_pad_val) or positions[idx] < (-1*(trim_val + expected_pad_val))):
+            if(positions[idx] > (trim_val + expected_pad_val) or positions[idx] < (-1 * (trim_val + expected_pad_val))):
                 assert False, "Pad not set to same as trim value"
         _delete_store(my_col)
 
@@ -307,7 +309,7 @@ class TestCollection(unittest.TestCase):
 
     def test_trim_fail_invalid_trim(self):
         my_col = AtomsCollection("Test", "tests/store")
-        #self.assertRaises(TypeError, AtomsCollection.trim, trim="string", dim=0)
+        # self.assertRaises(TypeError, AtomsCollection.trim, trim="string", dim=0)
         try:
             my_col.trim(trim="string", dim=0)
         except TypeError as e:
@@ -357,24 +359,23 @@ class TestCollection(unittest.TestCase):
         mask_B = my_col_B[aid].get_array("mask")
         assert np.array_equal(mask_A, mask_B), "Masks not equal, so atoms were trimmed differently for different dimensions"
         _delete_store(my_col_A)
-        #deletes store b coincidentally
+        # deletes store b coincidentally
 
     def test_describe_own_function(self):
         '''Test using descriptor function not built into descriptors.py'''
         my_col = _initialize_collection_and_read(['455'])
-        kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
+        kwargs = {'num': 0, 'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col.describe('desc', fcn=_test_descriptor, **kwargs)
         res, info = my_col.get_description('455', 'desc', metadata=True, **kwargs)
         assert res == 'test result 1'
         assert info['desc_args'] == kwargs
         _delete_store(my_col)
 
-
     def test_describe_override(self):
         '''Put result in store, and check to make sure 'override' parameter overrides previous result'''
         kwargs = {'arg1': 1, 'arg2': 2, 'arg3': 3}
         my_col = _initialize_collection_and_read(['455'])
-        my_col.store.store_description("fake result", {}, '455', "test", **kwargs) #store result, can be overridden
+        my_col.store.store_description("fake result", {}, '455', "test", **kwargs)  # store result, can be overridden
         try:
             my_col.describe('test', fcn=_test_descriptor, override=True, **kwargs)
             res = my_col.get_description('455', 'test', **kwargs)
@@ -393,22 +394,22 @@ class TestCollection(unittest.TestCase):
         res, info = my_col.get_description(aid, 'soap', metadata=True, **soapargs)
         assert res is not None
         assert info['desc_args'] == soapargs
-        assert num_atoms_with_mask > len(res), f"Result not correctly trimmed following description"
+        assert num_atoms_with_mask > len(res), print("Result not correctly trimmed following description")
         _delete_store(my_col)
 
     def test_describe_specific_atomic_systems(self):
         a1 = '454'
         a2 = '455'
         my_col = _initialize_collection_and_read([a1, a2])
-        kwargs = {'num': 0,'arg1': 1, 'arg2': 2, 'arg3': 3}
-        my_col.describe('desc', aid = a1, fcn=_test_descriptor, **kwargs)
+        kwargs = {'num': 0, 'arg1': 1, 'arg2': 2, 'arg3': 3}
+        my_col.describe('desc', aid=a1, fcn=_test_descriptor, **kwargs)
 
         res1, info1 = my_col.get_description(a1, 'desc', metadata=True, **kwargs)
         assert res1 == 'test result 1'
         assert info1['desc_args'] == kwargs
 
         try:
-            res2 = my_col.get_description(a2, 'desc', **kwargs)
+            my_col.get_description(a2, 'desc', **kwargs)
             assert False, "No result was calculated previously so an exception should be raised"
         except FileNotFoundError:
             assert True
@@ -472,7 +473,6 @@ class TestCollection(unittest.TestCase):
     #     assert os.path.exists(os.path.join(my_col.store.root, 'test2')) == False
     #     assert os.path.exists(my_col.store.root) == True
     #     _delete_store(my_col)
-
 
     def test_aids(self):
         '''Test function to get list of all aid's in collection'''

@@ -31,7 +31,7 @@ def asr(collection, based_on, norm_asr=False):
     Parameters:
         norm_asr (bool): Normalize ASR vector. Default is False, not normalized.
     """
-    #for each gb, average and add to matrix, and return
+    # for each gb, average and add to matrix, and return
     asr_matrix = []
     magnitude = 1
     for aid in collection.aids():
@@ -184,7 +184,7 @@ def ler(collection, based_on, eps, dissimilarity=gaussian_dissimilarity, dissim_
     if seed is None:
         seed = elements.seed(list(collection.values())[0].get_chemical_symbols()[0], soap_fcn, **based_on[1])
     U['centers'][('0', 0)] = seed
-    #print("Part 1: Clustering (for each LAE in each GB)")
+    # print("Part 1: Clustering (for each LAE in each GB)")
     for aid in collection:
         soap = collection.get_description(aid, based_on[0], **based_on[1])
         for lae_num, lae in enumerate(soap):

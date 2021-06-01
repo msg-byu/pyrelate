@@ -1,12 +1,10 @@
 from pyrelate.store import Store
 from pyrelate.collection import AtomsCollection
 import os
-import io
-import sys
-import numpy as np
 import shutil
 import unittest
-#TODO finish updating unit tests
+# TODO finish updating unit tests
+
 
 def _delete_store(store):
     shutil.rmtree(store.root)
@@ -32,7 +30,7 @@ def _initialize_collection_and_describe(desc, aids, **kwargs):
     for d in desc:
         my_col.describe(d, fcn=_test_descriptor, **kwargs)
         for aid in aids:
-            assert my_col.get_description(aid, d, **kwargs) != None
+            assert my_col.get_description(aid, d, **kwargs) is not None
     return my_col
 
 
@@ -42,7 +40,7 @@ class TestStore(unittest.TestCase):
         '''Test initialization of store'''
         try:
             store = Store('./tests/results')
-        except:
+        except TypeError:
             assert False
         assert True
         _delete_store(store)
@@ -51,7 +49,7 @@ class TestStore(unittest.TestCase):
         '''Test initializing store default'''
         try:
             store = Store()
-        except:
+        except TypeError:
             assert False
         assert True
         _delete_store(store)
@@ -60,7 +58,7 @@ class TestStore(unittest.TestCase):
         '''Test initializing store default'''
         try:
             store = Store("~/test_store")
-        except:
+        except TypeError:
             assert False
         assert True
         _delete_store(store)
@@ -77,14 +75,14 @@ class TestStore(unittest.TestCase):
         # if based_on is None, and is in dict, false
         store = Store("./tests/results")
         based_on = None
-        info = {"other": 1, "based_on_name":"name", "based_on_args":{"a":1,"b":2}}
+        info = {"other": 1, "based_on_name": "name", "based_on_args": {"a": 1, "b": 2}}
         assert not store._based_on_is_correct(based_on, info)
         _delete_store(store)
 
     def test_based_on_is_correct_3(self):
         # if based_on is not None, and not in dict, false
         store = Store("./tests/results")
-        desc_args = {"a":1,"b":2}
+        desc_args = {"a": 1, "b": 2}
         based_on = ("desc", desc_args)
         info = {"other": 1}
         assert not store._based_on_is_correct(based_on, info)
@@ -93,10 +91,10 @@ class TestStore(unittest.TestCase):
     def test_based_on_is_correct_4(self):
         # if based_on is not None, and wrong based_on_args, false
         store = Store("./tests/results")
-        desc_args = {"a":1,"b":2}
+        desc_args = {"a": 1, "b": 2}
         name = "desc"
         based_on = (name, desc_args)
-        info = {"other": 1, "based_on_name":name, "based_on_args":{"a":1,"b":22}}
+        info = {"other": 1, "based_on_name": name, "based_on_args": {"a": 1, "b": 22}}
         assert not store._based_on_is_correct(based_on, info)
         _delete_store(store)
 
@@ -193,8 +191,8 @@ class TestStore(unittest.TestCase):
         _delete_store(store)
 
     def test_store_description(self):
-        #called in describe()
-        #result, descriptor, aid, argmuments
+        # called in describe()
+        # result, descriptor, aid, argmuments
         store = Store("./tests/results")
         result = "Random test result"
         desc = "test_desc"
@@ -205,7 +203,7 @@ class TestStore(unittest.TestCase):
         store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         fpath = os.path.join(store.root, "Descriptions", aid, desc)
-        info_fpath = os.path.join(store.root, "Descriptions", aid, desc)
+        os.path.join(store.root, "Descriptions", aid, desc)
         assert os.path.exists(fpath)
 
         directory = os.fsencode(fpath)
@@ -228,7 +226,7 @@ class TestStore(unittest.TestCase):
         aid = "111"
         kw1 = "option_1"
         kw2 = "option_2"
-        info = {"num":47, "important_info":12, "fcn": _test_descriptor}
+        info = {"num": 47, "important_info": 12, "fcn": _test_descriptor}
         store.store_description(result, info, aid, desc, a=kw1, b=kw2)
 
         fpath = os.path.join(store.root, "Descriptions", aid, desc)
@@ -252,14 +250,13 @@ class TestStore(unittest.TestCase):
             assert False, "No correct file found"
         _delete_store(store)
 
-
     def test_store_collection_description(self):
-        #called in the process() method
-        #result, info, collection name, arguments, descriptor_args
+        # called in the process() method
+        # result, info, collection name, arguments, descriptor_args
         store = Store("./tests/results")
         result = "Random test result"
         info = {
-            "additional_info": [1,2,3,4,5]
+            "additional_info": [1, 2, 3, 4, 5]
         }
         desc = "test_desc"
         method = "test_method"
@@ -270,7 +267,7 @@ class TestStore(unittest.TestCase):
         }
         method_args = {
             "eps": 1,
-            "num":50
+            "num": 50
         }
 
         store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
@@ -298,12 +295,12 @@ class TestStore(unittest.TestCase):
         _delete_store(store)
 
     def test_store_collection_description_with_function_in_args(self):
-        #called in the process() method
-        #result, info, collection name, arguments, descriptor_args
+        # called in the process() method
+        # result, info, collection name, arguments, descriptor_args
         store = Store("./tests/results")
         result = "Random test result"
         info = {
-            "additional_info": [1,2,3,4,5]
+            "additional_info": [1, 2, 3, 4, 5]
         }
         desc = "test_desc"
         method = "test_method"
@@ -314,8 +311,8 @@ class TestStore(unittest.TestCase):
         }
         method_args = {
             "eps": 1,
-            "num":50,
-            "fcn":_test_descriptor
+            "num": 50,
+            "fcn": _test_descriptor
         }
 
         store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args)
@@ -333,7 +330,7 @@ class TestStore(unittest.TestCase):
                 info_fullpath = os.path.join(fpath, "info_" + filename)
                 assert os.path.exists(info_fullpath)
                 fetched_info = store._unpickle(info_fullpath)
-                assert fetched_info['method_args'] != method_args #function converted to string of name
+                assert fetched_info['method_args'] != method_args  # function converted to string of name
                 assert fetched_info['method_args']['fcn'] == "_test_descriptor"
                 assert fetched_info['based_on_name'] == desc
                 assert fetched_info['based_on_args'] == desc_args
@@ -473,7 +470,7 @@ class TestStore(unittest.TestCase):
         store = Store("./tests/results")
         try:
             store._unpickle("fakepath", "fake_fname")
-        except FileNotFoundError as e:
+        except FileNotFoundError:
             assert True
         else:
             assert False, "Expected error not thrown"
@@ -486,12 +483,13 @@ class TestStore(unittest.TestCase):
         fname = "fakepkl.pkl"
         try:
             store._unpickle("./tests", fname)
-        except pickle.UnpicklingError as e:
+        except pickle.UnpicklingError:
             assert True
         else:
             assert False, "Expected error not thrown"
         finally:
             _delete_store(store)
+
 
 """
     def test_clear_specific_result(self):
