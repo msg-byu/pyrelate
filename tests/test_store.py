@@ -178,7 +178,7 @@ class TestStore(unittest.TestCase):
         aid = "455"
         desc = "soap"
         filename = store._generate_default_file_name(aid, desc)
-        assert filename[:-20] == aid + "_" + desc
+        assert filename[:-26] == aid + "_" + desc
         assert filename[-4:] == ".pkl"
         _delete_store(store)
 
@@ -209,7 +209,7 @@ class TestStore(unittest.TestCase):
         directory = os.fsencode(fpath)
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            if filename[:-20] == aid + "_" + desc:
+            if filename[:-26] == aid + "_" + desc:
                 fullpath = os.path.join(fpath, filename)
                 assert os.path.exists(fullpath)
                 break
@@ -235,7 +235,7 @@ class TestStore(unittest.TestCase):
         directory = os.fsencode(fpath)
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            if filename[:-20] == aid + "_" + desc:
+            if filename[:-26] == aid + "_" + desc:
                 fullpath = os.path.join(fpath, filename)
                 assert os.path.exists(fullpath)
                 info_fullpath = os.path.join(fpath, "info_" + filename)
@@ -278,8 +278,8 @@ class TestStore(unittest.TestCase):
         directory = os.fsencode(fpath)
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            print(filename[:-20], name + "_" + method)
-            if filename[:-20] == name + "_" + method:
+            print(filename[:-26], name + "_" + method)
+            if filename[:-26] == name + "_" + method:
                 fullpath = os.path.join(fpath, filename)
                 assert os.path.exists(fullpath)
                 info_fullpath = os.path.join(fpath, "info_" + filename)
@@ -323,8 +323,8 @@ class TestStore(unittest.TestCase):
         directory = os.fsencode(fpath)
         for file in os.listdir(directory):
             filename = os.fsdecode(file)
-            print(filename[:-20], name + "_" + method)
-            if filename[:-20] == name + "_" + method:
+            print(filename[:-26], name + "_" + method)
+            if filename[:-26] == name + "_" + method:
                 fullpath = os.path.join(fpath, filename)
                 assert os.path.exists(fullpath)
                 info_fullpath = os.path.join(fpath, "info_" + filename)
@@ -490,52 +490,136 @@ class TestStore(unittest.TestCase):
         finally:
             _delete_store(store)
 
-
-"""
-    def test_clear_specific_result(self):
+    def test_clear_collection_result(self):
         '''Test clear, specific result'''
-        my_col = _initialize_collection_and_describe(
-            ['test'], ['454', '455'], arg1=1)
-        my_col.store._clear_result('test', '454', arg1=1)
-        assert my_col.store.check_exists('test', '454', arg1=1) == False
-        assert my_col.store.check_exists('test', '455', arg1=1) == True
-        assert os.path.exists(os.path.join(
-            my_col.store.root, 'test', '454')) == False
-        assert os.path.exists(my_col.store.root) == True
-        _delete_store(my_col.store)
+        store = Store("./tests/results")
+        result1 = "Random test result1"
+        result2 = "Random test result2"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args1 = {
+            "eps": 1,
+            "num": 50
+        }
+        method_args2 = {
+            "eps": 1,
+            "num": 49
+        }
 
-    def test_clear_specific_results_list_of_aids(self):
+        store.store_collection_result(result1, info, method, name, (desc, desc_args), **method_args1)
+        store.store_collection_result(result2, info, method, name, (desc, desc_args), **method_args2)
+        store.clear_collection_result(method, name, (desc, desc_args), **method_args1)
+
+        try:
+            store.get_collection_result(method, name, (desc, desc_args), **method_args1)
+        except FileNotFoundError:
+            assert True
+        else:
+            assert False, "Expected error not thrown"
+        _delete_store(store)
+
+    def test_clear_description_result(self):
         '''Test clear, clear all results for given discriptor and parameters for all aids in list'''
-        aids = ['454', '455']
-        my_col = _initialize_collection_and_describe(
-            ['test'], aids, arg1=1)
-        my_col.store.clear('test', aids, arg1=1)
-        assert my_col.store.check_exists('test', '454', arg1=1) == False
-        assert my_col.store.check_exists('test', '455', arg1=1) == False
-        assert os.path.exists(os.path.join(
-            my_col.store.root, 'test', '454')) == False
-        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
-        assert os.path.exists(my_col.store.root) == True
-        _delete_store(my_col.store)
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kwargs1 = {"a": "option_1", "b": "option_2"}
+        kwargs2 = {"a": "option_1", "b": "option_3"}
+        info = {}
+        store.store_description(result, info, aid, desc, **kwargs1)
+        store.store_description(result, info, aid, desc, **kwargs2)
+        store.clear_description_result(aid, desc, **kwargs1)
 
-    def test_clear_descriptor(self):
+        try:
+            store.get_description(aid, desc, **kwargs1)
+        except FileNotFoundError:
+            assert True
+        else:
+            assert False, "Expected error not thrown"
+        _delete_store(store)
+
+    def test_clear_method(self):
         '''Test clear, clear all results for given descriptor'''
-        my_col = _initialize_collection_and_describe(
-            ['test', 'test2'], ['454'], arg1=1)
-        my_col.store.clear_descriptor('test')
-        assert my_col.store.check_exists('test', '454', arg1=1) == False
-        assert my_col.store.check_exists('test2', '454', arg1=1) == True
-        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args1 = {
+            "eps": 1,
+            "num": 50
+        }
+        method_args2 = {
+            "eps": 1,
+            "num": 49
+        }
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args1)
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args2)
+
+        store.clear_method(method, name)
+
+        assert os.path.exists(os.path.join(store.root, "Collections", method, name)) is False
+        _delete_store(store)
+
+    def test_clear_description(self):
+        '''Test clear, clear all results for given descriptor'''
+        store = Store("./tests/results")
+        result = "Random test result"
+        desc = "test_desc"
+        aid = "111"
+        kwargs1 = {"a": "option_1", "b": "option_2"}
+        kwargs2 = {"a": "option_1", "b": "option_3"}
+        info = {}
+        store.store_description(result, info, aid, desc, **kwargs1)
+        store.store_description(result, info, aid, desc, **kwargs2)
+        store.clear_description(aid, desc)
+
+        assert os.path.exists(os.path.join(store.root, "Descriptions", aid, desc)) is False
+        _delete_store(store)
 
     def test_clear_all(self):
         '''Test clear, clear all'''
-        my_col = _initialize_collection_and_describe(
-            ['test', 'test2'], ['454', '455'], arg1=1)
-        my_col.store.clear_all()
-        assert os.path.exists(os.path.join(
-            my_col.store.root, 'test', '454')) == False
-        assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
-        assert os.path.exists(os.path.join(
-            my_col.store.root, 'test2')) == False
-        assert os.path.exists(my_col.store.root) == True
-"""
+        store = Store("./tests/results")
+        result = "Random test result"
+        info = {
+            "additional_info": [1, 2, 3, 4, 5]
+        }
+        desc = "test_desc"
+        method = "test_method"
+        name = "my_collection"
+        desc_args = {
+            "kw1": "option_1",
+            "kw2": "option_2"
+        }
+        method_args1 = {
+            "eps": 1,
+            "num": 50
+        }
+
+        aid = "111"
+        kwargs1 = {"a": "option_1", "b": "option_2"}
+        info = {}
+
+        store.store_description(result, info, aid, desc, **kwargs1)
+        store.store_collection_result(result, info, method, name, (desc, desc_args), **method_args1)
+        store.clear_all()
+
+        assert os.path.exists(os.path.join(store.root, "Descriptions", aid, desc)) is False
+        assert os.path.exists(os.path.join(store.root, "Collections", method, name)) is False
+        _delete_store(store)

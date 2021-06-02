@@ -3,9 +3,11 @@
 import os
 import numpy as np
 import pickle
-# This was included "import shutil"
-import time
+import shutil
+from datetime import datetime
 import types
+
+from pycsoap.descriptors import Descriptor
 
 
 class Store:
@@ -30,7 +32,7 @@ class Store:
 
     def _generate_default_file_name(self, param_1, param_2):
         """Generate a default file name based on given parameters and the current date and time."""
-        timestr = time.strftime("%Y%m%d-%H%M%S")
+        timestr = datetime.now().strftime("%Y%m%d-%H%M%S%f")
         return param_1 + "_" + param_2 + "_" + timestr + ".pkl"
 
     def _store_file(self, to_store, path):
@@ -105,6 +107,7 @@ class Store:
 
     def _replace_functions(self, dictionary):
         """Function to replace any items in dictionary that are functions with a string of its name."""
+        # TODO why not loop through dictionary.items()?
         for key in dictionary.keys():
             item = dictionary[key]
             if isinstance(item, types.FunctionType):
@@ -182,7 +185,7 @@ class Store:
 
             for file in os.listdir(directory):
                 filename = os.fsdecode(file)
-                if (level1 + "_" + level2) == filename[:-20]:  # remove the date/time and file end
+                if (level1 + "_" + level2) == filename[:-26]:  # remove the date/time and file end
                     info = self._unpickle(path, "info_" + filename)
                     check_args = info['desc_args'] if 'desc_args' in info else info['method_args']
                     if self._based_on_is_correct(based_on, info) and self._equal_args(kwargs, check_args):
@@ -270,62 +273,58 @@ class Store:
             else:
                 return res
 
-    def _clear_result(self, descriptor, idd, **kwargs):
-        '''Function to remove a single result from the store
+    def clear_collection_result(self, method, collection_name, based_on, **method_args):
+        '''Function to remove a single collection_result
 
         Parameters:
-            descriptor (str): name of descriptor
-            idd (str): atoms id
-            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+            Parameters not completed
         '''
-        # FIXME: Store structure changed
-        # fname = self._generate_file_name(descriptor, idd, **kwargs)
-        # path = os.path.join(self.root, descriptor, idd, fname)
-        # if os.path.exists(path):
-        #     os.remove(path)
-        # directory = os.path.dirname(path)
-        # if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
-        #     os.rmdir(directory)
-        pass
+        filename = self.check_exists("Collections", collection_name, method, based_on=based_on, explicit=True, **method_args)
+        if filename is False:
+            raise FileNotFoundError("No such results found for given parameters")
+        else:
+            path = os.path.join(self.root, "Collections", collection_name, method, filename)
+            info_path = os.path.join(self.root, "Collections", collection_name, method, "info_" + filename)
+            if os.path.exists(path):
+                os.remove(path)
+                os.remove(info_path)
+            method_path = os.path.join(self.root, "Collections", collection_name, method)
+            directory = os.path.dirname(method_path)
+            if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+                os.rmdir(directory)
 
-    def clear(self, descriptor, idd, **kwargs):
-        '''More general clear function
+    def clear_description_result(self, aid, descriptor, **desc_args):
+        '''Function to remove a single description_result'''
+        filename = self.check_exists("Descriptions", aid, descriptor, explicit=True, **desc_args)
+        if filename is False:
+            raise FileNotFoundError("No such results found for given parameters")
+        else:
+            path = os.path.join(self.root, "Descriptions", aid, descriptor, filename)
+            os.remove(path)
+        descriptor_path = os.path.join(self.root, "Descriptions", aid, descriptor)
+        directory = os.path.dirname(descriptor_path)
+        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
+            os.rmdir(directory)
 
-        Parameters:
-            descriptor (str): name of descriptor
-            idd (str **or** list(str)): atoms id (or list of atom id's)
-            kwargs (dict): refers to whatever arguments that were used to generate the description (which correspond to the file name)
+    def clear_method(self, method, collection_name):
+        '''Function to remove a method directory'''
+        path = os.path.join(self.root, "Collections", collection_name, method)
+        if os.path.exists(path) is False:
+            raise FileNotFoundError("No such results found for given parameters")
+        else:
+            shutil.rmtree(path)
 
-        '''
-        # FIXME: Store structure changed
-        # if type(idd) is list:
-        #     for i in idd:
-        #         self._clear_result(descriptor, i, **kwargs)
-        # else:
-        #     self._clear_result(descriptor, idd, **kwargs)
-        # directory = os.path.join(self.root, descriptor)
-        # if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
-        #     os.rmdir(directory)
-        pass
-
-    def clear_descriptor(self, descriptor):
-        '''Function to remove all descriptions of a certain type
-
-        Parameters:
-            descriptor (str): name of descriptor
-
-        '''
-        # FIXME: Store structure changed
-        # path = os.path.join(self.root, descriptor)
-        # if os.path.exists(path):
-        #     shutil.rmtree(path)
-        pass
+    def clear_description(self, aid, descriptor):
+        '''Function to remove a description directory'''
+        path = os.path.join(self.root, "Descriptions", aid, descriptor)
+        if os.path.exists(path) is False:
+            raise FileNotFoundError("No such results found for given parameters")
+        else:
+            shutil.rmtree(path)
 
     def clear_all(self):
         '''Function to remove all results from the Store'''
-        # FIXME: Store structure changed
-        # for item in os.listdir(self.root):
-        #     path = os.path.join(self.root, item)
-        #     if os.path.isdir(path):
-        #         shutil.rmtree(path)
-        pass
+        for item in os.listdir(self.root):
+            path = os.path.join(self.root, item)
+            if os.path.isdir(path):
+                shutil.rmtree(path)
