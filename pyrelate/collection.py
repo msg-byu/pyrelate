@@ -245,7 +245,7 @@ class AtomsCollection(dict):
             if aid not in self.aids():
                 raise ValueError(f"{aid} is not a valid atoms ID.")
 
-            exists = self.store.check_exists("Descriptions", descriptor, aid, **desc_args)
+            exists = self.store.check_exists("Descriptions", aid, descriptor, **desc_args)
             if not exists or override:
                 returned = fcn(self[aid], **desc_args)
                 if type(returned) is tuple:
