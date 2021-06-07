@@ -22,7 +22,11 @@ class AtomsCollection(dict):
     def __init__(self, name, store=None, data=None):
         """Initializer which calls dict's and Store's initializers."""
         super(AtomsCollection, self).__init__()
-        self.name = name.lower()
+        try:
+            self.name = name.lower()
+        except ValueError:
+            print("name parameter must be a single string")
+
         # TODO make trim and pad more general (have FIRM for entire collection, apply to new atoms read in, cannot trim
         # to be wider than it is, when you do "subset" the trim/pad values must be applied, update trim function)
         # self.trim = trim
@@ -244,7 +248,7 @@ class AtomsCollection(dict):
         for aid in tqdm(to_calculate):
             if aid not in self.aids():
                 raise ValueError(f"{aid} is not a valid atoms ID.")
-
+            
             exists = self.store.check_exists("Descriptions", aid, descriptor, **desc_args)
             if not exists or override:
                 returned = fcn(self[aid], **desc_args)
@@ -254,7 +258,6 @@ class AtomsCollection(dict):
                 else:
                     result = returned
                     info = {}
-
                 if len(result) > np.count_nonzero(self[aid].get_array("mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
@@ -306,7 +309,7 @@ class AtomsCollection(dict):
 
         return self.store.get_collection_result(method, self.name, based_on, **kwargs)  # return result and info dict
 
-    def clear(self, descriptor=None, idd=None, **kwargs):
+    def clear(self, descriptor=None, aid=None, collection_name=None, method=None, based_on=None, **kwargs):
         '''Function to delete specified results from Store.
 
         Functionality includes:
@@ -333,20 +336,19 @@ class AtomsCollection(dict):
                 my_col.clear() #clears all results from store
 
         '''
-        # FIXME rewrite how change works, and it is implemented differently in store.py
-        # has_kwargs = len(kwargs) != 0
-        # if descriptor is not None:
-        #     if has_kwargs:
-        #         if idd is not None:
-        #             self.store.clear(descriptor, idd, **kwargs)
-        #         else:
-        #             idds = self.aids()
-        #             self.store.clear(descriptor, idds, **kwargs)
-        #     else:
-        #         self.store.clear_descriptor(descriptor)
-        # else:
-        #     self.store.clear_all()
-        pass
+        has_kwargs = len(kwargs) != 0
+        if descriptor is not None and aid is not None:
+            if has_kwargs:
+                self.store.clear_description_result(aid, descriptor, **kwargs)
+            else:
+                self.store.clear_description(aid, descriptor)
+        elif collection_name is not None and method is not None and based_on is not None:
+            if has_kwargs:
+                self.store.clear_collection_result(method, collection_name, based_on, **kwargs)
+            else:
+                self.store.clear_method(method, collection_name)
+        else:
+            self.store.clear_all()
 
     def get_description(self, idd, descriptor, metadata=False, **desc_args):
         """Wrapper function to retrieve descriptor results from the store"""

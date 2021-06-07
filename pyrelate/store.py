@@ -7,8 +7,6 @@ import shutil
 from datetime import datetime
 import types
 
-from pycsoap.descriptors import Descriptor
-
 
 class Store:
     """Class for efficient storing of description of the AtomsCollection"""
@@ -69,6 +67,7 @@ class Store:
         # store info dict
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
+
 
     def store_collection_result(self, result, info, method, collection_name, based_on, **method_args):
         """Store collection specific results generated.
@@ -152,7 +151,7 @@ class Store:
             try:
                 item_given = args_given[key]
                 item_store = args_store[key]
-            except ValueError:
+            except KeyError:
                 return False
 
             if isinstance(item_given, types.FunctionType):  # and isinstance(item_store, types.FunctionType):
@@ -182,7 +181,6 @@ class Store:
         path = os.path.join(self.root, store_section, level1, level2)
         if os.path.exists(path):
             directory = os.fsencode(path)
-
             for file in os.listdir(directory):
                 filename = os.fsdecode(file)
                 if (level1 + "_" + level2) == filename[:-26]:  # remove the date/time and file end

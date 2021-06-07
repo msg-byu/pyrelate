@@ -7,6 +7,7 @@ import shutil
 import io
 import re
 import unittest
+import os
 
 '''Functions to help in writing and designing clear, functional unit tests'''
 
@@ -431,54 +432,99 @@ class TestCollection(unittest.TestCase):
         res = my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args)
         assert res == "my_method__test result 2_test result 2_"
 
-    # def test_clear_single_result(self):
-    #     '''Test clear, clear single result with given descriptor, parameters, and aid'''
-    #     my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
-    #     my_col.clear('test', '454', arg1=1)
-    #     assert my_col.store.check_exists('test', '454', arg1=1) == False
-    #     assert my_col.store.check_exists('test', '455', arg1=1) == True
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test', '454')) == False
-    #     assert os.path.exists(my_col.store.root) == True
-    #     _delete_store(my_col)
-    #
-    #
-    # def test_clear_specific_results_for_collection(self):
-    #     '''Test clear, no aid given, clears results of given parameters for all aids in collection'''
-    #     my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
-    #     my_col.clear('test', arg1=1)
-    #     assert my_col.store.check_exists('test', '454', arg1=1) == False
-    #     assert my_col.store.check_exists('test', '455', arg1=1) == False
-    #     assert os.path.exists(os.path.join( my_col.store.root, 'test', '454')) == False
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
-    #     assert os.path.exists(my_col.store.root) == True
-    #     _delete_store(my_col)
-    #
-    #
-    # def test_clear_results_for_descriptor(self):
-    #     '''Test clear, clear all results for given descriptor'''
-    #     my_col = _initialize_collection_and_describe(['test', 'test2'], ['454'], arg1=1)
-    #     my_col.clear('test')
-    #     assert my_col.store.check_exists('test', '454', arg1=1) == False
-    #     assert my_col.store.check_exists('test2', '454', arg1=1) == True
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
-    #     _delete_store(my_col)
-    #
-    #
-    # def test_clear_all(self):
-    #     '''Test clear, clear all'''
-    #     my_col = _initialize_collection_and_describe(['test', 'test2'], ['454', '455'], arg1=1)
-    #     my_col.clear()
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test', '454')) == False
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test')) == False
-    #     assert os.path.exists(os.path.join(my_col.store.root, 'test2')) == False
-    #     assert os.path.exists(my_col.store.root) == True
-    #     _delete_store(my_col)
+        _delete_store(my_col)
+
+    def test_clear_method(self):
+        '''Test clear, clear single result with given descriptor, parameters, and aid'''
+        desc = "test"
+        desc_args = {
+            'num': 1
+        }
+        method = "my_method"
+        method_args = {
+            "a": 0,
+            "b": 1,
+            "method_name": method
+        }
+        my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
+        my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args)
+        my_col.clear(collection_name='Test', method=method)
+        assert my_col.store.check_exists("Collections", 'Test', method) is False
+        assert os.path.exists(os.path.join(my_col.store.root, "Collections", "Test", method)) is False
+        _delete_store(my_col)
+
+    def test_clear_description(self):
+        '''Test clear, clear single result with given descriptor, parameters, and aid'''
+        my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
+        my_col.clear(descriptor='test', aid='454')
+        assert my_col.store.check_exists('Descriptions', '454', 'test') is False
+        assert os.path.exists(os.path.join(my_col.store.root, 'Collections', '454', 'test')) is False
+        _delete_store(my_col)
+
+    def test_clear_specific_results_for_collection(self):
+        '''Test clear, no aid given, clears results of given parameters for all aids in collection'''
+        desc = "test"
+        desc_args = {
+            "num": 1
+        }
+        method = "my_method"
+        method_args1 = {
+            "a": 0,
+            "b": 1,
+            "method_name": method
+        }
+        method_args2 = {
+            "a": 0,
+            "b": 2,
+            "method_name": method
+        }
+        my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
+        my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args1)
+        my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args2)
+        my_col.clear(collection_name='test', method=method, based_on=(desc, desc_args), **method_args1)
+        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args1)
+        assert filename is False
+        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2) 
+        assert filename is True
+        _delete_store(my_col)
+
+    def test_clear_results_for_descriptor(self):
+        '''Test clear, clear all results for given descriptor'''
+        my_col = _initialize_collection_and_describe(['test'], ['454'], arg1=1)
+        my_col = _initialize_collection_and_describe(['test'], ['454'], arg2=2)
+        my_col.clear(descriptor='test', aid='454', arg1=1)
+        filename = my_col.store.check_exists('Descriptions', '454', 'test', arg1=1)
+        assert filename is False
+        filename = my_col.store.check_exists('Descriptions', '454', 'test', arg2=2)
+        assert filename is True
+        _delete_store(my_col)
+
+    def test_clear_all(self):
+        '''Test clear, clear all'''
+        desc = "test"
+        desc_args = {
+            'num': 1
+        }
+        method = "my_method"
+        method_args = {
+            "a": 0,
+            "b": 1,
+            "method_name": method
+        }
+        my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
+        my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args)
+        my_col.clear()
+        filename = my_col.store.check_exists("Collections", 'Test', method, based_on=desc, **method_args)
+        assert filename is False
+        filename = my_col.store.check_exists('Descriptions', '454', 'test', **desc_args)
+        assert filename is False
+        _delete_store(my_col)
 
     def test_aids(self):
         '''Test function to get list of all aid's in collection'''
         my_col = _initialize_collection_and_read(['454', '455'])
         aid_list = my_col.aids()
-        assert type(aid_list) is list
+        assert type(aid_list) == list
         assert aid_list[0] == "454"
         assert len(aid_list) == 2
         _delete_store(my_col)
