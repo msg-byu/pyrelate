@@ -1,5 +1,6 @@
 """Functions and Store class for storing atomic descriptions
 """
+from genericpath import exists
 import os
 import numpy as np
 import pickle
@@ -49,6 +50,10 @@ class Store:
             kwargs (dict): arguments for computing descriptor, will be used to generate file names
 
         """
+        exists = self.check_exists("Descriptions", aid, descriptor, **desc_args)
+        if exists:
+            self.clear_description_result(aid, descriptor, **desc_args)
+
         fname = self._generate_default_file_name(aid, descriptor)
         info_fname = "info_" + fname
 
@@ -185,7 +190,9 @@ class Store:
                 filename = os.fsdecode(file)
                 if (level1 + "_" + level2) == filename[:-26]:  # remove the date/time and file end
                     info = self._unpickle(path, "info_" + filename)
+                    print(info)
                     check_args = info['desc_args'] if 'desc_args' in info else info['method_args']
+                    print(check_args)
                     if self._based_on_is_correct(based_on, info) and self._equal_args(kwargs, check_args):
                         if explicit:
                             return filename

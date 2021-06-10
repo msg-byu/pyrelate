@@ -248,8 +248,9 @@ class AtomsCollection(dict):
         for aid in tqdm(to_calculate):
             if aid not in self.aids():
                 raise ValueError(f"{aid} is not a valid atoms ID.")
-            
+
             exists = self.store.check_exists("Descriptions", aid, descriptor, **desc_args)
+            print(exists)
             if not exists or override:
                 returned = fcn(self[aid], **desc_args)
                 if type(returned) is tuple:
@@ -258,6 +259,7 @@ class AtomsCollection(dict):
                 else:
                     result = returned
                     info = {}
+                print(np.count_nonzero(self[aid].get_array("mask")))
                 if len(result) > np.count_nonzero(self[aid].get_array("mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
