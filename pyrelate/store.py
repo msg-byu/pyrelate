@@ -1,6 +1,5 @@
 """Functions and Store class for storing atomic descriptions
 """
-from genericpath import exists
 import os
 import numpy as np
 import pickle
@@ -72,7 +71,6 @@ class Store:
         # store info dict
         info_path = os.path.join(path, info_fname)
         self._store_file(info, info_path)
-
 
     def store_collection_result(self, result, info, method, collection_name, based_on, **method_args):
         """Store collection specific results generated.

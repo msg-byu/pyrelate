@@ -435,7 +435,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_clear_method(self):
-        '''Test clear, clear single result with given descriptor, parameters, and aid'''
+        '''Test clear, clear results created with method'''
         desc = "test"
         desc_args = {
             'num': 1
@@ -454,7 +454,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_clear_description(self):
-        '''Test clear, clear single result with given descriptor, parameters, and aid'''
+        '''Test clear, clear all results with specific description'''
         my_col = _initialize_collection_and_describe(['test'], ['454', '455'], arg1=1)
         my_col.clear(descriptor='test', aid='454')
         assert my_col.store.check_exists('Descriptions', '454', 'test') is False
@@ -462,7 +462,7 @@ class TestCollection(unittest.TestCase):
         _delete_store(my_col)
 
     def test_clear_specific_results_for_collection(self):
-        '''Test clear, no aid given, clears results of given parameters for all aids in collection'''
+        '''Test clear, clear specific result from collection with specific collection_name, method, and based_on'''
         desc = "test"
         desc_args = {
             "num": 1
@@ -484,12 +484,12 @@ class TestCollection(unittest.TestCase):
         my_col.clear(collection_name='test', method=method, based_on=(desc, desc_args), **method_args1)
         filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args1)
         assert filename is False
-        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2) 
+        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2)
         assert filename is True
         _delete_store(my_col)
 
     def test_clear_results_for_descriptor(self):
-        '''Test clear, clear all results for given descriptor'''
+        '''Test clear, clear specific descriptor result with specific aid and descriptor'''
         my_col = _initialize_collection_and_describe(['test'], ['454'], arg1=1)
         my_col = _initialize_collection_and_describe(['test'], ['454'], arg2=2)
         my_col.clear(descriptor='test', aid='454', arg1=1)

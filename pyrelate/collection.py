@@ -250,7 +250,6 @@ class AtomsCollection(dict):
                 raise ValueError(f"{aid} is not a valid atoms ID.")
 
             exists = self.store.check_exists("Descriptions", aid, descriptor, **desc_args)
-            print(exists)
             if not exists or override:
                 returned = fcn(self[aid], **desc_args)
                 if type(returned) is tuple:
@@ -259,7 +258,6 @@ class AtomsCollection(dict):
                 else:
                     result = returned
                     info = {}
-                print(np.count_nonzero(self[aid].get_array("mask")))
                 if len(result) > np.count_nonzero(self[aid].get_array("mask")):
                     to_delete = np.logical_not(self[aid].get_array("mask"))
                     result = np.delete(result, to_delete, axis=0)
@@ -316,29 +314,37 @@ class AtomsCollection(dict):
 
         Functionality includes:
 
-            - remove a result for a specific Atoms object
+            - remove a specific description result
 
-            - remove specific results for all Atoms objects in the collection
+            - remove all descriptions
 
-            - remove all results for a certain type of descriptor, and
+            - remove a specific collection result
+
+            - remove all collection results created with specific method
 
             - remove all results in the store
 
         Parameters:
-            descriptor (str): descriptor to be applied to AtomsCollection.
-            idd (str): Idd of Atoms object who's results you want. Defaults to None, in which case corresponding results for all ASE Atoms objects will be returned as a dictionary, with the aid as key.
-            kwargs (dict): Parameters associated with the description function specified.
+            descriptor (str): Descriptor to be cleared or descriptor with specific results to be cleared. Defaults to None. 
+            aid (str): Aid of Atoms object who's results you want cleared. Defaults to None, in which case all descriptor results will be cleared if descriptor is not none. 
+            collection_name (str): Name of collection that contain the results you want cleared. Defaults to None. Must be called with mothod parameter.
+            method (str): Method to be cleared or method with specific results to be cleared. Defaults to None.
+            based_on (str): Descriptor that specifc collection results are based on. Defaults to None. in which case all method results will be cleared if method and collection name are none. 
+            **kwargs (dict): Parameters associated with specifc descriptor or collection that will be cleared.
 
         Example:
             .. code-block:: python
 
-                my_col.clear("soap", "aid1", rcut=5.0, nmax=9, lmax=9) #clears single SOAP result with given parameters
-                my_col.clear("soap", rcut=5.0, nmax=9, lmax=9) #clears SOAP results for whole collection with given parameters
-                my_col.clear("soap") #clears all soap results from store
+                my_col.clear(descriptor="soap", aid="aid1", rcut=5.0, nmax=9, lmax=9) #clears single SOAP result with given parameters
+                my_col.clear(descriptor="soap") #clears all soap results from store
+                my_col.clear(collection_name="S5", method="ler", based_on="soap") #clears all collection results processed with ler from the collection named S5 and described with soap
+                my_col.clear(collection_name="S5". method="ler") #clears all collection results processed with ler from the collection named S5
                 my_col.clear() #clears all results from store
 
         '''
         has_kwargs = len(kwargs) != 0
+        if collection_name is not None and method is None and based_on is None:
+            print("Collection cannot be left as a solo parameter")
         if descriptor is not None and aid is not None:
             if has_kwargs:
                 self.store.clear_description_result(aid, descriptor, **kwargs)
