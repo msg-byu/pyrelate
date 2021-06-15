@@ -21,7 +21,7 @@ fortpy.mod
 
 # Distribution / packaging
 .Python
-env/
+pyenv/
 build/
 develop-eggs/
 dist/
@@ -58,3 +58,4 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+.vscode
