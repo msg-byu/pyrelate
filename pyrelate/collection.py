@@ -325,11 +325,11 @@ class AtomsCollection(dict):
             - remove all results in the store
 
         Parameters:
-            descriptor (str): Descriptor to be cleared or descriptor with specific results to be cleared. Defaults to None. 
-            aid (str): Aid of Atoms object who's results you want cleared. Defaults to None, in which case all descriptor results will be cleared if descriptor is not none. 
+            descriptor (str): Descriptor to be cleared or descriptor with specific results to be cleared. Defaults to None.
+            aid (str): Aid of Atoms object who's results you want cleared. Defaults to None, in which case all descriptor results will be cleared if descriptor is not none.
             collection_name (str): Name of collection that contain the results you want cleared. Defaults to None. Must be called with mothod parameter.
             method (str): Method to be cleared or method with specific results to be cleared. Defaults to None.
-            based_on (str): Descriptor that specifc collection results are based on. Defaults to None. in which case all method results will be cleared if method and collection name are none. 
+            based_on (str): Descriptor that specifc collection results are based on. Defaults to None. in which case all method results will be cleared if method and collection name are none.
             **kwargs (dict): Parameters associated with specifc descriptor or collection that will be cleared.
 
         Example:
