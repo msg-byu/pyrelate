@@ -188,9 +188,7 @@ class Store:
                 filename = os.fsdecode(file)
                 if (level1 + "_" + level2) == filename[:-26]:  # remove the date/time and file end
                     info = self._unpickle(path, "info_" + filename)
-                    print(info)
                     check_args = info['desc_args'] if 'desc_args' in info else info['method_args']
-                    print(check_args)
                     if self._based_on_is_correct(based_on, info) and self._equal_args(kwargs, check_args):
                         if explicit:
                             return filename

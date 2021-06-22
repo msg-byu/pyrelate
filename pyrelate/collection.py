@@ -13,7 +13,7 @@ class AtomsCollection(dict):
     :Attributes:
         - self (dict): inherits from dictionary
         - name (str) : identifier for this collection
-        - store (Store) : store to hold all the results and other information
+        - store (Store) : store to hold all the results and other information. Defaults to None, which creates a store in the current directory named 'Store'
 
     .. WARNING:: Make sure to have unique collection names, will be used for LER
 
@@ -32,7 +32,9 @@ class AtomsCollection(dict):
         # self.trim = trim
         # self.pad = pad
 
-        if type(store) == Store:
+        if store is None:
+            self.store = Store()
+        elif type(store) == Store:
             self.store = store
         elif type(store) == str:
             self.store = Store(store)
@@ -248,7 +250,9 @@ class AtomsCollection(dict):
         for aid in tqdm(to_calculate):
             if aid not in self.aids():
                 raise ValueError(f"{aid} is not a valid atoms ID.")
+             
 
+            # TODO make sure this works with default store name you know? 
             exists = self.store.check_exists("Descriptions", aid, descriptor, **desc_args)
             if not exists or override:
                 returned = fcn(self[aid], **desc_args)

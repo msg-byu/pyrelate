@@ -10,14 +10,14 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0', 'numpy', 'tqdm', 'ase' ]
+requirements = ['Click>=7.0', 'numpy', 'tqdm', 'ase']
 
 test_requirements = ['pytest>=3', ]
 
 setup(
     author="Christopher Braxton Owens",
     author_email='cbraxtonowens@gmail.com',
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
