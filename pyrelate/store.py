@@ -43,9 +43,9 @@ class Store:
 
         Parameters:
             result (pickle): computed result
+            info (dict): dictionary holding additional information to be stored, including the parameters used in calculation
             aid (str): atoms id
             descriptor (str): name of descriptor
-            info (dict): dictionary holding additional information to be stored, including the parameters used in calculation
             kwargs (dict): arguments for computing descriptor, will be used to generate file names
 
         """
@@ -180,6 +180,8 @@ class Store:
             level2 (str): Second level of directory in store. In "Descriptions" section, corresponds to the descriptor name. In the
             "Collections" section, corresponds to the collection name.
             based_on (string, dict): If based_on is None, considered an atomic description. If not, considered a collection processing result.
+            explicit(bool): If True and result exists, function will return the filename of the result location. If False and result exists, will
+            return True. Returns False if result does not exist.
         """
         path = os.path.join(self.root, store_section, level1, level2)
         if os.path.exists(path):
@@ -230,10 +232,10 @@ class Store:
             aid (str): atoms id
             descriptor (str): descriptor name
             metadata (bool): If True, return info dictionary with the result. Default is False.
-            \*\*desc_args: arguments used in generating the result
+            \*\*desc_args: keyword arguments used in generating the result
 
         Returns:
-
+            Descriptor result for the structure indicated by the atoms ID, using the parameters given.
         """
         filename = self.check_exists("Descriptions", aid, descriptor, explicit=True, **desc_args)
         if filename is False:
@@ -255,12 +257,11 @@ class Store:
             collection_name (str): collection name
             based_on (Tuple of types (str, dict)): tuple holding the name of the descriptor the method uses the results of,
             and the parameters used in generating the results.
-            \*\*method_args: additional arguments to used in generating the method result
             metadata (bool): If True, return info dictionary with the result. Default is False.
-            \*\*method_args: arguments used in generating the result
+            \*\*method_args: keyword arguments used in generating the method result
 
         Returns:
-
+            Collection-specific result given by the post-processing method and arguments.
         """
         filename = self.check_exists("Collections", collection_name, method, based_on=based_on, explicit=True, **method_args)
         if filename is False:
@@ -275,10 +276,14 @@ class Store:
                 return res
 
     def clear_collection_result(self, method, collection_name, based_on, **method_args):
-        '''Function to remove a single collection_result
+        '''Function to remove a single collection-specific result generated using the "process" function.
 
         Parameters:
-            Parameters not completed
+            method (str): method name used to generate results
+            collection_name (str): collection name
+            based_on (Tuple of types (str, dict)): tuple holding the name of the descriptor the method uses the results of,
+            and the parameters used in generating the results.
+            \*\*method_args: keyword arguments used in generating the method result
         '''
         filename = self.check_exists("Collections", collection_name, method, based_on=based_on, explicit=True, **method_args)
         if filename is False:
@@ -289,42 +294,89 @@ class Store:
             if os.path.exists(path):
                 os.remove(path)
                 os.remove(info_path)
-            method_path = os.path.join(self.root, "Collections", collection_name, method)
-            directory = os.path.dirname(method_path)
-            if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
-                os.rmdir(directory)
+
+            self._delete_empty_collection_dirs(collection_name, method)
+
+    def _delete_empty_collection_dirs(self, collection_name, method):
+        # Delete empty directories in "Collections" branch of the store if they exist
+        method_path = os.path.join(self.root, "Collections", collection_name, method)
+        if os.path.isdir(method_path) and len(os.listdir(method_path)) == 0:
+            os.rmdir(method_path)
+
+        collection_path = os.path.join(self.root, "Collections", collection_name)
+        if os.path.isdir(collection_path) and len(os.listdir(collection_path)) == 0:
+            os.rmdir(collection_path)
+
+        collections_path = os.path.join(self.root, "Collections")
+        if os.path.isdir(collections_path) and len(os.listdir(collections_path)) == 0:
+            os.rmdir(collections_path)
+
 
     def clear_description_result(self, aid, descriptor, **desc_args):
-        '''Function to remove a single description_result'''
+        '''Function to remove a single descriptor result calculated from the material structure.
+
+        Parameters:
+            aid (str): atoms id
+            descriptor (str): descriptor name
+            \*\*desc_args: keyword arguments used in generating the result        
+        '''
         filename = self.check_exists("Descriptions", aid, descriptor, explicit=True, **desc_args)
         if filename is False:
             raise FileNotFoundError("No such results found for given parameters")
         else:
             path = os.path.join(self.root, "Descriptions", aid, descriptor, filename)
+            info_path = os.path.join(self.root, "Descriptions", aid, descriptor, "info_" + filename)
             os.remove(path)
+            os.remove(info_path)
+
+            self._delete_empty_descriptors_dirs(aid, descriptor)
+
+    def _delete_empty_descriptors_dirs(self, aid, descriptor):
         descriptor_path = os.path.join(self.root, "Descriptions", aid, descriptor)
-        directory = os.path.dirname(descriptor_path)
-        if os.path.isdir(directory) and len(os.listdir(directory)) == 0:
-            os.rmdir(directory)
+        # directory = os.path.dirname(descriptor_path)
+        if os.path.isdir(descriptor_path) and len(os.listdir(descriptor_path)) == 0:
+            os.rmdir(descriptor_path)
+
+        aid_path = os.path.join(self.root, "Descriptions", aid)
+        if os.path.isdir(aid_path) and len(os.listdir(aid_path)) == 0:
+            os.rmdir(aid_path)
+
+        descriptions_path = os.path.join(self.root, "Descriptions")
+        if os.path.isdir(descriptions_path) and len(os.listdir(descriptions_path)) == 0:
+            os.rmdir(descriptions_path)
+
 
     def clear_method(self, method, collection_name):
-        '''Function to remove a method directory'''
+        '''Function to remove all results for a given processing method done on the given collection in the store.
+        
+        Parameters:
+            method (str): method name used to generate results
+            collection_name (str): collection name
+        '''
         path = os.path.join(self.root, "Collections", collection_name, method)
         if os.path.exists(path) is False:
             raise FileNotFoundError("No such results found for given parameters")
         else:
             shutil.rmtree(path)
+            self._delete_empty_collection_dirs(collection_name, method)
 
     def clear_description(self, aid, descriptor):
-        '''Function to remove a description directory'''
+        '''Function to remove all results for a given descriptor in the store.
+        
+        Parameters:
+            aid (str): atoms id
+            descriptor (str): descriptor name
+        '''
         path = os.path.join(self.root, "Descriptions", aid, descriptor)
         if os.path.exists(path) is False:
             raise FileNotFoundError("No such results found for given parameters")
         else:
             shutil.rmtree(path)
+            self._delete_empty_descriptors_dirs(aid, descriptor)
+
 
     def clear_all(self):
-        '''Function to remove all results from the Store'''
+        '''Function to remove all results from the Store.'''
         for item in os.listdir(self.root):
             path = os.path.join(self.root, item)
             if os.path.isdir(path):

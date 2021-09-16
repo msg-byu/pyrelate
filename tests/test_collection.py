@@ -171,7 +171,7 @@ class TestCollection(unittest.TestCase):
     def test_read_list(self):
         '''Test read function, read list of input files'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 2 == len(my_col)
         assert "test_454" == list(my_col)[0]
         _delete_store(my_col)
@@ -179,7 +179,7 @@ class TestCollection(unittest.TestCase):
     def test_read_list_with_atomic_num_list(self):
         '''Test read, list of input files with atomic number list'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], [28, 28], "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read(["./tests/test_data/ni.p454.out", "./tests/test_data/ni.p455.out"], [28, 28], rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 2 == len(my_col)
         assert "test_454" == list(my_col)[0]
         _delete_store(my_col)
@@ -187,35 +187,35 @@ class TestCollection(unittest.TestCase):
     def test_read_single_file(self):
         '''Test read function, read single file'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read("./tests/test_data/ni.p455.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read("./tests/test_data/ni.p455.out", 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_directory(self):
         '''Test read, read all input files in directory'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read("./tests/test_data/sub1/", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read("./tests/test_data/sub1/", 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_empty_dir_with_file(self):
         '''Test read, read empty directory + single file'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read(["./tests/test_data/ni.p455.out", "./tests/test_data/empty"], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read(["./tests/test_data/ni.p455.out", "./tests/test_data/empty"], 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 1 == len(my_col)
         _delete_store(my_col)
 
     def test_read_empty_list(self):
         '''Test read, empty list'''
         my_col = AtomsCollection("Test", store="./tests/store")
-        my_col.read([], 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read([], 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert 0 == len(my_col)
         _delete_store(my_col)
 
     def test_read_repeat_file(self):
         '''Test read, repeat file, will not read previously read file'''
         my_col = _initialize_collection_and_read(['454'])
-        my_col.read("./tests/test_data/ni.p454.out", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out')
+        my_col.read("./tests/test_data/ni.p454.out", 28, rxid=r'ni.p(?P<gbid>\d+).out')
         assert 1 == len(my_col)
         _delete_store(my_col)
 
@@ -224,20 +224,9 @@ class TestCollection(unittest.TestCase):
         my_col = AtomsCollection("Test", store="./tests/store")
         output = io.StringIO()
         sys.stdout = output
-        my_col.read("definitely_wrong", 28, "lammps-dump-text", rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
+        my_col.read("definitely_wrong", 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
         assert "Invalid file path, definitely_wrong was not read.\n" == output.getvalue()
         _delete_store(my_col)
-
-    def test_read_ASE_read_error(self):
-        '''Test read, ASE read error if filetype not included '''
-        my_col = AtomsCollection("Test", store="./tests/store")
-        # ASE io.read() cannot automatically determine filetype
-        self.assertRaises(StopIteration, AtomsCollection.read, my_col, "./tests/test_data/ni.p454.out", 28, rxid=r'ni.p(?P<gbid>\d+).out', prefix="TEST")
-        _delete_store(my_col)
-
-    def test_read_no_filetype(self):
-        pass  # TODO add unit test for automatic filetype reading through ASE
-        # test with xyz file
 
     def test_trim_correct_trim(self):
         '''Test trim function, check that a) some atoms are trimmed, and b) no outside values kept in the Atoms object'''
@@ -482,10 +471,14 @@ class TestCollection(unittest.TestCase):
         my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args1)
         my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args2)
         my_col.clear(collection_name='test', method=method, based_on=(desc, desc_args), **method_args1)
-        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args1)
-        assert filename is False
-        filename = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2)
-        assert filename is True
+        exists = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args1)
+        assert exists is False
+        exists = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2)
+        assert exists is True
+        # check that can delete with default collection name
+        my_col.clear(method=method, based_on=(desc, desc_args), **method_args2)
+        exists = my_col.store.check_exists("Collections", 'test', method, based_on=(desc, desc_args), **method_args2)
+        assert exists is False
         _delete_store(my_col)
 
     def test_clear_results_for_descriptor(self):
@@ -513,7 +506,7 @@ class TestCollection(unittest.TestCase):
         }
         my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
         my_col.process(method, (desc, desc_args), fcn=_processing_method, **method_args)
-        my_col.clear()
+        my_col.clear_all()
         filename = my_col.store.check_exists("Collections", 'Test', method, based_on=desc, **method_args)
         assert filename is False
         filename = my_col.store.check_exists('Descriptions', '454', 'test', **desc_args)

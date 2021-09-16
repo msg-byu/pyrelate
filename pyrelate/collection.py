@@ -25,7 +25,7 @@ class AtomsCollection(dict):
         try:
             self.name = name.lower()
         except ValueError:
-            print("name parameter must be a single string")
+            print("Name parameter must be a single string.")
 
         # TODO make trim and pad more general (have FIRM for entire collection, apply to new atoms read in, cannot trim
         # to be wider than it is, when you do "subset" the trim/pad values must be applied, update trim function)
@@ -102,14 +102,15 @@ class AtomsCollection(dict):
         Parameters:
             root (str) : relative file path (or list of file paths) to the file, or directory of files, where the raw atomic descriptions are located.
             Z (int) : atomic number of the elements to be read
-            f_format (str) : format of data file. Defaults to None. See ASE's documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'
+            f_format (str) : format of data file. Defaults to None. See ASE's documentation at 'https://wiki.fysik.dtu.dk/ase/ase/io/io.html'. Most formats can be automatically
+            read in without this parameter.
             rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly.  If any files don't match the regex or if it is not specified, the file name is used as the `aid`.
             prefix (str): optional prefix for aid. Defaults to none.
 
         Example:
             .. code-block:: python
 
-                my_col.read(["/Ni/ni.p454.out", "/Ni/ni.p453.out"], 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
+                my_col.read(["/Ni/ni.p454.out", "/Ni/ni.p453.out"], 28, rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
                 my_col.read("/Ni/", 28, "lammps-dump-text", rxid=r'ni.p(?P<aid>\d+).out', prefix="Nickel")
 
         """
@@ -209,8 +210,6 @@ class AtomsCollection(dict):
             override (bool) : if True, descriptor will override any matching results in the store. Defaults to False.
             desc_args (dict) : Parameters associated with the description function specified. See documentation in descriptors.py for function details and parameters.
 
-        #FIXME old examples
-
         Examples:
             .. code-block:: python
 
@@ -221,21 +220,7 @@ class AtomsCollection(dict):
                 }
 
                 my_col.describe("soap", **soap_args)
-
                 my_col.describe("my_soap", fcn=soap, **soap_args)
-                my_col.describe("asr", res_needed="my_soap", **soap_args)
-
-                ler_args = {
-                    "collection" : my_col,
-                    "res_needed" : "my_soap",
-                    "soap_fcn" : soap,
-                    "eps" : 0.1,
-                    "dissim_args" : {"gamma":4000},
-                    **soap_args
-                }
-
-                my_col.describe("ler", **ler_args)
-
         """
 
         if fcn is None:
@@ -274,7 +259,7 @@ class AtomsCollection(dict):
         # self.clear("temp")
 
     def process(self, method, based_on, fcn=None, override=None, **kwargs):
-        """Calculate and store collection specific results
+        """Calculate and store collection specific results.
 
         Parameters:
             method (str): string indicating the name of the descriptor to be applied
@@ -284,7 +269,16 @@ class AtomsCollection(dict):
             kwargs (dict): Parameters associated with the processing function specified. See documentation in descriptors.py for function details and parameters.
 
         Examples:
+            .. code-block:: python
 
+                asr_res = my_col.process("asr", based_on=("soap", soap_args), fcn=asr, norm_asr=True)
+
+                ler_args = {
+                    "soap_fcn" : soap,
+                    "eps" : 0.1,
+                    "dissim_args" : {"gamma":4000},
+                }
+                my_col.process("ler", based_on=("soap", soap_args), **ler_args)
         """
 
         if fcn is None:
@@ -320,47 +314,62 @@ class AtomsCollection(dict):
 
             - remove a specific description result
 
-            - remove all descriptions
+            - remove all results for a specific descriptor
 
             - remove a specific collection result
 
-            - remove all collection results created with specific method
-
-            - remove all results in the store
+            - remove collection results created with specific method for a specific collection
 
         Parameters:
             descriptor (str): Descriptor to be cleared or descriptor with specific results to be cleared. Defaults to None.
-            aid (str): Aid of Atoms object who's results you want cleared. Defaults to None, in which case all descriptor results will be cleared if descriptor is not none.
-            collection_name (str): Name of collection that contain the results you want cleared. Defaults to None. Must be called with mothod parameter.
+            aid (str): Aid of Atoms object who's results you want cleared. Defaults to None, in which case all descriptor results will be cleared if descriptor is not none. Can be inputted as a list or single value as well.
+            collection_name (str): Name of collection that contain the results you want cleared. Defaults to None, which  will use the name of the current collection as 
+            collection_name. Must be called with method parameter.
             method (str): Method to be cleared or method with specific results to be cleared. Defaults to None.
-            based_on (str): Descriptor that specifc collection results are based on. Defaults to None. in which case all method results will be cleared if method and collection name are none.
+            based_on (str): Descriptor that specific collection results are based on. Defaults to None. in which case all method results will be cleared if method and collection name are none.
             **kwargs (dict): Parameters associated with specifc descriptor or collection that will be cleared.
 
         Example:
             .. code-block:: python
 
-                my_col.clear(descriptor="soap", aid="aid1", rcut=5.0, nmax=9, lmax=9) #clears single SOAP result with given parameters
-                my_col.clear(descriptor="soap") #clears all soap results from store
-                my_col.clear(collection_name="S5", method="ler", based_on="soap") #clears all collection results processed with ler from the collection named S5 and described with soap
-                my_col.clear(collection_name="S5". method="ler") #clears all collection results processed with ler from the collection named S5
-                my_col.clear() #clears all results from store
+                my_col.clear(descriptor="soap", aid="aid1", **soap_args) #clears single SOAP result with given parameters
+                my_col.clear(descriptor="soap") #clears ALL soap results from store
+                my_col.clear(collection_name="S5", method="ler", based_on=("soap", soap_args), **ler_args) #clears  collection results processed with ler from the collection named S5 and described with soap
+                my_col.clear(collection_name="S5", method="ler") #clears all collection results processed with ler from the collection named S5
+                my_col.clear(method="ler") #same as above, if the collection you are calling function from has the same name as the collection that generated the results
+
 
         '''
         has_kwargs = len(kwargs) != 0
-        if collection_name is not None and method is None and based_on is None:
-            print("Collection cannot be left as a solo parameter")
-        if descriptor is not None and aid is not None:
-            if has_kwargs:
+
+        if collection_name is None:
+            collection_name = self.name
+        else:
+            collection_name = collection_name.lower()
+
+        if descriptor is not None: 
+            if aid is not None and has_kwargs:
                 self.store.clear_description_result(aid, descriptor, **kwargs)
+            elif aid is None and not has_kwargs:
+                for aid_i in self.aids():
+                    try:
+                        self.store.clear_description(aid_i, descriptor)
+                    except:
+                        pass #result for that aid doesn't exist anyways
             else:
-                self.store.clear_description(aid, descriptor)
-        elif collection_name is not None and method is not None and based_on is not None:
-            if has_kwargs:
+                print("Incorrect parameters inputted.")
+
+        elif method is not None and collection_name is not None:
+            if based_on is not None and has_kwargs:
                 self.store.clear_collection_result(method, collection_name, based_on, **kwargs)
             else:
                 self.store.clear_method(method, collection_name)
         else:
-            self.store.clear_all()
+            print("Incorrect parameters inputted.")
+
+    def clear_all(self):
+        """Wrapper function to clear all results from the store."""
+        self.store.clear_all()
 
     def get_description(self, idd, descriptor, metadata=False, **desc_args):
         """Wrapper function to retrieve descriptor results from the store"""
