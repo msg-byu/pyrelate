@@ -1,48 +1,49 @@
 #!/usr/bin/env python
-try:
-    from setuptools import setup
-    args = {}
-except ImportError:
-    from distutils.core import setup
-    print("""\
-    *** WARNING: setuptools is not found.  Using distutils...
-    """)
 
-from setuptools import setup
-try:
-    from pypandoc import convert
-    read_md = lambda f: convert(f, 'rst')
-except ImportError:
-    print("warning: pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
+"""The setup script."""
 
-from os import path
-setup(name='pyrelate',
-    version='0.1.3',
-    description='Scientific code to represent and learn on a collection of atomic environments',
-    long_description= "" if not path.isfile("README.md") else read_md('README.md'),
-    author='Jay Spendlove',
-    author_email='jayclark24@gmail.com',
-    url='https://github.com/msg-byu/pyrelate',
-    license='Academic Public License',
-    setup_requires=['pytest-runner',],
-    tests_require=['pytest', 'python-coveralls'],
-    install_requires=[
-        "numpy",
-        "tqdm",
-        "ase",
-    ],
-    packages=['pyrelate'],
-    scripts=[],
-    package_data = {'pyrelate': []},
-    include_package_data=False,
+from setuptools import setup, find_packages
+
+with open('README.rst') as readme_file:
+    readme = readme_file.read()
+
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
+
+requirements = ['Click>=7.0', 'numpy', 'tqdm', 'ase']
+
+test_requirements = ['pytest>=3', ]
+
+setup(
+    author="Christopher Braxton Owens",
+    author_email='cbraxtonowens@gmail.com',
+    python_requires='>=3.7',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
-        'Operating System :: POSIX::Linux',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
-    )
+    description="TBD",
+    entry_points={
+        'console_scripts': [
+            'pyrelate=pyrelate.cli:main',
+        ],
+    },
+    install_requires=requirements,
+    license="MIT license",
+    long_description=readme + '\n\n' + history,
+    include_package_data=True,
+    keywords='pyrelate',
+    name='pyrelate',
+    packages=find_packages(include=['pyrelate', 'pyrelate.*']),
+    test_suite='tests',
+    tests_require=test_requirements,
+    url='https://github.com/braxtonowens/pyrelate',
+    version='0.1.0',
+    zip_safe=False,
+)
