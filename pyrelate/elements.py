@@ -32,10 +32,12 @@ def atoms(element):
             import ase.lattice.cubic as structures
         if hasattr(structures, lattice):
             lat = getattr(structures, lattice)(element, latticeconstant=latpar)
-            a = Atoms(positions=lat.positions, numbers=lat.numbers)
+            a = Atoms(positions=lat.positions, numbers=lat.numbers, pbc=True)
             a.set_cell(lat.cell)
             a.set_atomic_numbers([Z for i in a])
             return a
+    else:
+        raise NotImplementedError(f"Lattice info for element {element} not hard-coded into elements.py.")
     # FIXME throw error if structure not included
 
 
