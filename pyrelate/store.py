@@ -85,6 +85,10 @@ class Store:
             \*\*method_args: additional arguments to used in generating the method result, any function arguments will
             be converted to a string of the function name before storing in the info dict
         """
+        exists = self.check_exists("Collections", collection_name, method, based_on=based_on, **method_args)
+        if exists:
+            self.clear_collection_result(method, collection_name, based_on, **method_args)
+
         fname = self._generate_default_file_name(collection_name, method)
         info_fname = "info_" + fname
         path = os.path.join(self.root, "Collections", collection_name, method)
