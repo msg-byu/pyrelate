@@ -250,7 +250,7 @@ class TestStore(unittest.TestCase):
             assert False, "No correct file found"
         _delete_store(store)
 
-    def test_store_collection_description(self):
+    def test_store_collection_result(self):
         # called in the process() method
         # result, info, collection name, arguments, descriptor_args
         store = Store("./tests/results")
@@ -294,7 +294,7 @@ class TestStore(unittest.TestCase):
             assert False, "No correct file found"
         _delete_store(store)
 
-    def test_store_collection_description_with_function_in_args(self):
+    def test_store_collection_result_with_function_in_args(self):
         # called in the process() method
         # result, info, collection name, arguments, descriptor_args
         store = Store("./tests/results")

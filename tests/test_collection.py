@@ -423,6 +423,28 @@ class TestCollection(unittest.TestCase):
 
         _delete_store(my_col)
 
+    def test_process_override(self):
+        '''Put result in store, and check to make sure 'override' parameter overrides previous result'''
+        desc = "test"
+        desc_args = {
+            'num': 1
+        }
+        method = "my_method"
+        method_args = {
+            "a": 0,
+            "b": 1,
+            "method_name": method
+        }
+        
+        my_col = _initialize_collection_and_describe([desc], ['454', '455'], **desc_args)
+        my_col.store.store_collection_result("fake result", {}, "method", "collection_name", based_on=(desc, desc_args), **method_args)  # store result, can be overridden
+        try:
+            res = my_col.process("method", (desc, desc_args), fcn=_processing_method, override=True, **method_args)
+            assert res != "fake result"
+            assert res == "my_method__test result 2_test result 2_"
+        finally:
+            _delete_store(my_col)
+
     def test_clear_method(self):
         '''Test clear, clear results created with method'''
         desc = "test"
