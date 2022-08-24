@@ -99,18 +99,19 @@ class TestDescriptors():
         my_col.store.store_description(fake_mat2, {}, "455", "fake_soap", **soapargs)
         seed = [0, 0, 0]
         lerargs = {
-            'eps': 0.3,
-            'dissim_args': {"gamma": 0.1},
+            'eps': 2, #0.3,
+            # 'dissim_args': {"gamma": 0.1},
             'seed': seed,
         }
         my_col.process("ler", ("fake_soap", soapargs), **lerargs)
         ler, info = my_col.get_collection_result("ler", ("fake_soap", soapargs), metadata=True, **lerargs)
 
-        assert len(ler[0]) == 4  # 4 clusters
-        assert info['num_clusters'] == 4
+        n_clusters = 4
+        assert len(ler[0]) == n_clusters #4  # 4 clusters
+        assert info['num_clusters'] == n_clusters #4
         # when sorting is implemented into LER these will be in a different order
-        assert np.array_equal(ler[0], np.array([1 / 4, 1 / 2, 1 / 4, 0]))
-        assert np.array_equal(ler[1], np.array([1 / 4, 0, 1 / 4, 1 / 2]))
+        assert np.array_equal(ler[0], np.array([1 / 4, 1 / 4, 1 / 2,  0]))
+        assert np.array_equal(ler[1], np.array([1 / 4,  1 / 4,0, 1 / 2]))
         _delete_store(my_col)
 
     def test_ler_runs_pass_in_soapfcn(self):
@@ -126,8 +127,8 @@ class TestDescriptors():
             return [[0, 0, 0]]
 
         lerargs = {
-            'eps': 0.3,
-            'dissim_args': {"gamma": 0.1},
+            'eps': 2, #0.3,
+            # 'dissim_args': {"gamma": 0.1},
             'soap_fcn': soap_fcn
         }
         try:
@@ -136,8 +137,9 @@ class TestDescriptors():
         finally:
             _delete_store(my_col)
 
-        assert len(ler[0]) == 4  # 4 clusters
-        assert info['num_clusters'] == 4
+        n_clusters = 4
+        assert len(ler[0]) == n_clusters #4  # 4 clusters
+        assert info['num_clusters'] == n_clusters #4
         # when sorting is implemented into LER these will be in a different order
-        assert np.array_equal(ler[0], np.array([1 / 4, 1 / 2, 1 / 4, 0]))
-        assert np.array_equal(ler[1], np.array([1 / 4, 0, 1 / 4, 1 / 2]))
+        assert np.array_equal(ler[0], np.array([1 / 4, 1 / 4, 1 / 2, 0]))
+        assert np.array_equal(ler[1], np.array([1 / 4, 1 / 4, 0, 1 / 2]))
