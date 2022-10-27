@@ -94,7 +94,7 @@ class AtomsCollection(dict):
 
         return aid
 
-    def read(self, root, Z, f_format=None, rxid=None, prefix=None):
+    def read(self, root, Z, f_format=None, rxid=None, prefix=None,style = None,del_blocks = True):
         """Function to read atoms data into ASE Atoms objects and add to AtomsCollection.
 
         Utilizes functionality in ASE to read in atomic data.
@@ -106,6 +106,8 @@ class AtomsCollection(dict):
             read in without this parameter.
             rxid (:obj: str, optional) : regex pattern for extracting the `aid` for each Atoms object. Defaults to None. The regex should include a named group `(?P<aid>...)` so that the id can be extracted correctly.  If any files don't match the regex or if it is not specified, the file name is used as the `aid`.
             prefix (str): optional prefix for aid. Defaults to none.
+            style (str) : input parameter for ase.io.read funciton. Defaults to None. 
+            del_blocks (bool) : allows user to choose to delete the end blocks of atoms from a simulation or not. Defaults to True. 
 
         Example:
             .. code-block:: python
@@ -122,15 +124,16 @@ class AtomsCollection(dict):
             if isinstance(root, list):
                 for i in tqdm(range(len(root))):
                     if not isinstance(Z, list):
-                        self.read(root[i], Z, f_format, rxid, prefix)
+                        self.read(root[i], Z, f_format, rxid, prefix,style,del_blocks)
                     else:
-                        self.read(root[i], Z[i], f_format, rxid, prefix)
+                        self.read(root[i], Z[i], f_format, rxid, prefix,style,del_blocks)
             elif(path.isfile(root)):
                 # TODO generalize for reading multi elemental data
-                a0 = io.read(root, format=f_format)
+                a0 = io.read(root, format=f_format, style)
                 a = a0.copy()
-                # delete end blocks
-                del a[[atom.index for atom in a if atom.number == 4 or atom.number == 5]]
+                if del_blocks:
+                    # delete end blocks
+                    del a[[atom.index for atom in a if atom.number == 4 or atom.number == 5]]
                 a.new_array('type', a.get_array(
                     'numbers', copy=True), dtype=int)
                 a.set_atomic_numbers([Z for i in a])
@@ -143,7 +146,7 @@ class AtomsCollection(dict):
             elif(path.isdir(root)):
                 for afile in os.listdir(root):
                     fpath = os.path.join(root, afile)
-                    self.read(fpath, Z, f_format, rxid, prefix)
+                    self.read(fpath, Z, f_format, rxid, prefix,style,del_blocks)
             else:
                 raise ValueError(root)
         except ValueError:
