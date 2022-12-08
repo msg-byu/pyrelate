@@ -12,7 +12,7 @@ backcall==0.2.0
 binaryornot==0.4.4
 bleach==3.3.0
 bump2version==0.5.11
-certifi==2020.12.5
+certifi==2022.12.7
 chardet==4.0.0
 Click==7.0
 cookiecutter==1.7.3
